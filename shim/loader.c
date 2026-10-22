@@ -52,17 +52,21 @@ _Static_assert(sizeof(struct boot_args) == 736, "boot_args layout");
 /* MMU off: everything is Device memory, so copy in aligned 8-byte words. */
 static void copy64(uintptr_t dst, uintptr_t src, uint64_t n)
 {
-    volatile uint64_t *d = (volatile uint64_t *)dst;
-    volatile const uint64_t *s = (volatile const uint64_t *)src;
-    for (uint64_t i = 0; i < (n + 7) / 8; i++)
-        d[i] = s[i];
+    uint64_t i = 0;
+    for (; n-i >= 8; i+=8)
+        *(volatile uint64_t *)(dst+i) = *(volatile const uint64_t *)(src+i);
+    for (; i<n; i++)
+        *(volatile uint8_t *)(dst+i) = *(volatile const uint8_t *)(src+i);
 }
-
 static void zero64(uintptr_t dst, uint64_t n)
 {
-    volatile uint64_t *d = (volatile uint64_t *)dst;
-    for (uint64_t i = 0; i < n / 8; i++)
-        d[i] = 0;
+    while (n && (dst & 7)) {
+        *(volatile uint8_t *)dst++ = 0; n--;
+    }
+    while (n >= 8) {
+        *(volatile uint64_t *)dst = 0; dst+=8; n-=8;
+    }
+    while (n--) *(volatile uint8_t *)dst++ = 0;
 }
 
 static int magic_ok(const char *m)
@@ -126,7 +130,7 @@ const char *loader_boot(uintptr_t dtb)
             seg->vmsize > used - (seg->vmaddr - p->virt_base) ||
             seg->file_size > seg->vmsize || seg->file_off > rd_size ||
             seg->file_size > rd_size - seg->file_off ||
-            ((seg->vmaddr | seg->vmsize | seg->file_off | seg->file_size) & 7))
+            ((seg->vmaddr | seg->vmsize | seg->file_off) & 7))
             return "segment out of bounds/alignment";
         if (p->entry_va >= seg->vmaddr && p->entry_va-seg->vmaddr < seg->file_size)
             entry_ok = 1;
@@ -152,7 +156,7 @@ const char *loader_boot(uintptr_t dtb)
         uintptr_t dst = s->vmaddr + pa_of_va_base;
         copy64(dst, rd_start + s->file_off, s->file_size);
         if (s->vmsize > s->file_size)
-            zero64(dst + ((s->file_size + 7) & ~7UL), s->vmsize - ((s->file_size + 7) & ~7UL));
+            zero64(dst + s->file_size, s->vmsize - s->file_size);
     }
     con_hex2("SEGS", "n=", p->nsegs, "end=", p->kernel_end + pa_of_va_base);
 
