@@ -1,84 +1,56 @@
-/*
- * Just enough flattened-device-tree parsing to find what ABL put in
- * /chosen (initrd location). Big-endian, 4-byte aligned tokens.
- */
+/* Bounded FDT /chosen reader for Samsung's live bootloader tree. */
 #include "fdt.h"
-
-#define FDT_MAGIC	0xd00dfeed
-#define FDT_BEGIN_NODE	1
-#define FDT_END_NODE	2
-#define FDT_PROP	3
-#define FDT_NOP		4
-#define FDT_END		9
-
-static uint32_t be32(uintptr_t a)
+#define MAX_FDT_SIZE 0x100000U
+static uint32_t be32(uintptr_t p)
 {
-	return __builtin_bswap32(*(volatile uint32_t *)a);
+    return __builtin_bswap32(*(volatile uint32_t *)p);
 }
-
-static int streq(const char *a, const char *b)
+static int bounded_equal(uintptr_t p, uintptr_t end, const char *want)
 {
-	while (*a && *a == *b)
-		a++, b++;
-	return *a == *b;
+    while (p < end) {
+        char c = *(volatile const char *)p++;
+        if (c != *want++) return 0;
+        if (!c) return 1;
+    }
+    return 0;
 }
-
-static uintptr_t align4(uintptr_t a)
-{
-	return (a + 3) & ~3UL;
-}
-
-static uintptr_t skip_str(uintptr_t p)
-{
-	/* byte loads are fine on Device memory as long as they are aligned to 1 */
-	while (*(volatile char *)p)
-		p++;
-	return p + 1;
-}
-
 int fdt_chosen_u64(uintptr_t fdt, const char *prop, uint64_t *out)
 {
-	if (!fdt || be32(fdt) != FDT_MAGIC)
-		return 0;
-	uintptr_t p = fdt + be32(fdt + 8);		/* off_dt_struct */
-	uintptr_t strings = fdt + be32(fdt + 12);	/* off_dt_strings */
-	int depth = 0, in_chosen = 0;
-
-	for (;;) {
-		uint32_t tok = be32(p);
-		p += 4;
-		switch (tok) {
-		case FDT_BEGIN_NODE: {
-			const char *name = (const char *)p;
-			depth++;
-			in_chosen = depth == 2 && streq(name, "chosen");
-			p = align4(skip_str(p));
-			break;
-		}
-		case FDT_END_NODE:
-			if (in_chosen)
-				return 0;
-			depth--;
-			break;
-		case FDT_PROP: {
-			uint32_t len = be32(p), nameoff = be32(p + 4);
-			uintptr_t val = p + 8;
-			if (in_chosen && streq((const char *)(strings + nameoff), prop)) {
-				if (len == 4)
-					*out = be32(val);
-				else if (len == 8)
-					*out = (uint64_t)be32(val) << 32 | be32(val + 4);
-				else
-					return 0;
-				return 1;
-			}
-			p = align4(val + len);
-			break;
-		}
-		case FDT_NOP:
-			break;
-		default:	/* FDT_END or garbage */
-			return 0;
-		}
-	}
+    if (!fdt || (fdt & 3) || be32(fdt) != 0xd00dfeed) return 0;
+    uint32_t size = be32(fdt+4);
+    if (size < 40 || size > MAX_FDT_SIZE || fdt+size < fdt) return 0;
+    uint32_t so=be32(fdt+8), no=be32(fdt+12);
+    uint32_t ns=be32(fdt+32), ss=be32(fdt+36);
+    if ((so & 3) || so < 40 || no < 40 || so > size || no > size ||
+        ss > size-so || ns > size-no) return 0;
+    uintptr_t p=fdt+so, end=p+ss, names=fdt+no, names_end=names+ns;
+    int depth=0, chosen=0;
+    while (p <= end && end-p >= 4) {
+        uint32_t token=be32(p); p+=4;
+        if (token==1) {
+            if (++depth > 64) return 0;
+            if (depth==2) chosen=bounded_equal(p,end,"chosen");
+            while (p<end && *(volatile const char *)p) p++;
+            if (p==end) return 0;
+            p=(p+4)&~(uintptr_t)3;
+        } else if (token==2) {
+            if (depth<=0) return 0;
+            if (depth==2) chosen=0;
+            depth--;
+        } else if (token==3) {
+            if (end-p<8 || depth<=0) return 0;
+            uint32_t len=be32(p), off=be32(p+4); p+=8;
+            if (len>end-p || off>=ns) return 0;
+            if (chosen && depth==2 && bounded_equal(names+off,names_end,prop)) {
+                if (len==4) *out=be32(p);
+                else if (len==8) *out=((uint64_t)be32(p)<<32)|be32(p+4);
+                else return 0;
+                return 1;
+            }
+            p=(p+len+3)&~(uintptr_t)3;
+        } else if (token==4) {
+            continue;
+        } else return 0;
+    }
+    return 0;
 }
