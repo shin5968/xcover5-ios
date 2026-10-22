@@ -17,6 +17,11 @@ def setprop(n, key, value):
 def build():
     root = base.build(qemu=True)
     byname = {dict((k,v) for k,f,v in n.props)['name'].rstrip(b'\0'):n for n in root.children}
+    # Early kernel has no corecrypto provider yet. These optional identity
+    # fields trigger generatePlatformUUID -> SHA1Init(NULL provider).
+    chosen = byname[b'chosen']
+    chosen.props = [(k,f,v) for k,f,v in chosen.props
+                    if k not in ('unique-chip-id', 'chip-id')]
     cpu = byname[b'cpus'].children[0]
     setprop(cpu, 'compatible', base.cstr('arm,cortex-a55') + base.cstr('ARM,v8'))
     setprop(cpu, 'clock-frequency', base.u32(2000000000))
