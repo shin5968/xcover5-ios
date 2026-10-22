@@ -13,3 +13,9 @@ First target is early kernel console, not iOS GUI. Missing later providers (libp
 GitHub Actions workflow: .github/workflows/xnu.yml. Pushes changing kernel patches or the workflow trigger a DEVELOPMENT/SWEET build. The initial target is kernel console output; no boot or userdata partition is flashed by CI.
 
 Source provenance: tools/adt.py, tools/mkpayload.py and tools/sweet_adt_base.py are copies of ios-sweet equivalents (the last renamed from mkadt.py). Source trees/build-support are downloaded reference/build inputs, not authored code.
+
+## Samsung boot shim
+
+`shim/build.sh 3 /absolute/path/to/payload.bin` builds the XNU loader using aarch64-linux-gnu-gcc on Linux/WSL. Supply the device DTB locally at `stock/unpacked/dtb`; device dumps are excluded from git. Loader source compiles with -Wall -Wextra -Werror. It bounds payload segments, ADT and boot arguments and accepts only the selected 255MiB RAM window; actual kernel handoff is untested.
+
+M9 bare-metal runtime validation: 16KiB MMU, virtual timer IRQ27 and physical IRQ30 each delivered 29 interrupts in 300ms. SMP is unresolved. Existing M9 images are preserved outside this repository. Kernel build and boot results must be reported separately.

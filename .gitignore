@@ -4,3 +4,7 @@ xnu/out/
 *.simg
 *.tar.md5
 __pycache__/
+stock/
+backup/
+odin/
+shim/out/
