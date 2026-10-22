@@ -1,0 +1,6 @@
+xnu/source/
+xnu/out/
+*.img
+*.simg
+*.tar.md5
+__pycache__/
