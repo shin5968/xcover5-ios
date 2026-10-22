@@ -23,7 +23,7 @@ def build():
     chosen.props = [(k,f,v) for k,f,v in chosen.props
                     if k not in ('unique-chip-id', 'chip-id')]
     cpu = byname[b'cpus'].children[0]
-    setprop(cpu, 'compatible', base.cstr('arm,cortex-a55') + base.cstr('ARM,v8'))
+    setprop(cpu, 'compatible', base.cstr('arm,cortex-a55') + base.cstr('qcom,kryo470') + base.cstr('ARM,v8'))
     setprop(cpu, 'clock-frequency', base.u32(2000000000))
     gic = byname[b'arm-io'].children[0]
     setprop(gic, 'compatible', base.cstr('arm,gic-400'))
