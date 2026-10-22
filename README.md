@@ -19,3 +19,11 @@ Source provenance: tools/adt.py, tools/mkpayload.py and tools/sweet_adt_base.py 
 `shim/build.sh 3 /absolute/path/to/payload.bin` builds the XNU loader using aarch64-linux-gnu-gcc on Linux/WSL. Supply the device DTB locally at `stock/unpacked/dtb`; device dumps are excluded from git. Loader source compiles with -Wall -Wextra -Werror. It bounds payload segments, ADT and boot arguments and accepts only the selected 255MiB RAM window; actual kernel handoff is untested.
 
 M9 bare-metal runtime validation: 16KiB MMU, virtual timer IRQ27 and physical IRQ30 each delivered 29 interrupts in 300ms. SMP is unresolved. Existing M9 images are preserved outside this repository. Kernel build and boot results must be reported separately.
+
+## 2026-10-22 device results and current build
+
+The first kernel reached IOKit but SHA1Init panicked because the crypto provider was absent. An early ADT omitting optional chip identity passed this point. Matching SweetCPU via its compatibility alias then registered CPU0 and passed the SGI self-test. The next observed panic is `pthread kernel extension not loaded` at pthread_shims.c:318.
+
+The current patch set therefore includes the pinned public libpthread provider, portable BearSSL AES/MD5/SHA1/SHA384/SHA512 and built-in SHA256. These are hardware-independent base patches; no Qualcomm UFS/USB/touch patches are included. Build results and device results are separate: CPU+SGI runtime success is verified; the added providers await a new boot test.
+
+To package a downloaded kernel locally: `bash tools/package_xnu.sh /absolute/kernel.development.sweet xnu-next`. This creates `odin/AP_xnu-next.tar.md5` containing boot.img only. Supply stock/unpacked/dtb locally. This repository contains no device dumps or Apple firmware/userland.
