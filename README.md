@@ -27,3 +27,9 @@ The first kernel reached IOKit but SHA1Init panicked because the crypto provider
 The current patch set therefore includes the pinned public libpthread provider, portable BearSSL AES/MD5/SHA1/SHA384/SHA512 and built-in SHA256. These are hardware-independent base patches; no Qualcomm UFS/USB/touch patches are included. Build results and device results are separate: CPU+SGI runtime success is verified; the added providers await a new boot test.
 
 To package a downloaded kernel locally: `bash tools/package_xnu.sh /absolute/kernel.development.sweet xnu-next`. This creates `odin/AP_xnu-next.tar.md5` containing boot.img only. Supply stock/unpacked/dtb locally. This repository contains no device dumps or Apple firmware/userland.
+
+## Faster CI iterations
+
+A matching compiled kernel is cached by runner OS/architecture, Xcode path, macOS target, kernel/machine configuration, pinned build-support revision, patch content and workflow content. Root/init-only changes reuse that exact kernel and skip the full build; kernel patch or workflow changes generate a new cache key. A cold cache still needs a complete build. Runner queue time is independent of this cache.
+
+Full source/build-tree uploads and KDK symbol inspection are disabled for ordinary runs. Use workflow_dispatch diagnostics=true for a fresh-build diagnostic run; source-tree artifacts are unavailable when reusing a cached kernel. Actual cache-hit timing has not yet been measured.

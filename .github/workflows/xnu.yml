@@ -12,6 +12,10 @@ on:
       machine_config:
         description: xnu MACHINE_CONFIG
         default: SWEET
+      diagnostics:
+        description: Upload full build tree and inspect KDK libraries
+        type: boolean
+        default: false
       keep_going:
         description: make -k (collect all compile errors in one run)
         default: "true"
@@ -70,12 +74,23 @@ jobs:
           xcodebuild -version
           xcrun --find iig
 
+      - name: Restore matching kernel
+        id: kernel-cache
+        uses: actions/cache@v4
+        with:
+          path: dxb/fakeroot/System/Library/Kernels
+          key: xnu-kernel-v1-${{ runner.os }}-${{ runner.arch }}-${{ env.MACOS_VERSION }}-${{ env.KERNEL_CONFIG }}-${{ env.MACHINE_CONFIG }}-${{ env.DXB_SHA }}-${{ env.DEVELOPER_DIR }}-${{ hashFiles('xnu/patches/**', '.github/workflows/xnu.yml') }}
+
       - name: Build
+        if: steps.kernel-cache.outputs.cache-hit != 'true'
         working-directory: dxb
         env:
           # keep going after errors so one run reports every compile failure
           MAKEFLAGS: ${{ inputs.keep_going == 'false' && '' || '-k' }}
-        run: bash build.sh
+        run: |
+          bash build.sh
+          test -s "fakeroot/System/Library/Kernels/kernel.development.sweet" || \
+            find fakeroot/System/Library/Kernels -type f -name 'kernel.*' -size +1M | grep -q .
 
       - name: Build minimal userspace init
         run: |
@@ -87,7 +102,7 @@ jobs:
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Package build tree for local compiles
-        if: always()
+        if: always() && inputs.diagnostics == true && steps.kernel-cache.outputs.cache-hit != 'true'
         run: |
           # Generated headers, config option headers, mig output and the patched
           # source: enough to re-run any single compile command from the log locally.
@@ -102,14 +117,14 @@ jobs:
           ls -la buildtree.tgz
 
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && inputs.diagnostics == true && steps.kernel-cache.outputs.cache-hit != 'true'
         with:
           name: xnu-buildtree
           path: buildtree.tgz
           retention-days: 7
 
       - name: Inspect closed KDK support libs
-        if: always()
+        if: always() && inputs.diagnostics == true
         run: |
           mkdir -p out/kdk-libs
           for lib in /Library/Developer/KDKs/*/System/Library/KernelSupport/lib*.a; do
