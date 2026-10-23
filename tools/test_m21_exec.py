@@ -6,7 +6,9 @@ import struct
 from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM, UC_HOOK_INTR
 from unicorn.arm64_const import *
 
-def child(parent, code, probe, mode):
+def child(parent, code, probe, mode, dynamic=None):
+    label = 'M22' if dynamic else 'M21'
+    prefix = label.lower()
     u = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
     for base, size in [(0x100000, 0x10000), (0x200000, 0x20000), (0x300000, 0x10000)]:
         u.mem_map(base, size)
@@ -30,17 +32,17 @@ def child(parent, code, probe, mode):
         a = [u.reg_read(r) for r in regs[:4]]
         if n == 59:
             assert not state['exec']
-            assert string(a[0]) == b'/emmc/sbin/m21-probe'
+            assert string(a[0]) == f'/emmc/sbin/{prefix}-probe'.encode()
             argv = struct.unpack('<QQ', u.mem_read(a[1], 16))
             assert argv == (a[0], 0)
             assert bytes(u.mem_read(a[2], 8)) == bytes(8)
-            if mode == 'm21_exec_error': result(8, True)
+            if mode == prefix+'_exec_error': result(8, True)
             else:
                 state['exec'] = True
                 u.emu_stop()
         elif n == 20:
             assert state['exec']
-            result(1 if mode == 'm21_child_pid' else 17)
+            result(1 if mode == prefix+'_child_pid' else 17)
         elif n == 5:
             assert state['exec']
             name = string(a[0])
@@ -49,20 +51,20 @@ def child(parent, code, probe, mode):
                 result(3)
             else:
                 assert name == b'/emmc/m20-proof.txt' and a[1] == 0
-                result(2, True) if mode == 'm21_child_open' else result(6)
+                result(2, True) if mode == prefix+'_child_open' else result(6)
         elif n == 3:
             assert a[0] == 6 and a[2] == 128
             data = b'XCOVER5 M20 eMMC file read verified\n'
-            if mode == 'm21_child_content': data = b'!'+data[1:]
-            if mode == 'm21_child_short': data = data[:-1]
-            if mode == 'm21_child_read': result(5, True)
+            if mode == prefix+'_child_content': data = b'!'+data[1:]
+            if mode == prefix+'_child_short': data = data[:-1]
+            if mode == prefix+'_child_read': result(5, True)
             else:
                 u.mem_write(a[1], data)
                 result(len(data))
         elif n == 4:
             assert a[0] == 3, 'only console writes'
             output.append(bytes(u.mem_read(a[1], a[2])).decode())
-            result(5, True) if mode == 'm21_child_write' else result(a[2])
+            result(5, True) if mode == prefix+'_child_write' else result(a[2])
         elif n == 6: result(0)
         elif n == 1:
             state['exit'] = a[0]
@@ -74,18 +76,24 @@ def child(parent, code, probe, mode):
         # Simulate exec: only the new image and a fresh, deliberately unaligned
         # initial stack survive; register inheritance cannot make the probe pass.
         u.mem_write(0x100000, bytes(len(code)))
-        u.mem_write(0x300000, probe)
         u.mem_write(0x200000, bytes(0x20000))
         for reg in regs: u.reg_write(reg, 0)
-        u.reg_write(UC_ARM64_REG_SP, 0x21ffe8)
-        u.emu_start(0x300000, 0x310000, count=100000)
+        if dynamic:
+            from test_m22_loader import prepare
+            pc = prepare(u, *dynamic)
+            u.emu_start(pc, 0x600000, count=100000)
+        else:
+            u.mem_write(0x300000, probe)
+            u.reg_write(UC_ARM64_REG_SP, 0x21ffe8)
+            u.emu_start(0x300000, 0x310000, count=100000)
     assert state['exit'] is not None, state
-    if mode == 'm21_exec_error':
+    if mode == prefix+'_exec_error':
         assert not state['exec'] and state['exit'] == 127
         assert 'child exec errno=00000008' in ''.join(output)
-    elif mode.startswith('m21_child_'):
-        assert state['exec'] and state['exit'] == 111, state
+    elif mode.startswith(prefix+'_child_'):
+        assert state['exec'] and state['exit'] in (111, 112), state
     else:
-        assert state['exec'] and state['exit'] == 42, state
-        assert 'M21 CHILD PASS' in ''.join(output)
+        assert state['exec'] and state['exit'] == (43 if dynamic else 42), state
+        assert label+' CHILD PASS' in ''.join(output)
+        if dynamic: assert 'M22 LOADER PASS' in ''.join(output)
     return state['exit'] << 8, output

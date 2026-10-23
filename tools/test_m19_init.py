@@ -11,6 +11,8 @@ from unicorn.arm64_const import *
 code = Path(sys.argv[1]).read_bytes()
 boot = Path(sys.argv[2]).read_bytes()
 probe = Path(sys.argv[3]).read_bytes() if len(sys.argv) > 3 else None
+dynamic = tuple(Path(p).read_bytes() for p in sys.argv[4:6]) or None
+if b'M22 USER PASS' in code: assert dynamic and len(dynamic) == 2
 if b'M21 USER PASS' in code:
     assert probe, 'M21 requires probe .text as the third argument'
     from test_m21_exec import child
@@ -52,7 +54,7 @@ def run(mode, expected_stage=None):
     u.reg_write(UC_ARM64_REG_SP, 0x21fff0)
     output, reads = [], []
     counts = {}
-    child_state = {'status': None, 'waits': 0, 'killed': False}
+    child_state = {'status': None, 'waits': 0, 'killed': False, 'forks': 0}
     def result(value, error=False):
         u.reg_write(UC_ARM64_REG_X0, value)
         nzcv = u.reg_read(UC_ARM64_REG_NZCV) & ~(1 << 29)
@@ -117,9 +119,13 @@ def run(mode, expected_stage=None):
                 result(len(data))
         elif n == 6: result(0)
         elif n == 2:
-            if mode == 'm21_fork': result(12, True)
+            child_state['forks'] += 1
+            prefix = 'm21' if child_state['forks'] == 1 else 'm22'
+            child_state['prefix'] = prefix
+            child_state['waits'] = 0
+            if mode == prefix+'_fork': result(12, True)
             else:
-                status, child_output = child(u, code, probe, mode)
+                status, child_output = child(u, code, probe, mode, dynamic if prefix == 'm22' else None)
                 output.extend(child_output)
                 child_state['status'] = status
                 u.reg_write(UC_ARM64_REG_X1, 0)
@@ -132,13 +138,15 @@ def run(mode, expected_stage=None):
             else:
                 assert a[0] == 17
                 child_state['waits'] += 1
-                if mode == 'm21_wait': result(10, True)
-                elif mode == 'm21_timeout': result(0)
-                elif mode == 'm21_eintr' and child_state['waits'] == 1: result(4, True)
+                prefix = child_state['prefix']
+                child_state[prefix+'_waits'] = child_state['waits']
+                if mode == prefix+'_wait': result(10, True)
+                elif mode == prefix+'_timeout': result(0)
+                elif mode == prefix+'_eintr' and child_state['waits'] == 1: result(4, True)
                 elif child_state['waits'] == 1: result(0) # genuinely exercise polling
                 else:
-                    status = 9 if mode == 'm21_signal' else child_state['status']
-                    if mode == 'm21_exit': status = 0
+                    status = 9 if mode == prefix+'_signal' else child_state['status']
+                    if mode == prefix+'_exit': status = 0
                     u.mem_write(a[1], struct.pack('<I', status))
                     result(17)
         elif n == 37:
@@ -156,15 +164,16 @@ def run(mode, expected_stage=None):
     u.hook_add(UC_HOOK_INTR, syscall)
     u.emu_start(0x100000, 0x100000+len(code), count=20000000)
     out = ''.join(output)
-    if mode.startswith('m21_'):
+    if mode.startswith(('m21_', 'm22_')):
+        label = mode[:3].upper()
         if expected_stage is None:
-            assert 'M21 USER PASS' in out, out
+            assert label+' USER PASS' in out, out
         else:
-            assert f'M21 USER FAIL stage={expected_stage:08x}' in out, out
-            assert 'M21 USER PASS' not in out, out
-        if mode == 'm21_timeout':
-            assert child_state['waits'] == 100 and child_state['killed']
-        print(f'{mode}: checked M21 result, stage={expected_stage}')
+            assert f'{label} USER FAIL stage={expected_stage:08x}' in out, out
+            assert label+' USER PASS' not in out, out
+        if mode.endswith('_timeout'):
+            assert child_state[mode[:3]+'_waits'] == 100 and child_state['killed']
+        print(f'{mode}: checked {label} result, stage={expected_stage}')
     elif mode.startswith('m20_'):
         assert 'M19 USER PASS' in out, out
         assert f'M20 USER FAIL stage={expected_stage:08x}' in out, out
@@ -175,6 +184,7 @@ def run(mode, expected_stage=None):
         assert 'M19 USER PASS' in out, out
         if b'M20 USER PASS' in code: assert 'M20 USER PASS' in out, out
         if b'M21 USER PASS' in code: assert 'M21 USER PASS' in out, out
+        if b'M22 USER PASS' in code: assert 'M22 USER PASS' in out, out
         kernel_size = struct.unpack_from('<I', boot, 8)[0]
         offset = 2048 + ((kernel_size+2047)//2048)*2048
         expected = zlib.crc32(boot[offset:offset+16384])
@@ -193,6 +203,14 @@ for mode, stage in [('valid', None), ('header_crc', 3), ('layout', 3),
 
 if b'M20 USER PASS' in code:
     for mode, stage in [('m20_mount', 21), ('m20_open', 22), ('m20_read', 23), ('m20_short', 24), ('m20_content', 24)]:
+        run(mode, stage)
+
+if b'M22 USER PASS' in code:
+    for mode, stage in [('m22_fork', 41), ('m22_wait', 42), ('m22_timeout', 44),
+                        ('m22_exec_error', 43), ('m22_exit', 43), ('m22_signal', 43),
+                        ('m22_eintr', None), ('m22_child_pid', 43), ('m22_child_open', 43),
+                        ('m22_child_read', 43), ('m22_child_short', 43),
+                        ('m22_child_content', 43), ('m22_child_write', 43)]:
         run(mode, stage)
 
 if b'M21 USER PASS' in code:
