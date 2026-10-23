@@ -6,7 +6,7 @@ OUT=${2:?OUT required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
-hdiutil create -size 64m -layout NONE -fs 'Case-sensitive HFS+' -volname XCOVER5TEST -format UDRW "$WORK/root.dmg" >/dev/null
+hdiutil create -size 16m -layout NONE -fs 'Case-sensitive HFS+' -volname XCOVER5TEST -format UDRW "$WORK/root.dmg" >/dev/null
 hdiutil attach -nobrowse -mountpoint "$WORK/mnt" "$WORK/root.dmg" >/dev/null
 sudo mkdir -p "$WORK/mnt/sbin" "$WORK/mnt/dev" "$WORK/mnt/private/var"
 sudo cp "$INIT" "$WORK/mnt/sbin/launchd"
@@ -22,6 +22,6 @@ with open(sys.argv[1],'rb') as f:
  f.seek(1024);h=f.read(48)
 assert h[:2] in (b'H+',b'HX'), 'not raw HFS+ at offset1024'
 block,count=struct.unpack_from('>II',h,40)
-assert block*count<=64*1024*1024
+assert block*count<=16*1024*1024
 print('Raw HFS root verified:',sys.argv[1],block,count)
 PY
