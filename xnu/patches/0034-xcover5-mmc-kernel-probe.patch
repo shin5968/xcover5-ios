@@ -1,0 +1,114 @@
+--- a/iokit/Kernel/arm/SweetCPU.cpp
++++ b/iokit/Kernel/arm/SweetCPU.cpp
+@@ -16,6 +16,10 @@
+ #include <kern/clock.h>
+ #include <kern/processor.h>
+ #include <mach/mach_time.h>
++
++#if defined(XCOVER5)
++#include "XCover5MMCProbe.h"
++#endif
+ 
+ class SweetCPU : public IOCPU {
+ 	OSDeclareDefaultStructors(SweetCPU);
+@@ -92,6 +96,9 @@
+ 	ml_set_max_cpus(topology->max_cpu_id + 1);
+ 	IOLog("SWEET CPU: boot CPU %u registered, SGI1 verified, initialization complete\n",
+ 	    getCPUNumber());
++#if defined(XCOVER5)
++	xcover5_mmc::probe();
++#endif
+ 	return true;
+ }
+ 
+--- /dev/null
++++ b/iokit/Kernel/arm/XCover5MMCProbe.h
+@@ -0,0 +1,88 @@
++/* M17 bounded, single-owner boot diagnostic. CMD8/CMD17 only. */
++#include <machine/machine_routines.h>
++namespace xcover5_mmc {
++static vm_offset_t mmio;
++static uint32_t rd(unsigned o) { return *(volatile uint32_t *)(mmio+o); }
++static void wr(unsigned o,uint32_t v) {
++    *(volatile uint32_t *)(mmio+o)=v;
++    __asm__ volatile("dsb sy" ::: "memory");
++}
++static uint64_t now(void) {
++    uint64_t n;__asm__ volatile("isb; mrs %0,cntpct_el0":"=r"(n));return n;
++}
++
++struct result { unsigned bytes; uint32_t irq, clear, response; };
++static uint32_t word(const uint8_t *p) {
++ return (uint32_t)p[0]|((uint32_t)p[1]<<8)|((uint32_t)p[2]<<16)|((uint32_t)p[3]<<24);
++}
++static int transfer(uint8_t *data, unsigned opcode, uint32_t argument, struct result *r)
++{
++ if(opcode!=8 && opcode!=17)return -5;
++ uint64_t freq;__asm__ volatile("mrs %0,cntfrq_el0":"=r"(freq));
++ r->bytes=0;r->irq=0;r->clear=0;r->response=0;
++ if(!freq || (rd(0x2c)&0x80000000U) || (rd(0x48)&0x200) ||
++    (rd(0)&((1U<<25)|(1U<<5))) || ((rd(0x70)>>7)&7)!=2)return -1;
++ wr(0,rd(0)|2);uint64_t start=now();
++ while((rd(0)&2) && now()-start<freq){}
++ if(rd(0)&2)return -2;
++ wr(0x44,0xffff);r->clear=rd(0x44);
++ if(r->clear&0xbfee)return -3;
++ for(unsigned i=0;i<512;i++)data[i]=0;
++ wr(0x1c,512);wr(0x20,512);wr(0x28,argument);wr(0x2c,0xa0002340U|opcode);
++ start=now();
++ while(now()-start<freq) {
++  uint32_t irq=rd(0x44);r->irq|=irq;
++  if(irq&0xbfc2)break;
++  unsigned count=(rd(0x48)>>17)&0x1fff;
++  while(count-- && r->bytes<512) {
++   uint64_t value=*(volatile uint64_t *)(mmio+0x200);
++   for(unsigned j=0;j<8;j++)data[r->bytes++]=(uint8_t)(value>>(j*8));
++  }
++  if(irq&0x20)wr(0x44,0x20);
++  if(r->bytes==512 && (r->irq&12)==12)break;
++ }
++ r->response=rd(0x30);
++ return r->bytes==512 && !(r->irq&0xbfc2) && (r->irq&12)==12 ? 0:-4;
++}
++
++static uint64_t wide(const uint8_t *p) {return (uint64_t)word(p)|((uint64_t)word(p+4)<<32);}
++static uint32_t crc_update(uint32_t c,const uint8_t *p,unsigned n) {
++ for(unsigned i=0;i<n;i++) {c^=p[i];for(unsigned j=0;j<8;j++)c=(c>>1)^((0U-(c&1))&0xedb88320U);}return c;
++}
++static void probe(void) {
++ uint8_t ext[512],h[512],b[512];struct result r;
++ IOLog("XCOVER5 M17: mapping DWMMC 0x12100000 read-only media probe\n");
++ mmio=ml_io_map(0x12100000,0x1000);
++ if(!mmio){IOLog("XCOVER5 M17: STOP MMIO map failed\n");return;}
++ IOLog("XCOVER5 M17: VERID=%08x HCON=%08x\n",rd(0x6c),rd(0x70));
++ int rc=transfer(ext,8,0,&r);
++ if(rc || (r.response&0xfdffa080U)){IOLog("XCOVER5 M17: STOP EXT rc=%d irq=%08x R1=%08x\n",rc,r.irq,r.response);return;}
++ uint32_t sectors=word(ext+212);
++ if(ext[192]!=8 || (ext[179]&7) || sectors<34){IOLog("XCOVER5 M17: STOP card metadata\n");return;}
++ rc=transfer(h,17,1,&r);
++ if(rc || (r.response&0xfdffa080U)){IOLog("XCOVER5 M17: STOP header read rc=%d\n",rc);return;}
++ uint32_t size=word(h+12),stored=word(h+16);
++ if(word(h)!=0x20494645 || word(h+4)!=0x54524150 || size<92 || size>512 ||
++    wide(h+24)!=1 || wide(h+32)!=sectors-1 || word(h+80)!=128 || word(h+84)!=128){
++  IOLog("XCOVER5 M17: STOP GPT format\n");return;
++ }
++ for(unsigned i=16;i<20;i++)h[i]=0;
++ uint32_t hc=~crc_update(~0U,h,size);
++ if(hc!=stored){IOLog("XCOVER5 M17: STOP header CRC %08x/%08x\n",stored,hc);return;}
++ uint64_t base=wide(h+72),first=wide(h+40),last=wide(h+48);
++ if(base<2 || base>=sectors || base+32>first || first>last || last>=sectors-1){IOLog("XCOVER5 M17: STOP GPT bounds\n");return;}
++ uint32_t expected=word(h+88),crc=~0U;
++ uint64_t freq;__asm__ volatile("mrs %0,cntfrq_el0":"=r"(freq));
++ uint64_t begin=now();
++ for(unsigned i=0;i<32;i++) {
++  if(now()-begin>freq*5){IOLog("XCOVER5 M17: STOP total timeout\n");return;}
++  rc=transfer(b,17,(uint32_t)base+i,&r);
++  if(rc || (r.response&0xfdffa080U)){IOLog("XCOVER5 M17: STOP table sector=%u rc=%d irq=%08x\n",i,rc,r.irq);return;}
++  crc=crc_update(crc,b,512);
++ }
++ crc=~crc;
++ IOLog("XCOVER5 M17: GPT header=%08x table stored=%08x calc=%08x\n",hc,expected,crc);
++ IOLog("XCOVER5 M17: %s kernel eMMC GPT read; sectors=%08x\n",crc==expected?"PASS":"FAIL",sectors);
++ /* Keep the small mapping for this boot; no disk service or IRQ registration. */
++}
++}
