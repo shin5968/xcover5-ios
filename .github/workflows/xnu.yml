@@ -19,6 +19,9 @@ on:
     branches: [main]
     paths:
       - "xnu/patches/**"
+      - "tools/mkhfsroot.sh"
+      - "tools/mkinit.py"
+      - "tools/sweet-init.S"
       - ".github/workflows/xnu.yml"
 
 concurrency:
