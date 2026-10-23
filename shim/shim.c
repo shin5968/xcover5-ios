@@ -261,8 +261,18 @@ static void __attribute__((unused)) test_gic(void)
 #ifndef SHIM_TEST
 #define SHIM_TEST 1
 #endif
+void mmc_probe(void);
 void shim_main(uint64_t dtb)
 {
+#if SHIM_TEST == 4
+    stage = "DWMMC0 read-only probe";
+    con_clear(RED);
+    con_str("SHIM", "XCover5 M10 MMC register probe");
+    con_hex("IMAGE", (uintptr_t)_head);
+    con_hex("DTB", dtb);
+    mmc_probe();
+    for (;;) __asm__ volatile("wfe");
+#endif
 #if SHIM_TEST == 3
     stage = "xnu loader";
     con_clear(RED);
