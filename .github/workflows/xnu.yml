@@ -26,6 +26,7 @@ on:
       - "tools/mkhfsroot.sh"
       - "tools/mkinit.py"
       - "tools/sweet-init.S"
+      - "tools/sweet-exec.S"
       - ".github/workflows/xnu.yml"
 
 concurrency:
@@ -108,8 +109,11 @@ jobs:
           mkdir -p out
           xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-init.S -o out/init.o
           python3 tools/mkinit.py out/init.o out/init-mockfs.img
+          xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-exec.S -o out/m21-probe.o
+          python3 tools/mkinit.py out/m21-probe.o out/m21-probe
+          shasum -a 256 out/m21-probe > out/PROBE_SHA256SUMS
           shasum -a 256 out/init-mockfs.img > out/INIT_SHA256SUMS
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Package build tree for local compiles

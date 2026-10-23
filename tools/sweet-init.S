@@ -102,8 +102,17 @@ mmc_report:
  add sp, sp, #1024
  bl m19_test
  bl m20_test
+ cbz w0, tick /* Do not exec unless the eMMC mount/file proof succeeded. */
+ bl m21_test
 
 tick:
+	/* Reap any late child after a timed-out M21; never block PID 1. */
+	mov x0, #-1
+	mov x1, #0
+	mov x2, #1
+	mov x3, #0
+	mov x16, #7
+	svc #0x80
 	/* select(0, NULL, NULL, NULL, &5s) as a portable sleep */
 	mov	x0, #0
 	mov	x1, #0
@@ -472,6 +481,7 @@ m19_error_end:
 m20_test:
  sub sp, sp, #256
  str x30, [sp]
+ str wzr, [sp, #208]
  mov x20, #-1
  mov w28, #21
  stp xzr, xzr, [sp, #16]
@@ -522,6 +532,8 @@ m20_compare:
  b.ne m20_fail
  subs x10, x10, #1
  b.ne m20_compare
+ mov w9, #1
+ str w9, [sp, #208]
  adr x1, m20_ok
  adr x2, m20_ok_end
  sub x2, x2, x1
@@ -549,6 +561,7 @@ m20_finish:
  mov x16, #6
  svc #0x80
 m20_return:
+ ldr w0, [sp, #208]
  ldr x30, [sp]
  add sp, sp, #256
  ret
@@ -575,3 +588,132 @@ m20_error_end:
 m20_errno:
  .ascii "XCOVER5 M20 errno="
 m20_errno_end:
+
+/* M21: fork/exec a separate static Mach-O from the read-only eMMC mount.
+ * Darwin fork returns x1=1 in the child (x0 is NOT the libc zero result).
+ * Bound WNOHANG polling; PID 1 must remain alive on every failure path.
+ */
+.p2align 2
+m21_test:
+ sub sp, sp, #96
+ str x30, [sp]
+ mov w28, #31
+ adr x1, m21_start
+ adr x2, m21_start_end
+ sub x2, x2, x1
+ bl write_console
+ mov x16, #2 /* fork */
+ svc #0x80
+ b.cs m21_sysfail
+ cbnz x1, m21_child
+ mov x20, x0 /* exact child PID, never wait for an unrelated process */
+ mov w21, #100 /* at most 100 x 100ms waits */
+ mov w28, #32
+m21_wait:
+ str wzr, [sp, #16]
+ mov x0, x20
+ add x1, sp, #16
+ mov x2, #1 /* WNOHANG */
+ mov x3, #0
+ mov x16, #7 /* wait4 */
+ svc #0x80
+ b.cs m21_wait_error
+ cbz x0, m21_delay
+ cmp x0, x20
+ b.ne m21_bad_status
+ ldr w27, [sp, #16]
+ mov w9, #0x2a00 /* WIFEXITED && WEXITSTATUS == 42 */
+ cmp w27, w9
+ b.ne m21_bad_status
+ adr x1, m21_ok
+ adr x2, m21_ok_end
+ sub x2, x2, x1
+ bl write_console
+ b m21_return
+m21_wait_error:
+ cmp w0, #4 /* EINTR still consumes a bounded retry */
+ b.ne m21_sysfail
+m21_delay:
+ subs w21, w21, #1
+ b.eq m21_timeout
+ stp xzr, xzr, [sp, #32]
+ mov w9, #34464
+ movk w9, #1, lsl #16 /* timeval.tv_usec = 100000 */
+ str w9, [sp, #40]
+ mov x0, #0
+ mov x1, #0
+ mov x2, #0
+ mov x3, #0
+ add x4, sp, #32
+ mov x16, #93
+ svc #0x80
+ b m21_wait
+m21_timeout:
+ mov x0, x20
+ mov x1, #9 /* SIGKILL; the created child only */
+ mov x2, #1
+ mov x16, #37
+ svc #0x80
+ /* The alive loop reaps this child if termination is not immediate. */
+ mov w28, #34
+ mov w27, #0
+ b m21_fail
+m21_bad_status:
+ mov w28, #33
+ ldr w27, [sp, #16]
+ b m21_fail
+m21_sysfail:
+ mov w27, w0
+m21_fail:
+ adr x1, m21_error
+ adr x2, m21_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w28
+ bl m19_hex
+ adr x1, m21_detail
+ adr x2, m21_detail_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+m21_return:
+ ldr x30, [sp]
+ add sp, sp, #96
+ ret
+m21_child:
+ adr x0, m21_path
+ stp x0, xzr, [sp, #48] /* argv = { path, NULL } */
+ str xzr, [sp, #64] /* envp = { NULL } */
+ add x1, sp, #48
+ add x2, sp, #64
+ mov x16, #59 /* execve: success never returns */
+ svc #0x80
+ mov w27, w0
+ adr x1, m21_exec_error
+ adr x2, m21_exec_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+ mov x0, #127
+ mov x16, #1 /* child only: exit */
+ svc #0x80
+ b hang
+m21_path:
+ .asciz "/emmc/sbin/m21-probe"
+m21_start:
+ .ascii "XCOVER5 M21 USER: fork + exec /emmc/sbin/m21-probe\n"
+m21_start_end:
+m21_ok:
+ .ascii "XCOVER5 M21 USER PASS: eMMC exec + child exit 42\n"
+m21_ok_end:
+m21_error:
+ .ascii "XCOVER5 M21 USER FAIL stage="
+m21_error_end:
+m21_detail:
+ .ascii "XCOVER5 M21 errno/status="
+m21_detail_end:
+m21_exec_error:
+ .ascii "XCOVER5 M21 child exec errno="
+m21_exec_error_end:

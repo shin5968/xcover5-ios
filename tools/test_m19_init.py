@@ -10,6 +10,10 @@ from unicorn.arm64_const import *
 
 code = Path(sys.argv[1]).read_bytes()
 boot = Path(sys.argv[2]).read_bytes()
+probe = Path(sys.argv[3]).read_bytes() if len(sys.argv) > 3 else None
+if b'M21 USER PASS' in code:
+    assert probe, 'M21 requires probe .text as the third argument'
+    from test_m21_exec import child
 FIRST, LAST, SECTORS = 0x45000, 0x5afff, 0x747c000
 
 def fixture(mode):
@@ -48,6 +52,7 @@ def run(mode, expected_stage=None):
     u.reg_write(UC_ARM64_REG_SP, 0x21fff0)
     output, reads = [], []
     counts = {}
+    child_state = {'status': None, 'waits': 0, 'killed': False}
     def result(value, error=False):
         u.reg_write(UC_ARM64_REG_X0, value)
         nzcv = u.reg_read(UC_ARM64_REG_NZCV) & ~(1 << 29)
@@ -111,19 +116,65 @@ def run(mode, expected_stage=None):
                 u.mem_write(a[1], data)
                 result(len(data))
         elif n == 6: result(0)
-        elif n == 93: u.emu_stop()
+        elif n == 2:
+            if mode == 'm21_fork': result(12, True)
+            else:
+                status, child_output = child(u, code, probe, mode)
+                output.extend(child_output)
+                child_state['status'] = status
+                u.reg_write(UC_ARM64_REG_X1, 0)
+                result(17)
+        elif n == 7:
+            assert a[2:] == [1, 0]
+            if a[0] == 0xffffffffffffffff:
+                assert a[1] == 0
+                result(10, True) # alive-loop reaper, no children remaining
+            else:
+                assert a[0] == 17
+                child_state['waits'] += 1
+                if mode == 'm21_wait': result(10, True)
+                elif mode == 'm21_timeout': result(0)
+                elif mode == 'm21_eintr' and child_state['waits'] == 1: result(4, True)
+                elif child_state['waits'] == 1: result(0) # genuinely exercise polling
+                else:
+                    status = 9 if mode == 'm21_signal' else child_state['status']
+                    if mode == 'm21_exit': status = 0
+                    u.mem_write(a[1], struct.pack('<I', status))
+                    result(17)
+        elif n == 37:
+            assert a[:3] == [17, 9, 1]
+            child_state['killed'] = True
+            result(0)
+        elif n == 93:
+            tv = u.reg_read(UC_ARM64_REG_X4)
+            seconds, usec = struct.unpack('<qI', u.mem_read(tv, 12))
+            if (seconds, usec) == (0, 100000): result(0)
+            else:
+                assert seconds == 5
+                u.emu_stop()
         else: raise AssertionError(('unexpected syscall', n))
     u.hook_add(UC_HOOK_INTR, syscall)
     u.emu_start(0x100000, 0x100000+len(code), count=20000000)
     out = ''.join(output)
-    if mode.startswith('m20_'):
+    if mode.startswith('m21_'):
+        if expected_stage is None:
+            assert 'M21 USER PASS' in out, out
+        else:
+            assert f'M21 USER FAIL stage={expected_stage:08x}' in out, out
+            assert 'M21 USER PASS' not in out, out
+        if mode == 'm21_timeout':
+            assert child_state['waits'] == 100 and child_state['killed']
+        print(f'{mode}: checked M21 result, stage={expected_stage}')
+    elif mode.startswith('m20_'):
         assert 'M19 USER PASS' in out, out
         assert f'M20 USER FAIL stage={expected_stage:08x}' in out, out
         assert 'M20 USER PASS' not in out, out
+        assert 'M21 USER' not in out, out
         print(f'{mode}: correctly rejected at stage {expected_stage}')
     elif expected_stage is None:
         assert 'M19 USER PASS' in out, out
         if b'M20 USER PASS' in code: assert 'M20 USER PASS' in out, out
+        if b'M21 USER PASS' in code: assert 'M21 USER PASS' in out, out
         kernel_size = struct.unpack_from('<I', boot, 8)[0]
         offset = 2048 + ((kernel_size+2047)//2048)*2048
         expected = zlib.crc32(boot[offset:offset+16384])
@@ -142,4 +193,12 @@ for mode, stage in [('valid', None), ('header_crc', 3), ('layout', 3),
 
 if b'M20 USER PASS' in code:
     for mode, stage in [('m20_mount', 21), ('m20_open', 22), ('m20_read', 23), ('m20_short', 24), ('m20_content', 24)]:
+        run(mode, stage)
+
+if b'M21 USER PASS' in code:
+    for mode, stage in [('m21_fork', 31), ('m21_wait', 32), ('m21_timeout', 34),
+                        ('m21_exec_error', 33), ('m21_exit', 33), ('m21_signal', 33),
+                        ('m21_eintr', None), ('m21_child_pid', 33), ('m21_child_open', 33),
+                        ('m21_child_read', 33), ('m21_child_short', 33),
+                        ('m21_child_content', 33), ('m21_child_write', 33)]:
         run(mode, stage)

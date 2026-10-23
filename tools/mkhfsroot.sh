@@ -3,6 +3,7 @@
 set -euo pipefail
 INIT=${1:?INIT required}
 OUT=${2:?OUT required}
+PROBE=${3:?PROBE required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
@@ -11,6 +12,8 @@ hdiutil attach -nobrowse -mountpoint "$WORK/mnt" "$WORK/root.dmg" >/dev/null
 sudo mkdir -p "$WORK/mnt/sbin" "$WORK/mnt/dev" "$WORK/mnt/private/var" "$WORK/mnt/emmc"
 sudo cp "$INIT" "$WORK/mnt/sbin/launchd"
 sudo chmod 755 "$WORK/mnt/sbin/launchd"
+sudo cp "$PROBE" "$WORK/mnt/sbin/m21-probe"
+sudo chmod 755 "$WORK/mnt/sbin/m21-probe"
 printf 'XCOVER5 M20 eMMC file read verified\n' | sudo tee "$WORK/mnt/m20-proof.txt" >/dev/null
 echo 'XCOVER5 HFS root test' | sudo tee "$WORK/mnt/root-test.txt" >/dev/null
 sync
