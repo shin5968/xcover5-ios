@@ -80,6 +80,8 @@ jobs:
           xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-init.S -o out/init.o
           python3 tools/mkinit.py out/init.o out/init-mockfs.img
           shasum -a 256 out/init-mockfs.img > out/INIT_SHA256SUMS
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img
+          shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Package build tree for local compiles
         if: always()
