@@ -23,9 +23,9 @@
  
 --- /dev/null
 +++ b/iokit/Kernel/arm/XCover5MMCProbe.h
-@@ -0,0 +1,88 @@
+@@ -0,0 +1,92 @@
 +/* M17 bounded, single-owner boot diagnostic. CMD8/CMD17 only. */
-+#include <machine/machine_routines.h>
++#include <IOKit/IOMemoryDescriptor.h>
 +namespace xcover5_mmc {
 +static vm_offset_t mmio;
 +static uint32_t rd(unsigned o) { return *(volatile uint32_t *)(mmio+o); }
@@ -78,7 +78,11 @@
 +static void probe(void) {
 + uint8_t ext[512],h[512],b[512];struct result r;
 + IOLog("XCOVER5 M17: mapping DWMMC 0x12100000 read-only media probe\n");
-+ mmio=ml_io_map(0x12100000,0x1000);
++ auto memory=IOMemoryDescriptor::withPhysicalAddress(0x12100000,0x1000,kIODirectionInOut);
++ if(!memory){IOLog("XCOVER5 M17: STOP descriptor allocation failed\n");return;}
++ auto mapping=memory->map(kIOMapInhibitCache);
++ if(!mapping){IOLog("XCOVER5 M17: STOP device mapping failed\n");return;}
++ mmio=mapping->getVirtualAddress();
 + if(!mmio){IOLog("XCOVER5 M17: STOP MMIO map failed\n");return;}
 + IOLog("XCOVER5 M17: VERID=%08x HCON=%08x\n",rd(0x6c),rd(0x70));
 + int rc=transfer(ext,8,0,&r);
