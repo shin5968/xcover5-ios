@@ -74,13 +74,32 @@ def run(mode, expected_stage=None):
             name = bytes(u.mem_read(a[0], 64)).split(b'\0')[0]
             if name == b'/dev/console': result(3)
             else:
-                assert name == b'/dev/xcmmc' and a[1] == 0
-                result(4)
+                assert a[1] == 0
+                if name == b'/emmc/m20-proof.txt':
+                    result(2, True) if mode == 'm20_open' else result(6)
+                else:
+                    assert name == b'/dev/xcmmc'
+                    result(4)
         elif n == 4:
             assert a[0] == 3, 'no writes to media allowed'
             output.append(bytes(u.mem_read(a[1], a[2])).decode())
             result(a[2])
         elif n == 20: result(1)
+        elif n == 167:
+            assert bytes(u.mem_read(a[0], 4)) == b'hfs\0'
+            assert bytes(u.mem_read(a[1], 6)) == b'/emmc\0'
+            assert a[2] == 1
+            dev = struct.unpack('<Q', u.mem_read(a[3], 8))[0]
+            assert bytes(u.mem_read(dev, 11)) == b'/dev/xchfs\0'
+            result(6, True) if mode == 'm20_mount' else result(0)
+        elif n == 3 and a[0] == 6:
+            data = b'XCOVER5 M20 eMMC file read verified\n'
+            if mode == 'm20_short': data = data[:-1]
+            if mode == 'm20_content': data = b'!'+data[1:]
+            if mode == 'm20_read': result(5, True)
+            else:
+                u.mem_write(a[1], data)
+                result(len(data))
         elif n in (3, 153):
             assert a[0] == 4
             off = a[3] if n == 153 else 0
@@ -97,8 +116,14 @@ def run(mode, expected_stage=None):
     u.hook_add(UC_HOOK_INTR, syscall)
     u.emu_start(0x100000, 0x100000+len(code), count=20000000)
     out = ''.join(output)
-    if expected_stage is None:
+    if mode.startswith('m20_'):
         assert 'M19 USER PASS' in out, out
+        assert f'M20 USER FAIL stage={expected_stage:08x}' in out, out
+        assert 'M20 USER PASS' not in out, out
+        print(f'{mode}: correctly rejected at stage {expected_stage}')
+    elif expected_stage is None:
+        assert 'M19 USER PASS' in out, out
+        if b'M20 USER PASS' in code: assert 'M20 USER PASS' in out, out
         kernel_size = struct.unpack_from('<I', boot, 8)[0]
         offset = 2048 + ((kernel_size+2047)//2048)*2048
         expected = zlib.crc32(boot[offset:offset+16384])
@@ -114,3 +139,7 @@ for mode, stage in [('valid', None), ('header_crc', 3), ('layout', 3),
                     ('boot_magic', 6), ('payload_bounds', 6), ('kernel_overflow', 6),
                     ('repeat', 7), ('short_read', 2), ('pread_error', 2)]:
     run(mode, stage)
+
+if b'M20 USER PASS' in code:
+    for mode, stage in [('m20_mount', 21), ('m20_open', 22), ('m20_read', 23), ('m20_short', 24), ('m20_content', 24)]:
+        run(mode, stage)

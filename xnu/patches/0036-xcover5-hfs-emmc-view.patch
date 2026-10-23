@@ -1,0 +1,158 @@
+--- a/bsd/dev/xcmmc.c
++++ b/bsd/dev/xcmmc.c
+@@ -37,6 +37,7 @@
+  .d_ioctl=eno_ioctl,.d_stop=eno_stop,.d_reset=eno_reset,.d_ttys=NULL,
+  .d_select=eno_select,.d_mmap=eno_mmap,.d_strategy=eno_strat,.d_type=0
+ };
++#include "xchfs.h"
+ void xcover5_mmc_dev_init(void) {
+  if(!xcover5_mmc_capacity()){printf("XCOVER5 M18: device unavailable\n");return;}
+  int maj=cdevsw_add(-1,&xc_sw);
+@@ -46,4 +47,5 @@
+   cdevsw_remove(maj,&xc_sw);printf("XCOVER5 M18: devfs failed\n");return;
+  }
+  printf("XCOVER5 M18: /dev/xcmmc read-only registered\n");
++ xchfs_init();
+ }
+--- /dev/null
++++ b/bsd/dev/xchfs.h
+@@ -0,0 +1,139 @@
++/* Read-only HFS view of the RAM-root image stored inside our boot payload.
++ * No controller writes beyond existing read-command setup; no media writes.
++ * All on-disk offsets are parsed and bounded before access. */
++#ifndef XCHFS_HOST_TEST
++#include <sys/buf.h>
++#include <sys/disk.h>
++#endif
++struct xc_hfs_view { uint64_t base, size; };
++static struct xc_hfs_view xc_view;
++static uint32_t xc_blocksize=512;
++static uint32_t xc_le32(const uint8_t *p) {
++ return (uint32_t)p[0]|((uint32_t)p[1]<<8)|((uint32_t)p[2]<<16)|((uint32_t)p[3]<<24);
++}
++static uint64_t xc_le64(const uint8_t *p) {return xc_le32(p)|((uint64_t)xc_le32(p+4)<<32);}
++static uint32_t xc_be32(const uint8_t *p) {
++ return ((uint32_t)p[0]<<24)|((uint32_t)p[1]<<16)|((uint32_t)p[2]<<8)|p[3];
++}
++static uint32_t xc_crc(uint32_t c,const uint8_t *p,unsigned n) {
++ while(n--) {c^=*p++;for(unsigned i=0;i<8;i++)c=(c>>1)^(0xedb88320U&(0U-(c&1)));}
++ return c;
++}
++/* Byte-addressed reads also handle the payload's 16-byte file alignment. */
++static int xc_bytes(uint64_t off,void *out,uint32_t len) {
++ uint64_t cap=(uint64_t)xcover5_mmc_capacity()*512;
++ uint8_t sector[512],*dst=out;
++ if(off>cap || len>cap-off || len>1024*1024)return EINVAL;
++ while(len) {
++  unsigned skip=(unsigned)(off&511),n=512-skip;if(n>len)n=len;
++  if(xcover5_mmc_read_sector((uint32_t)(off/512),sector))return EIO;
++  memcpy(dst,sector+skip,n);off+=n;dst+=n;len-=n;
++ }
++ return 0;
++}
++/* Return diagnostic stage on malformed/unreadable layout; success is zero. */
++static int xc_discover(struct xc_hfs_view *v) {
++ uint8_t h[512],b[512];
++ uint64_t cap=xcover5_mmc_capacity(),first,last,boot=0,end=0;
++ uint32_t expected,crc=~0U;
++ memset(v,0,sizeof(*v));
++ if(xc_bytes(512,h,512) || memcmp(h,"EFI PART",8))return 1;
++ uint32_t hs=xc_le32(h+12),hc=xc_le32(h+16);
++ if(hs<92 || hs>512 || xc_le32(h+8)!=0x10000)return 1;
++ memset(h+16,0,4);
++ if((~xc_crc(~0U,h,hs))!=hc)return 1;
++ first=xc_le64(h+40);last=xc_le64(h+48);
++ if(xc_le64(h+24)!=1 || xc_le64(h+32)!=cap-1 || first<34 || last<first || last>=cap-1 ||
++    xc_le64(h+72)!=2 || xc_le32(h+80)!=128 || xc_le32(h+84)!=128)return 2;
++ expected=xc_le32(h+88);
++ for(unsigned i=0;i<32;i++) {
++  if(xc_bytes((uint64_t)(2+i)*512,b,512))return 3;
++  crc=xc_crc(crc,b,512);
++  for(unsigned j=0;j<4;j++) {
++   const uint8_t *e=b+j*128;
++   if(!(xc_le64(e)|xc_le64(e+8)))continue;
++   if(memcmp(e+56,"b\0o\0o\0t\0\0\0",10))continue;
++   if(boot)return 4;
++   boot=xc_le64(e+32);end=xc_le64(e+40);
++   if(boot<first || end<boot || end>last)return 4;
++  }
++ }
++ if((~crc)!=expected || !boot)return 3;
++ uint64_t size=(end-boot+1)*512,base=boot*512;
++ if(xc_bytes(base,b,512) || memcmp(b,"ANDROID!",8) || xc_le32(b+36)!=2048 || xc_le32(b+40)!=2)return 5;
++ uint64_t kernel=xc_le32(b+8),rd=xc_le32(b+16);
++ uint64_t po=2048+((kernel+2047)&~2047ULL);
++ if(!kernel || po>=size || rd>size-po || rd<512)return 5;
++ base+=po;
++ if(xc_bytes(base,b,512) || memcmp(b,"SWEETXNU",8) || xc_le32(b+8)!=1)return 6;
++ unsigned count=xc_le32(b+12);
++ uint64_t table_end=0x2a8+(uint64_t)count*32;
++ if(count<2 || count>16 || table_end>rd)return 6;
++ if(xc_bytes(base+table_end-32,b,32))return 6;
++ uint64_t vo=xc_le64(b+16),vs=xc_le64(b+24);
++ if(vs!=16*1024*1024 || xc_le64(b+8)<vs || vo<table_end || vo>rd || vs>rd-vo)return 7;
++ if(xc_bytes(base+vo+1024,h,512) || h[0]!='H' || (h[1]!='+' && h[1]!='X'))return 8;
++ uint32_t bs=xc_be32(h+40),bc=xc_be32(h+44);
++ if(bs<512 || bs>65536 || (bs&(bs-1)) || (uint64_t)bs*bc!=vs)return 8;
++ v->base=base+vo;v->size=vs;
++ return 0;
++}
++#ifndef XCHFS_HOST_TEST
++static int xc_hfs_open(dev_t dev,int flags,int type,struct proc *p) {
++ (void)dev;(void)type;(void)p;
++ if(flags&FWRITE)return EROFS;
++ return xc_view.size?0:ENXIO;
++}
++static int xc_hfs_ioctl(dev_t dev,u_long cmd,caddr_t data,int flags,struct proc *p) {
++ (void)dev;(void)flags;(void)p;
++ if(!xc_view.size)return ENXIO;
++ switch(cmd) {
++ case DKIOCGETBLOCKSIZE:*(uint32_t *)data=xc_blocksize;return 0;
++ case DKIOCGETPHYSICALBLOCKSIZE:*(uint32_t *)data=512;return 0;
++ case DKIOCSETBLOCKSIZE:
++  if(*(uint32_t *)data!=512 && *(uint32_t *)data!=4096)return EINVAL;
++  xc_blocksize=*(uint32_t *)data;return 0;
++ case DKIOCGETBLOCKCOUNT:*(uint64_t *)data=xc_view.size/xc_blocksize;return 0;
++ case DKIOCISWRITABLE:*(uint32_t *)data=0;return 0;
++ case DKIOCISFORMATTED:*(uint32_t *)data=1;return 0;
++ case DKIOCGETMAXBLOCKCOUNTREAD:*(uint64_t *)data=65536/xc_blocksize;return 0;
++ case DKIOCGETMAXBYTECOUNTREAD:*(uint64_t *)data=65536;return 0;
++ default:return ENOTTY;
++ }
++}
++static void xc_hfs_strategy(struct buf *bp) {
++ uint32_t n=buf_count(bp),bs=xc_blocksize;
++ daddr64_t blk=buf_blkno(bp);caddr_t addr=NULL;int err=0;
++ static int reported;
++ buf_setresid(bp,n);
++ if(!(buf_flags(bp)&B_READ)){err=EROFS;goto done;}
++ if(!xc_view.size){err=ENXIO;goto done;}
++ if(blk<0 || (uint64_t)blk>xc_view.size/bs){err=EINVAL;goto done;}
++ uint64_t off=(uint64_t)blk*bs;
++ if(n>xc_view.size-off || n>1024*1024){err=EINVAL;goto done;}
++ if(!n)goto done;
++ err=buf_map(bp,&addr);if(err)goto done;
++ if(!reported){reported=1;printf("XCOVER5 M20: first HFS block read from eMMC\n");}
++ err=xc_bytes(xc_view.base+off,addr,n);
++ buf_unmap(bp);
++ if(!err)buf_setresid(bp,0);
++done:
++ if(err){buf_seterror(bp,err);printf("XCOVER5 M20: block error=%d\n",err);}
++ buf_biodone(bp);
++}
++static int xc_hfs_psize(dev_t dev) {(void)dev;return (int)xc_blocksize;}
++static const struct bdevsw xc_hfs_sw={
++ .d_open=xc_hfs_open,.d_close=xc_close,.d_strategy=xc_hfs_strategy,
++ .d_ioctl=xc_hfs_ioctl,.d_dump=eno_dump,.d_psize=xc_hfs_psize,.d_type=D_DISK
++};
++static void xchfs_init(void) {
++ int stage=xc_discover(&xc_view);
++ if(stage){printf("XCOVER5 M20: HFS view discovery failed stage=%d\n",stage);return;}
++ int maj=bdevsw_add(-1,&xc_hfs_sw);
++ if(maj<0){printf("XCOVER5 M20: bdevsw_add failed\n");return;}
++ if(!devfs_make_node(makedev(maj,0),DEVFS_BLOCK,0,0,0400,"xchfs")) {
++  bdevsw_remove(maj,&xc_hfs_sw);printf("XCOVER5 M20: devfs failed\n");return;
++ }
++ printf("XCOVER5 M20: /dev/xchfs read-only HFS view base=%llu size=%llu\n",xc_view.base,xc_view.size);
++}
++#endif

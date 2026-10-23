@@ -101,6 +101,7 @@ mmc_report:
  bl write_console
  add sp, sp, #1024
  bl m19_test
+ bl m20_test
 
 tick:
 	/* select(0, NULL, NULL, NULL, &5s) as a portable sleep */
@@ -465,3 +466,112 @@ m19_ok_end:
 m19_error:
  .ascii "XCOVER5 M19 USER FAIL stage="
 m19_error_end:
+
+/* M20: mount the bounded eMMC-backed HFS view and read a known file. */
+.p2align 2
+m20_test:
+ sub sp, sp, #256
+ str x30, [sp]
+ mov x20, #-1
+ mov w28, #21
+ stp xzr, xzr, [sp, #16]
+ stp xzr, xzr, [sp, #32]
+ stp xzr, xzr, [sp, #48]
+ stp xzr, xzr, [sp, #64]
+ adr x9, m20_device
+ str x9, [sp, #16]
+ mov w9, #493
+ strh w9, [sp, #32]
+ adr x0, m20_fstype
+ adr x1, m20_mountpoint
+ mov x2, #1 /* MNT_RDONLY */
+ add x3, sp, #16
+ mov x16, #167 /* mount */
+ svc #0x80
+ b.cs m20_sysfail
+ adr x1, m20_mounted
+ adr x2, m20_mounted_end
+ sub x2, x2, x1
+ bl write_console
+ mov w28, #22
+ adr x0, m20_file
+ mov x1, #0
+ mov x2, #0
+ mov x16, #5
+ svc #0x80
+ b.cs m20_sysfail
+ mov x20, x0
+ mov w28, #23
+ add x1, sp, #80
+ mov x2, #128
+ mov x16, #3
+ svc #0x80
+ b.cs m20_sysfail
+ mov w28, #24
+ mov w27, #0
+ adr x9, m20_expected
+ adr x10, m20_expected_end
+ sub x10, x10, x9
+ cmp x0, x10
+ b.ne m20_fail
+ add x11, sp, #80
+m20_compare:
+ ldrb w12, [x9], #1
+ ldrb w13, [x11], #1
+ cmp w12, w13
+ b.ne m20_fail
+ subs x10, x10, #1
+ b.ne m20_compare
+ adr x1, m20_ok
+ adr x2, m20_ok_end
+ sub x2, x2, x1
+ bl write_console
+ b m20_finish
+m20_sysfail:
+ mov w27, w0
+m20_fail:
+ adr x1, m20_error
+ adr x2, m20_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w28
+ bl m19_hex
+ adr x1, m20_errno
+ adr x2, m20_errno_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+m20_finish:
+ cmp x20, #0
+ b.lt m20_return
+ mov x0, x20
+ mov x16, #6
+ svc #0x80
+m20_return:
+ ldr x30, [sp]
+ add sp, sp, #256
+ ret
+m20_device:
+ .asciz "/dev/xchfs"
+m20_fstype:
+ .asciz "hfs"
+m20_mountpoint:
+ .asciz "/emmc"
+m20_file:
+ .asciz "/emmc/m20-proof.txt"
+m20_expected:
+ .ascii "XCOVER5 M20 eMMC file read verified\n"
+m20_expected_end:
+m20_mounted:
+ .ascii "XCOVER5 M20 USER: eMMC HFS mounted read-only at /emmc\n"
+m20_mounted_end:
+m20_ok:
+ .ascii "XCOVER5 M20 USER PASS: file read from eMMC HFS\n"
+m20_ok_end:
+m20_error:
+ .ascii "XCOVER5 M20 USER FAIL stage="
+m20_error_end:
+m20_errno:
+ .ascii "XCOVER5 M20 errno="
+m20_errno_end:
