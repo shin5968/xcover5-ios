@@ -110,3 +110,78 @@ void mmc_block_probe(void)
  }
  con_str("DONE","photo full screen; manual reboot");
 }
+
+/* M15: fixed, bounded primary GPT table. Never issue media writes. */
+static uint8_t entries[16384];
+static uint32_t table_crc(const uint8_t *p,unsigned n) {
+ uint32_t c=~0U;
+ for(unsigned i=0;i<n;i++) {
+  c^=p[i];for(unsigned j=0;j<8;j++)c=(c>>1)^((0U-(c&1))&0xedb88320U);
+ }
+ return ~c;
+}
+static int used(const uint8_t *p) {
+ unsigned v=0;for(unsigned i=0;i<16;i++)v|=p[i];return v!=0;
+}
+void mmc_table_probe(void) {
+ uint8_t ext[512],h[512],again[512];struct result r;
+ con_str("TEST","GPT table read twice; no writes");
+ if(transfer(ext,8,0,&r) || (r.response&0xfdffa080U))goto io;
+ uint32_t sectors=word(ext+212);
+ if(ext[192]!=8 || (ext[179]&7) || sectors<34)goto bad;
+ if(readblock(h,1,&r))goto io;
+ if(word(h)!=0x20494645 || word(h+4)!=0x54524150 || word(h+8)!=0x10000 ||
+    word(h+12)<92 || word(h+12)>512 || crc32_header(h,word(h+12))!=word(h+16) ||
+    wide(h+24)!=1 || wide(h+32)!=sectors-1)goto bad;
+ uint64_t first=wide(h+40),last=wide(h+48),base=wide(h+72);
+ if(word(h+80)!=128 || word(h+84)!=128 || base<2 || base>=sectors ||
+    base+32>first || first>last || last>=sectors-1)goto bad;
+ for(unsigned i=0;i<32;i++) {
+  uint8_t *dst=entries+i*512;
+  if(transfer(dst,17,(uint32_t)base+i,&r) || (r.response&0xfdffa080U))goto io;
+  if(transfer(again,17,(uint32_t)base+i,&r) || (r.response&0xfdffa080U))goto io;
+  if(differences(dst,again)){con_str("STOP","table repeated read mismatch");return;}
+ }
+ uint32_t computed=table_crc(entries,sizeof(entries)),stored=word(h+88);
+ con_hex2("TABLE CRC","stored=",stored,"calc=",computed);
+ if(stored!=computed)goto bad;
+ unsigned count=0;
+ for(unsigned i=0;i<128;i++) {
+  const uint8_t *e=entries+i*128;if(!used(e))continue;
+  uint64_t a=wide(e+32),b=wide(e+40);
+  if(a<first || a>b || b>last)goto bad;
+  for(unsigned j=0;j<i;j++) {
+   const uint8_t *q=entries+j*128;
+   if(used(q) && a<=wide(q+40) && wide(q+32)<=b)goto bad;
+  }
+  count++;
+ }
+ if(!count)goto bad;
+ uint64_t freq;__asm__ volatile("mrs %0,cntfrq_el0":"=r"(freq));
+ /* Eight entries per page, repeated indefinitely for photos. */
+ for(;;) {
+  unsigned index=0;
+  for(unsigned page=0;page<(count+7)/8;page++) {
+   con_clear(RED);con_str("SHIM","XCover5 M15 GPT partitions");
+   con_hex2("PAGE","number=",page+1,"total=",(count+7)/8);
+   con_hex2("TABLE CRC","stored=",stored,"calc=",computed);
+   con_str("PASS","repeat + CRC + ranges/overlap");
+   con_str("UNITS","hex LBA; size in hex MiB");
+   for(unsigned shown=0;shown<8 && index<128;index++) {
+    const uint8_t *e=entries+index*128;if(!used(e))continue;
+    char name[37];unsigned k=0;
+    for(;k<36;k++) {unsigned ch=e[56+k*2]|((unsigned)e[57+k*2]<<8);if(!ch)break;
+     name[k]=(ch>=32 && ch<127)?(char)ch:'?';}
+    name[k]=0;
+    con_str("NAME",name);
+    con_hex2("LBA","first=",(uint32_t)wide(e+32),"last=",(uint32_t)wide(e+40));
+    con_hex2("SIZE","MiB=",(uint32_t)((wide(e+40)-wide(e+32)+1)/2048),"slot=",index+1);
+    shown++;
+   }
+   con_str("NEXT","auto page in 20s; manual reboot");
+   uint64_t start=now();while(now()-start<freq*20){}
+  }
+ }
+io:con_str("STOP","MMC read/R1 error");con_hex2("DETAIL","bytes=",r.bytes,"irq=",r.irq);return;
+bad:con_str("STOP","GPT metadata/CRC/range invalid");
+}

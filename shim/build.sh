@@ -4,7 +4,7 @@
 # Run inside WSL/Linux: needs aarch64-linux-gnu-gcc and python3.
 set -euo pipefail
 TEST=${1:-1}
-[[ "$TEST" == 1 || "$TEST" == 2 || "$TEST" == 3 || "$TEST" == 4 || "$TEST" == 5 || "$TEST" == 6 || "$TEST" == 7 || "$TEST" == 8 ]] || { echo "usage: build.sh [1|2|3|4|5|6|7|8] [XNU_PAYLOAD]" >&2; exit 2; }
+[[ "$TEST" == 1 || "$TEST" == 2 || "$TEST" == 3 || "$TEST" == 4 || "$TEST" == 5 || "$TEST" == 6 || "$TEST" == 7 || "$TEST" == 8 || "$TEST" == 9 ]] || { echo "usage: build.sh [1|2|3|4|5|6|7|8|9] [XNU_PAYLOAD]" >&2; exit 2; }
 cd "$(dirname "$0")"
 CC=aarch64-linux-gnu-gcc
 OBJCOPY=aarch64-linux-gnu-objcopy
