@@ -261,10 +261,18 @@ static void __attribute__((unused)) test_gic(void)
 #ifndef SHIM_TEST
 #define SHIM_TEST 1
 #endif
+void mmc_ext_probe(void);
 void mmc_probe(void);
 void mmc_status_probe(void);
 void shim_main(uint64_t dtb)
 {
+#if SHIM_TEST == 6
+    stage = "DWMMC EXT_CSD read";
+    con_clear(RED);
+    con_str("SHIM", "XCover5 M12 EXT_CSD");
+    mmc_ext_probe();
+    for (;;) __asm__ volatile("wfe");
+#endif
 #if SHIM_TEST == 4 || SHIM_TEST == 5
     stage = "DWMMC0 read-only probe";
     con_clear(RED);
