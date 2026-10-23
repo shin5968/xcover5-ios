@@ -23,8 +23,8 @@
  
 --- /dev/null
 +++ b/iokit/Kernel/arm/XCover5MMCProbe.h
-@@ -0,0 +1,92 @@
-+/* M17 bounded, single-owner boot diagnostic. CMD8/CMD17 only. */
+@@ -0,0 +1,109 @@
++/* M17b bounded, single-owner boot diagnostic. CMD8/CMD17 only. */
 +#include <IOKit/IOMemoryDescriptor.h>
 +namespace xcover5_mmc {
 +static vm_offset_t mmio;
@@ -41,6 +41,12 @@
 +static uint32_t word(const uint8_t *p) {
 + return (uint32_t)p[0]|((uint32_t)p[1]<<8)|((uint32_t)p[2]<<16)|((uint32_t)p[3]<<24);
 +}
++static void snapshot(const char *phase) {
++ IOLog("M17b %s CMD=%08x STATUS=%08x RAW=%08x\n",phase,rd(0x2c),rd(0x48),rd(0x44));
++ IOLog("M17b %s CTRL=%08x PWR=%08x CLKENA=%08x\n",phase,rd(0),rd(4),rd(0x10));
++ IOLog("M17b %s DIV=%08x SRC=%08x TYPE=%08x\n",phase,rd(8),rd(12),rd(0x18));
++ IOLog("M17b %s TMOUT=%08x UHS=%08x BMOD=%08x\n",phase,rd(0x14),rd(0x74),rd(0x80));
++}
 +static int transfer(uint8_t *data, unsigned opcode, uint32_t argument, struct result *r)
 +{
 + if(opcode!=8 && opcode!=17)return -5;
@@ -48,6 +54,7 @@
 + r->bytes=0;r->irq=0;r->clear=0;r->response=0;
 + if(!freq || (rd(0x2c)&0x80000000U) || (rd(0x48)&0x200) ||
 +    (rd(0)&((1U<<25)|(1U<<5))) || ((rd(0x70)>>7)&7)!=2)return -1;
++ if(opcode==8)snapshot("BEFORE");
 + wr(0,rd(0)|2);uint64_t start=now();
 + while((rd(0)&2) && now()-start<freq){}
 + if(rd(0)&2)return -2;
@@ -56,7 +63,10 @@
 + for(unsigned i=0;i<512;i++)data[i]=0;
 + wr(0x1c,512);wr(0x20,512);wr(0x28,argument);wr(0x2c,0xa0002340U|opcode);
 + start=now();
++ uint64_t mt=mach_absolute_time();
++ uint32_t issued=rd(0x2c),initial_status=rd(0x48),polls=0;
 + while(now()-start<freq) {
++  polls++;
 +  uint32_t irq=rd(0x44);r->irq|=irq;
 +  if(irq&0xbfc2)break;
 +  unsigned count=(rd(0x48)>>17)&0x1fff;
@@ -67,7 +77,14 @@
 +  if(irq&0x20)wr(0x44,0x20);
 +  if(r->bytes==512 && (r->irq&12)==12)break;
 + }
++ uint64_t elapsed=now()-start,mt_elapsed=mach_absolute_time()-mt;
 + r->response=rd(0x30);
++ if(opcode==8) {
++  IOLog("M17b ISSUE CMD=%08x STATUS=%08x CLEAR=%08x\n",issued,initial_status,r->clear);
++  IOLog("M17b RESULT bytes=%u polls=%u irq=%08x\n",r->bytes,polls,r->irq);
++  IOLog("M17b TIMER freq=%llu ticks=%llu mach=%llu\n",(unsigned long long)freq,(unsigned long long)elapsed,(unsigned long long)mt_elapsed);
++  snapshot("AFTER");
++ }
 + return r->bytes==512 && !(r->irq&0xbfc2) && (r->irq&12)==12 ? 0:-4;
 +}
 +
@@ -77,42 +94,42 @@
 +}
 +static void probe(void) {
 + uint8_t ext[512],h[512],b[512];struct result r;
-+ IOLog("XCOVER5 M17: mapping DWMMC 0x12100000 read-only media probe\n");
++ IOLog("XCOVER5 M17b: mapping DWMMC 0x12100000 read-only media probe\n");
 + auto memory=IOMemoryDescriptor::withPhysicalAddress(0x12100000,0x1000,kIODirectionInOut);
-+ if(!memory){IOLog("XCOVER5 M17: STOP descriptor allocation failed\n");return;}
++ if(!memory){IOLog("XCOVER5 M17b: STOP descriptor allocation failed\n");return;}
 + auto mapping=memory->map(kIOMapInhibitCache);
-+ if(!mapping){IOLog("XCOVER5 M17: STOP device mapping failed\n");return;}
++ if(!mapping){IOLog("XCOVER5 M17b: STOP device mapping failed\n");return;}
 + mmio=mapping->getVirtualAddress();
-+ if(!mmio){IOLog("XCOVER5 M17: STOP MMIO map failed\n");return;}
-+ IOLog("XCOVER5 M17: VERID=%08x HCON=%08x\n",rd(0x6c),rd(0x70));
++ if(!mmio){IOLog("XCOVER5 M17b: STOP MMIO map failed\n");return;}
++ IOLog("XCOVER5 M17b: VERID=%08x HCON=%08x\n",rd(0x6c),rd(0x70));
 + int rc=transfer(ext,8,0,&r);
-+ if(rc || (r.response&0xfdffa080U)){IOLog("XCOVER5 M17: STOP EXT rc=%d irq=%08x R1=%08x\n",rc,r.irq,r.response);return;}
++ if(rc || (r.response&0xfdffa080U)){IOLog("XCOVER5 M17b: STOP EXT rc=%d irq=%08x R1=%08x\n",rc,r.irq,r.response);return;}
 + uint32_t sectors=word(ext+212);
-+ if(ext[192]!=8 || (ext[179]&7) || sectors<34){IOLog("XCOVER5 M17: STOP card metadata\n");return;}
++ if(ext[192]!=8 || (ext[179]&7) || sectors<34){IOLog("XCOVER5 M17b: STOP card metadata\n");return;}
 + rc=transfer(h,17,1,&r);
-+ if(rc || (r.response&0xfdffa080U)){IOLog("XCOVER5 M17: STOP header read rc=%d\n",rc);return;}
++ if(rc || (r.response&0xfdffa080U)){IOLog("XCOVER5 M17b: STOP header read rc=%d\n",rc);return;}
 + uint32_t size=word(h+12),stored=word(h+16);
 + if(word(h)!=0x20494645 || word(h+4)!=0x54524150 || size<92 || size>512 ||
 +    wide(h+24)!=1 || wide(h+32)!=sectors-1 || word(h+80)!=128 || word(h+84)!=128){
-+  IOLog("XCOVER5 M17: STOP GPT format\n");return;
++  IOLog("XCOVER5 M17b: STOP GPT format\n");return;
 + }
 + for(unsigned i=16;i<20;i++)h[i]=0;
 + uint32_t hc=~crc_update(~0U,h,size);
-+ if(hc!=stored){IOLog("XCOVER5 M17: STOP header CRC %08x/%08x\n",stored,hc);return;}
++ if(hc!=stored){IOLog("XCOVER5 M17b: STOP header CRC %08x/%08x\n",stored,hc);return;}
 + uint64_t base=wide(h+72),first=wide(h+40),last=wide(h+48);
-+ if(base<2 || base>=sectors || base+32>first || first>last || last>=sectors-1){IOLog("XCOVER5 M17: STOP GPT bounds\n");return;}
++ if(base<2 || base>=sectors || base+32>first || first>last || last>=sectors-1){IOLog("XCOVER5 M17b: STOP GPT bounds\n");return;}
 + uint32_t expected=word(h+88),crc=~0U;
 + uint64_t freq;__asm__ volatile("mrs %0,cntfrq_el0":"=r"(freq));
 + uint64_t begin=now();
 + for(unsigned i=0;i<32;i++) {
-+  if(now()-begin>freq*5){IOLog("XCOVER5 M17: STOP total timeout\n");return;}
++  if(now()-begin>freq*5){IOLog("XCOVER5 M17b: STOP total timeout\n");return;}
 +  rc=transfer(b,17,(uint32_t)base+i,&r);
-+  if(rc || (r.response&0xfdffa080U)){IOLog("XCOVER5 M17: STOP table sector=%u rc=%d irq=%08x\n",i,rc,r.irq);return;}
++  if(rc || (r.response&0xfdffa080U)){IOLog("XCOVER5 M17b: STOP table sector=%u rc=%d irq=%08x\n",i,rc,r.irq);return;}
 +  crc=crc_update(crc,b,512);
 + }
 + crc=~crc;
-+ IOLog("XCOVER5 M17: GPT header=%08x table stored=%08x calc=%08x\n",hc,expected,crc);
-+ IOLog("XCOVER5 M17: %s kernel eMMC GPT read; sectors=%08x\n",crc==expected?"PASS":"FAIL",sectors);
++ IOLog("XCOVER5 M17b: GPT header=%08x table stored=%08x calc=%08x\n",hc,expected,crc);
++ IOLog("XCOVER5 M17b: %s kernel eMMC GPT read; sectors=%08x\n",crc==expected?"PASS":"FAIL",sectors);
 + /* Keep the small mapping for this boot; no disk service or IRQ registration. */
 +}
 +}
