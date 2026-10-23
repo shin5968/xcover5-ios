@@ -31,7 +31,10 @@ def build(obj, kind):
         state = [0]*33
         state[32] = m.CODE_OFF+start
         cmds += [path_command(0xf), struct.pack('<4I33QII', 5, 288, 6, 68, *state, 0, 0)]
-    cmds += [struct.pack('<6I', 0x32, 24, 2, 0x100000, 0x100500, 0),
+    # These are our no-import diagnostic binaries for the macOS-target SWEET
+    # kernel. PLATFORM_IOS makes exec reject them before loader entry (M22D).
+    # This does not change Apple binaries or relax kernel execution policy.
+    cmds += [struct.pack('<6I', 0x32, 24, 1, 0x0d0000, 0x0d0500, 0),
              struct.pack('<4I', 0x1d, 16, m.SEG, sig_size)]
     commands = b''.join(cmds)
     header = struct.pack('<8I', m.MH_MAGIC_64, m.CPU_TYPE_ARM64, 0,

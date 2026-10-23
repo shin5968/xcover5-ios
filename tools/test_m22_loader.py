@@ -29,6 +29,10 @@ def validate(app, loader):
     main = [d for c, _, d in ac if c == 0x80000028]
     assert len(main) == 1 and struct.unpack_from('<Q', main[0], 8)[0] == 1024
     h, lc = commands(loader)
+    for cs in (ac, lc):
+        version = [d for c, _, d in cs if c == 0x32]
+        assert len(version) == 1
+        assert struct.unpack('<6I', version[0]) == (0x32, 24, 1, 0x0d0000, 0x0d0500, 0)
     assert h[3] == 7 and not any(c in (0xe, 0xc, 0x80000028) for c, _, _ in lc)
     text = [d for c, _, d in lc if c == 0x19 and d[8:14] == b'__TEXT']
     assert len(text) == 1 and struct.unpack_from('<Q', text[0], 24)[0] == 0
