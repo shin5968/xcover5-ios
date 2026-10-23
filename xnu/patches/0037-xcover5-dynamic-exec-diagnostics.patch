@@ -1,0 +1,90 @@
+--- a/bsd/kern/mach_loader.c
++++ b/bsd/kern/mach_loader.c
+@@ -579,6 +579,12 @@
+ 	    0, aslr_page_offset, dyld_aslr_page_offset, result,
+ 	    NULL, imgp);
+ 
++#if defined(SWEET)
++	if (header->flags & MH_DYLDLINK) {
++		printf("XCOVER5 M22D: main parse ret=%d entry=%llx valid=%d dyn=%d cs=%x\n",
++		    lret, (unsigned long long)result->entry_point, result->validentry, result->dynlinker, result->csflags);
++	}
++#endif
+ 	if (lret != LOAD_SUCCESS) {
+ 		vm_map_deallocate(map); /* will lose pmap reference too */
+ 		return lret;
+@@ -1502,6 +1508,9 @@
+ 			}
+ #if CONFIG_ENFORCE_SIGNED_CODE
+ 			if (!(result->csflags & CS_NO_UNTRUSTED_HELPERS)) {
++#if defined(SWEET)
++				printf("XCOVER5 M22D: untrusted helper rejected\n");
++#endif
+ 				ret = LOAD_FAILURE;
+ 			}
+ #endif
+@@ -3101,6 +3110,9 @@
+ 
+ 	ret = get_macho_vnode(name, cputype, header,
+ 	    &file_offset, &macho_size, macho_data, &vp, imgp);
++#if defined(SWEET)
++	printf("XCOVER5 M22D: helper open ret=%d path=%s\n", ret, name);
++#endif
+ 	if (ret) {
+ 		goto novp_out;
+ 	}
+@@ -3111,6 +3123,10 @@
+ 
+ 	ret = parse_machfile(vp, map, thread, header, file_offset,
+ 	    macho_size, depth, slide, 0, myresult, result, imgp);
++#if defined(SWEET)
++	printf("XCOVER5 M22D: helper parse ret=%d entry=%llx valid=%d platform=%d cs=%x\n",
++	    ret, (unsigned long long)myresult->entry_point, myresult->validentry, myresult->platform_binary, myresult->csflags);
++#endif
+ 
+ 	if (ret == LOAD_SUCCESS) {
+ 		if (result->threadstate) {
+--- a/bsd/kern/kern_exec.c
++++ b/bsd/kern/kern_exec.c
+@@ -1315,6 +1315,11 @@
+ 	 * Actually load the image file we previously decided to load.
+ 	 */
+ 	lret = load_machfile(imgp, mach_header, thread, &map, &load_result);
++#if defined(SWEET)
++	if (mach_header->flags & MH_DYLDLINK) {
++		printf("XCOVER5 M22D: exec load ret=%d pid=%d\n", lret, proc_getpid(p));
++	}
++#endif
+ 	if (lret != LOAD_SUCCESS) {
+ 		error = load_return_to_errno(lret);
+ 
+@@ -2044,6 +2049,9 @@
+ 	goto done;
+ 
+ badtoolate:
++#if defined(SWEET)
++	printf("XCOVER5 M22D: exec late failure errno=%d pid=%d spawn=%d\n", error, proc_getpid(p), spawn);
++#endif
+ 	/* Don't allow child process to execute any instructions */
+ 	if (!spawn) {
+ 		{
+@@ -7406,6 +7414,9 @@
+ 			}
+ #endif /* DEBUG || DEVELOPMENT */
+ 			if (!no_sandbox_entitled) {
++#if defined(SWEET)
++				printf("XCOVER5 M22D: iOS platform rejected by OSX exec policy pid=%d\n", proc_getpid(p));
++#endif
+ 				signature_failure_reason = os_reason_create(OS_REASON_EXEC,
+ 				    EXEC_EXIT_REASON_WRONG_PLATFORM);
+ 				error = EACCES;
+@@ -7558,6 +7569,9 @@
+ 			    "'%s' with cdhash %s\n", p->p_name, cdhash_string);
+ 		}
+ 	} else {
++#if defined(SWEET)
++		printf("XCOVER5 M22D: signature failure errno=%d pid=%d unexpected=%d\n", error, proc_getpid(p), unexpected_failure);
++#endif
+ 		if (!unexpected_failure) {
+ 			proc_csflags_set(p, CS_KILLED);
+ 		}

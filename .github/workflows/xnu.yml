@@ -98,7 +98,7 @@ jobs:
 
       - name: Verify required storage kernel code
         run: |
-          python3 -c 'from pathlib import Path; p=Path("dxb/fakeroot/System/Library/Kernels"); ks=[k for k in p.glob("kernel.*") if k.is_file()]; assert ks, "No kernels"; assert all(b"XCOVER5 M18: /dev/xcmmc read-only registered" in k.read_bytes() for k in ks), "M18 patch missing from kernel"; assert all(b"XCOVER5 M20: /dev/xchfs read-only HFS view" in k.read_bytes() for k in ks), "M20 patch missing from kernel"'
+          python3 -c 'from pathlib import Path; p=Path("dxb/fakeroot/System/Library/Kernels"); ks=[k for k in p.glob("kernel.*") if k.is_file()]; assert ks, "No kernels"; assert all(b"XCOVER5 M18: /dev/xcmmc read-only registered" in k.read_bytes() for k in ks), "M18 patch missing from kernel"; assert all(b"XCOVER5 M20: /dev/xchfs read-only HFS view" in k.read_bytes() for k in ks), "M20 patch missing from kernel"; assert all(b"XCOVER5 M22D: main parse ret=" in k.read_bytes() and b"XCOVER5 M22D: signature failure errno=" in k.read_bytes() for k in ks), "M22D diagnostics missing from kernel"'
 
       - name: Save compiled kernel before image generation
         if: steps.kernel-cache.outputs.cache-hit != 'true'
