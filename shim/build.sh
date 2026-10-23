@@ -4,7 +4,7 @@
 # Run inside WSL/Linux: needs aarch64-linux-gnu-gcc and python3.
 set -euo pipefail
 TEST=${1:-1}
-[[ "$TEST" == 1 || "$TEST" == 2 || "$TEST" == 3 || "$TEST" == 4 || "$TEST" == 5 || "$TEST" == 6 || "$TEST" == 7 || "$TEST" == 8 || "$TEST" == 9 ]] || { echo "usage: build.sh [1|2|3|4|5|6|7|8|9] [XNU_PAYLOAD]" >&2; exit 2; }
+[[ "$TEST" == 1 || "$TEST" == 2 || "$TEST" == 3 || "$TEST" == 4 || "$TEST" == 5 || "$TEST" == 6 || "$TEST" == 7 || "$TEST" == 8 || "$TEST" == 9 || "$TEST" == 10 ]] || { echo "usage: build.sh [1|2|3|4|5|6|7|8|9|10] [XNU_PAYLOAD]" >&2; exit 2; }
 cd "$(dirname "$0")"
 CC=aarch64-linux-gnu-gcc
 OBJCOPY=aarch64-linux-gnu-objcopy
@@ -20,7 +20,10 @@ $CC $CFLAGS -static -T shim.ld -Wl,--build-id=none -Wl,--no-warn-rwx-segments -W
 $OBJCOPY -O binary out/shim.elf out/Image
 size=$(aarch64-linux-gnu-nm out/shim.elf | awk '$3=="_end"{print strtonum("0x"$1)}')
 truncate -s "$size" out/Image
-if [[ "$TEST" == 3 ]]; then
+if [[ "$TEST" == 10 ]]; then
+    python3 -c 'from pathlib import Path; Path("out/m16-pattern.bin").write_bytes(bytes(((n*73)^(n>>3)^(n>>8)^0xa5)&255 for n in range(16384)))'
+    python3 ../tools/mkbootimg_v2.py out/Image ../stock/unpacked/dtb out/shim-boot.img --ramdisk out/m16-pattern.bin
+elif [[ "$TEST" == 3 ]]; then
     [[ -n "${2:-}" && -f "$2" ]] || { echo "XNU payload required" >&2; exit 2; }
     python3 ../tools/mkbootimg_v2.py out/Image ../stock/unpacked/dtb out/shim-boot.img --ramdisk "$2"
 else

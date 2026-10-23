@@ -269,6 +269,13 @@ void mmc_probe(void);
 void mmc_status_probe(void);
 void shim_main(uint64_t dtb)
 {
+#if SHIM_TEST == 10
+    stage = "DWMMC boot verify";
+    con_clear(RED);
+    con_str("SHIM", "XCover5 M16 boot data verify");
+    mmc_table_probe();
+    for (;;) __asm__ volatile("wfe");
+#endif
 #if SHIM_TEST == 9
     stage = "DWMMC GPT table";
     con_clear(RED);

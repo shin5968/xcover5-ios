@@ -123,6 +123,49 @@ static uint32_t table_crc(const uint8_t *p,unsigned n) {
 static int used(const uint8_t *p) {
  unsigned v=0;for(unsigned i=0;i<16;i++)v|=p[i];return v!=0;
 }
+
+#if SHIM_TEST == 10
+static void boot_verify(void) {
+ uint64_t start=0,end=0;unsigned found=0;struct result r;uint8_t a[512],b[512];
+ for(unsigned i=0;i<128;i++) {
+  const uint8_t *e=entries+i*128;
+  if(used(e) && word(e+56)==0x006f0062 && word(e+60)==0x0074006f && e[64]==0 && e[65]==0) {
+   start=wide(e+32);end=wide(e+40);found++;
+  }
+ }
+ if(found!=1){con_str("STOP","boot partition missing/duplicate");return;}
+ con_hex2("BOOT LBA","first=",(uint32_t)start,"last=",(uint32_t)end);
+ if(transfer(a,17,(uint32_t)start,&r) || (r.response&0xfdffa080U))goto io;
+ if(transfer(b,17,(uint32_t)start,&r) || (r.response&0xfdffa080U))goto io;
+ if(differences(a,b) || word(a)!=0x52444e41 || word(a+4)!=0x2144494f ||
+    word(a+36)!=2048 || word(a+40)!=2 || word(a+16)!=16384 || !word(a+8)) {
+  con_str("STOP","unexpected/repeated boot header");return;
+ }
+ uint64_t offset=2048+(((uint64_t)word(a+8)+2047)&~2047ULL);
+ if(offset+16384>(end-start+1)*512){con_str("STOP","payload outside boot");return;}
+ con_hex2("HEADER","kernel=",word(a+8),"ramdisk=",word(a+16));
+ con_hex("DATA OFFSET",offset);
+ uint32_t crc=~0U;unsigned diff=0;
+ for(unsigned sector=0;sector<32;sector++) {
+  uint32_t lba=(uint32_t)(start+offset/512+sector);
+  if(transfer(a,17,lba,&r) || (r.response&0xfdffa080U))goto io;
+  if(transfer(b,17,lba,&r) || (r.response&0xfdffa080U))goto io;
+  if(differences(a,b)){con_str("STOP","boot data repeat mismatch");return;}
+  for(unsigned j=0;j<512;j++) {
+   unsigned n=sector*512+j;
+   uint8_t expected=(uint8_t)((n*73U)^(n>>3)^(n>>8)^0xa5U);
+   diff+=a[j]!=expected;
+   crc^=a[j];for(unsigned k=0;k<8;k++)crc=(crc>>1)^((0U-(crc&1))&0xedb88320U);
+  }
+ }
+ con_hex2("PAYLOAD","bytes=",16384,"diff=",diff);
+ con_hex("DATA CRC",~crc);
+ con_str(diff?"STOP":"PASS",diff?"test payload differs":"boot header + 16KiB match");
+ con_str("DONE","photo screen; manual reboot");return;
+io:con_str("STOP","boot MMC read/R1 failure");con_hex2("DETAIL","bytes=",r.bytes,"irq=",r.irq);
+}
+#endif
+
 void mmc_table_probe(void) {
  uint8_t ext[512],h[512],again[512];struct result r;
  con_str("TEST","GPT table read twice; no writes");
@@ -157,6 +200,9 @@ void mmc_table_probe(void) {
   count++;
  }
  if(!count)goto bad;
+#if SHIM_TEST == 10
+ boot_verify();return;
+#endif
  uint64_t freq;__asm__ volatile("mrs %0,cntfrq_el0":"=r"(freq));
  /* Eight entries per page, repeated indefinitely for photos. */
  for(;;) {
