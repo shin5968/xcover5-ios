@@ -1,6 +1,6 @@
 /*
- * First userspace program for SWEET bring-up: mockfs serves the RAM disk
- * itself as /sbin/launchd, so this static binary is PID 1. It proves that
+ * Static userspace init for SWEET bring-up, installed in the HFS RAM root
+ * as /sbin/launchd. It is a diagnostic PID 1, not Apple launchd. It proves that
  * exec, the user/kernel boundary, devfs and the console all work, then
  * stays alive (init exiting panics the kernel).
  *
@@ -100,6 +100,7 @@ mmc_report:
  sub x2, x2, x1
  bl write_console
  add sp, sp, #1024
+ bl m19_test
 
 tick:
 	/* select(0, NULL, NULL, NULL, &5s) as a portable sleep */
@@ -151,3 +152,316 @@ mmc_ok_end:
 mmc_error:
  .ascii "XCOVER5 M18 USER FAIL: open/read/signature\n"
 mmc_error_end:
+
+/* M19: bounded userspace partition reads. All storage opens are O_RDONLY.
+ * Fixed supported GPT layout: 128 entries x128 bytes at LBA2, 512B sectors.
+ * x19 console, x20 media fd, x21/x22 16KiB buffers, w28 diagnostic stage.
+ * Helpers preserve x19-x28; no writable globals or external relocations.
+ */
+.p2align 2
+m19_test:
+ sub sp, sp, #8, lsl #12
+ sub sp, sp, #16
+ str x30, [sp]
+ add x21, sp, #16
+ add x22, x21, #4, lsl #12
+ mov x20, #-1
+ mov w28, #1
+ adr x1, m19_start
+ adr x2, m19_start_end
+ sub x2, x2, x1
+ bl write_console
+ adr x0, mmc_path
+ mov x1, #0
+ mov x2, #0
+ mov x16, #5
+ svc #0x80
+ b.cs m19_fail
+ mov x20, x0
+ mov w28, #2
+ mov x1, x21
+ mov x2, #1024
+ mov x3, #0
+ bl m19_pread
+ cbnz w0, m19_fail
+ ldrh w9, [x21, #510]
+ mov w10, #0xaa55
+ cmp w9, w10
+ b.ne m19_fail
+ add x12, x21, #512
+ ldr x9, [x12]
+ adr x10, gpt_magic
+ ldr x10, [x10]
+ cmp x9, x10
+ b.ne m19_fail
+ mov w28, #3
+ ldr w9, [x12, #8]
+ mov w10, #0x10000
+ cmp w9, w10
+ b.ne m19_fail
+ ldr w1, [x12, #12]
+ cmp w1, #92
+ b.lo m19_fail
+ cmp w1, #512
+ b.hi m19_fail
+ ldr w23, [x12, #16]
+ str wzr, [x12, #16]
+ mov x0, x12
+ bl m19_crc32
+ cmp w0, w23
+ b.ne m19_fail
+ add x12, x21, #512
+ ldr x9, [x12, #24]
+ cmp x9, #1
+ b.ne m19_fail
+ ldr x9, [x12, #72]
+ cmp x9, #2
+ b.ne m19_fail
+ ldr w9, [x12, #80]
+ cmp w9, #128
+ b.ne m19_fail
+ ldr w9, [x12, #84]
+ cmp w9, #128
+ b.ne m19_fail
+ ldr x24, [x12, #40]
+ ldr x25, [x12, #48]
+ cmp x24, #34
+ b.lo m19_fail
+ cmp x25, x24
+ b.lo m19_fail
+ ldr x9, [x12, #32]
+ cmp x9, x25
+ b.ls m19_fail
+ lsr x10, x9, #32
+ cbnz x10, m19_fail
+ ldr w23, [x12, #88]
+ mov w28, #4
+ mov x1, x21
+ mov x2, #16384
+ mov x3, #1024
+ bl m19_pread
+ cbnz w0, m19_fail
+ mov x1, x22
+ mov x2, #16384
+ mov x3, #1024
+ bl m19_pread
+ cbnz w0, m19_fail
+ bl m19_compare
+ cbnz w0, m19_fail
+ mov x0, x21
+ mov x1, #16384
+ bl m19_crc32
+ cmp w0, w23
+ b.ne m19_fail
+ /* Locate exactly one occupied entry named UTF16 'boot'. Bounds validated
+  * before shifting LBAs to byte offsets. No hard-coded boot start address. */
+ mov w28, #5
+ mov x26, #0
+ mov x27, #0
+ mov x12, x21
+ mov w13, #128
+m19_entry:
+ ldp x9, x10, [x12]
+ orr x9, x9, x10
+ cbz x9, m19_entry_next
+ ldr x9, [x12, #56]
+ adr x10, m19_boot_name
+ ldr x10, [x10]
+ cmp x9, x10
+ b.ne m19_entry_next
+ ldrh w9, [x12, #64]
+ cbnz w9, m19_entry_next
+ cbnz x26, m19_fail
+ ldp x26, x27, [x12, #32]
+ cmp x26, x24
+ b.lo m19_fail
+ cmp x27, x26
+ b.lo m19_fail
+ cmp x27, x25
+ b.hi m19_fail
+m19_entry_next:
+ add x12, x12, #128
+ subs w13, w13, #1
+ b.ne m19_entry
+ cbz x26, m19_fail
+ /* Supported Android v2 header, 2048B pages, bounded kernel+ramdisk. */
+ mov w28, #6
+ mov x1, x21
+ mov x2, #512
+ lsl x3, x26, #9
+ bl m19_pread
+ cbnz w0, m19_fail
+ ldr x9, [x21]
+ adr x10, m19_android
+ ldr x10, [x10]
+ cmp x9, x10
+ b.ne m19_fail
+ ldr w9, [x21, #40]
+ cmp w9, #2
+ b.ne m19_fail
+ ldr w9, [x21, #36]
+ cmp w9, #2048
+ b.ne m19_fail
+ ldr w9, [x21, #8]
+ cbz w9, m19_fail
+ add x24, x9, #2047
+ and x24, x24, #0xfffffffffffff800
+ add x24, x24, #2048
+ sub x25, x27, x26
+ add x25, x25, #1
+ lsl x25, x25, #9
+ cmp x24, x25
+ b.hs m19_fail
+ ldr w9, [x21, #16]
+ cmp x9, #4, lsl #12
+ b.lo m19_fail
+ sub x10, x25, x24
+ cmp x9, x10
+ b.hi m19_fail
+ add x24, x24, x26, lsl #9
+ mov w28, #7
+ mov x1, x21
+ mov x2, #16384
+ mov x3, x24
+ bl m19_pread
+ cbnz w0, m19_fail
+ mov x1, x22
+ mov x2, #16384
+ mov x3, x24
+ bl m19_pread
+ cbnz w0, m19_fail
+ bl m19_compare
+ cbnz w0, m19_fail
+ mov x0, x21
+ mov x1, #16384
+ bl m19_crc32
+ mov w23, w0
+ adr x1, m19_crc_msg
+ adr x2, m19_crc_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w23
+ bl m19_hex
+ adr x1, m19_ok
+ adr x2, m19_ok_end
+ sub x2, x2, x1
+ bl write_console
+ b m19_finish
+m19_fail:
+ adr x1, m19_error
+ adr x2, m19_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w28
+ bl m19_hex
+m19_finish:
+ cmp x20, #0
+ b.lt m19_return
+ mov x0, x20
+ mov x16, #6
+ svc #0x80
+m19_return:
+ ldr x30, [sp]
+ add sp, sp, #16
+ add sp, sp, #8, lsl #12
+ ret
+
+/* pread(fd=x20, buffer=x1, length=x2, byte offset=x3), exact read only. */
+m19_pread:
+ stp x2, x30, [sp, #-16]!
+ mov x0, x20
+ mov x16, #153
+ svc #0x80
+ b.cs m19_pread_bad
+ ldr x9, [sp]
+ cmp x0, x9
+ b.ne m19_pread_bad
+ mov w0, #0
+ b m19_pread_done
+m19_pread_bad:
+ mov w0, #1
+m19_pread_done:
+ ldp x2, x30, [sp], #16
+ ret
+
+/* Compare two full 16KiB buffers, return 0 if identical. */
+m19_compare:
+ mov x9, #0
+m19_compare_loop:
+ ldr x10, [x21, x9]
+ ldr x11, [x22, x9]
+ cmp x10, x11
+ b.ne m19_compare_bad
+ add x9, x9, #8
+ cmp x9, #4, lsl #12
+ b.ne m19_compare_loop
+ mov w0, #0
+ ret
+m19_compare_bad:
+ mov w0, #1
+ ret
+
+/* Reflected IEEE CRC32 over x0,x1; return w0. */
+m19_crc32:
+ mov w9, #-1
+ mov w10, #0x8320
+ movk w10, #0xedb8, lsl #16
+m19_crc_byte:
+ ldrb w11, [x0], #1
+ eor w9, w9, w11
+ mov w12, #8
+m19_crc_bit:
+ and w13, w9, #1
+ neg w13, w13
+ lsr w9, w9, #1
+ and w13, w13, w10
+ eor w9, w9, w13
+ subs w12, w12, #1
+ b.ne m19_crc_bit
+ subs x1, x1, #1
+ b.ne m19_crc_byte
+ mvn w0, w9
+ ret
+
+/* Print w0 as eight hex digits plus newline. */
+m19_hex:
+ sub sp, sp, #32
+ str x30, [sp, #16]
+ mov w9, w0
+ mov x10, #0
+ adr x11, m19_digits
+m19_hex_loop:
+ lsr w12, w9, #28
+ ldrb w12, [x11, x12]
+ strb w12, [sp, x10]
+ lsl w9, w9, #4
+ add x10, x10, #1
+ cmp x10, #8
+ b.ne m19_hex_loop
+ mov w12, #10
+ strb w12, [sp, #8]
+ mov x1, sp
+ mov x2, #9
+ bl write_console
+ ldr x30, [sp, #16]
+ add sp, sp, #32
+ ret
+
+m19_boot_name:
+ .short 0x62, 0x6f, 0x6f, 0x74
+m19_android:
+ .ascii "ANDROID!"
+m19_digits:
+ .ascii "0123456789abcdef"
+m19_start:
+ .ascii "XCOVER5 M19 USER: GPT CRC + boot partition read test\n"
+m19_start_end:
+m19_crc_msg:
+ .ascii "XCOVER5 M19 USER: boot payload 16KiB CRC="
+m19_crc_end:
+m19_ok:
+ .ascii "XCOVER5 M19 USER PASS: GPT CRC + boot header + 16KiB repeat\n"
+m19_ok_end:
+m19_error:
+ .ascii "XCOVER5 M19 USER FAIL stage="
+m19_error_end:
