@@ -92,6 +92,10 @@ jobs:
           test -s "fakeroot/System/Library/Kernels/kernel.development.sweet" || \
             find fakeroot/System/Library/Kernels -type f -name 'kernel.*' -size +1M | grep -q .
 
+      - name: Verify required M18 kernel code
+        run: |
+          python3 -c 'from pathlib import Path; p=Path("dxb/fakeroot/System/Library/Kernels"); ks=[k for k in p.glob("kernel.*") if k.is_file()]; assert ks, "No kernels"; assert all(b"XCOVER5 M18: /dev/xcmmc read-only registered" in k.read_bytes() for k in ks), "M18 patch missing from kernel"'
+
       - name: Save compiled kernel before image generation
         if: steps.kernel-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4

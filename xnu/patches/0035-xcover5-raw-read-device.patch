@@ -87,14 +87,15 @@
 +}
 --- a/bsd/conf/files
 +++ b/bsd/conf/files
-@@ -381,6 +381,7 @@
- bsd/kern/kern_credential.c		standard
- bsd/kern/kern_crossarch.c		standard
- bsd/kern/kern_cs.c			standard
+@@ -4,6 +4,8 @@
+ # All rights reserved.  The CMU software License Agreement specifies
+ # the terms and conditions for use and redistribution.
+ #
++
 +bsd/dev/xcmmc.c			standard
- bsd/kern/sweet_amfi.c			standard
- bsd/kern/kern_csr.c			optional config_csr
- bsd/kern/kern_debug.c			standard
+ 
+ OPTIONS/config_macf			optional config_macf
+ OPTIONS/mach_assert			optional mach_assert
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
 @@ -978,6 +978,10 @@
