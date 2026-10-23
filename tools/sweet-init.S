@@ -58,6 +58,49 @@ _start:
 	sub	x2, x2, x1
 	bl	write_console
 
+ /* M18: read two sectors through devfs and verify MBR + GPT magic. */
+ sub sp, sp, #1024
+ adr x0, mmc_path
+ mov x1, #0
+ mov x2, #0
+ mov x16, #5
+ svc #0x80
+ b.cs mmc_fail
+ mov x20, x0
+ mov x1, sp
+ mov x2, #1024
+ mov x16, #3
+ svc #0x80
+ b.cs mmc_close_fail
+ cmp x0, #1024
+ b.ne mmc_close_fail
+ ldrh w9, [sp, #510]
+ mov w10, #0xaa55
+ cmp w9, w10
+ b.ne mmc_close_fail
+ ldr x9, [sp, #512]
+ adr x10, gpt_magic
+ ldr x10, [x10]
+ cmp x9, x10
+ b.ne mmc_close_fail
+ mov x0, x20
+ mov x16, #6
+ svc #0x80
+ adr x1, mmc_ok
+ adr x2, mmc_ok_end
+ b mmc_report
+mmc_close_fail:
+ mov x0, x20
+ mov x16, #6
+ svc #0x80
+mmc_fail:
+ adr x1, mmc_error
+ adr x2, mmc_error_end
+mmc_report:
+ sub x2, x2, x1
+ bl write_console
+ add sp, sp, #1024
+
 tick:
 	/* select(0, NULL, NULL, NULL, &5s) as a portable sleep */
 	mov	x0, #0
@@ -97,3 +140,14 @@ hello_tail:
 alive:
 	.ascii	"XCOVER5 init: still alive\n"
 alive_end:
+
+mmc_path:
+ .asciz "/dev/xcmmc"
+gpt_magic:
+ .ascii "EFI PART"
+mmc_ok:
+ .ascii "XCOVER5 M18 USER PASS: MBR + GPT via /dev/xcmmc\n"
+mmc_ok_end:
+mmc_error:
+ .ascii "XCOVER5 M18 USER FAIL: open/read/signature\n"
+mmc_error_end:

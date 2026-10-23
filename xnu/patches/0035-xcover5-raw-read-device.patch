@@ -1,0 +1,110 @@
+--- a/iokit/Kernel/arm/XCover5MMCProbe.h
++++ b/iokit/Kernel/arm/XCover5MMCProbe.h
+@@ -2,6 +2,8 @@
+ #include <IOKit/IOMemoryDescriptor.h>
+ namespace xcover5_mmc {
+ static vm_offset_t mmio;
++static IOLock *media_lock;
++static uint32_t media_sectors;
+ static uint32_t rd(unsigned o) { return *(volatile uint32_t *)(mmio+o); }
+ static void wr(unsigned o,uint32_t v) {
+     *(volatile uint32_t *)(mmio+o)=v;
+@@ -104,6 +106,22 @@
+  crc=~crc;
+  IOLog("XCOVER5 M17c: GPT header=%08x table stored=%08x calc=%08x\n",hc,expected,crc);
+  IOLog("XCOVER5 M17c: %s kernel eMMC GPT read; sectors=%08x\n",crc==expected?"PASS":"FAIL",sectors);
+- /* Keep the small mapping for this boot; no disk service or IRQ registration. */
++ if(crc==expected) {
++  media_lock=IOLockAlloc();
++  if(media_lock) {mapping->retain();media_sectors=sectors;}
++ }
++ /* Retain mapping for the read-only diagnostic character device. */
+ }
+ }
++
++extern "C" uint32_t xcover5_mmc_capacity(void) {return xcover5_mmc::media_sectors;}
++extern "C" int xcover5_mmc_read_sector(uint32_t lba,void *buffer) {
++ using namespace xcover5_mmc;
++ if(!media_lock || lba>=media_sectors)return -1;
++ IOLockLock(media_lock);
++ struct result r;
++ int rc=transfer((uint8_t *)buffer,17,lba,&r);
++ if(r.response&0xfdffa080U)rc=-1;
++ IOLockUnlock(media_lock);
++ return rc;
++}
+--- /dev/null
++++ b/bsd/dev/xcmmc.c
+@@ -0,0 +1,49 @@
++/* Read-only, bounded diagnostic raw sector device; not a mountable disk. */
++#include <sys/param.h>
++#include <sys/conf.h>
++#include <sys/errno.h>
++#include <sys/fcntl.h>
++#include <sys/uio.h>
++#include <sys/systm.h>
++#include <miscfs/devfs/devfs.h>
++extern uint32_t xcover5_mmc_capacity(void);
++extern int xcover5_mmc_read_sector(uint32_t,void *);
++static int xc_open(dev_t dev,int flags,int type,struct proc *p) {
++ (void)dev;(void)type;(void)p;
++ if(flags&FWRITE)return EROFS;
++ return xcover5_mmc_capacity()?0:ENXIO;
++}
++static int xc_close(dev_t dev,int flags,int type,struct proc *p) {
++ (void)dev;(void)flags;(void)type;(void)p;return 0;
++}
++static int xc_write(dev_t dev,struct uio *uio,int flags) {
++ (void)dev;(void)uio;(void)flags;return EROFS;
++}
++static int xc_read(dev_t dev,struct uio *uio,int flags) {
++ (void)dev;(void)flags;
++ off_t off=uio_offset(uio);user_ssize_t len=uio_resid(uio);
++ uint64_t capacity=(uint64_t)xcover5_mmc_capacity()*512;
++ if(off<0 || (off&511) || len<0 || (len&511) || len>65536)return EINVAL;
++ if((uint64_t)off>capacity || (uint64_t)len>capacity-(uint64_t)off)return EINVAL;
++ uint8_t buf[512];
++ while(uio_resid(uio)) {
++  if(xcover5_mmc_read_sector((uint32_t)(uio_offset(uio)/512),buf))return EIO;
++  int err=uiomove((char *)buf,512,uio);if(err)return err;
++ }
++ return 0;
++}
++static const struct cdevsw xc_sw={
++ .d_open=xc_open,.d_close=xc_close,.d_read=xc_read,.d_write=xc_write,
++ .d_ioctl=eno_ioctl,.d_stop=eno_stop,.d_reset=eno_reset,.d_ttys=NULL,
++ .d_select=eno_select,.d_mmap=eno_mmap,.d_strategy=eno_strat,.d_type=0
++};
++void xcover5_mmc_dev_init(void) {
++ if(!xcover5_mmc_capacity()){printf("XCOVER5 M18: device unavailable\n");return;}
++ int maj=cdevsw_add(-1,&xc_sw);
++ if(maj<0){printf("XCOVER5 M18: cdevsw_add failed\n");return;}
++ cdevsw_flags[maj]|=CDEVSW_USE_OFFSET;
++ if(!devfs_make_node(makedev(maj,0),DEVFS_CHAR,0,0,0400,"xcmmc")) {
++  cdevsw_remove(maj,&xc_sw);printf("XCOVER5 M18: devfs failed\n");return;
++ }
++ printf("XCOVER5 M18: /dev/xcmmc read-only registered\n");
++}
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -381,6 +381,7 @@
+ bsd/kern/kern_credential.c		standard
+ bsd/kern/kern_crossarch.c		standard
+ bsd/kern/kern_cs.c			standard
++bsd/dev/xcmmc.c			standard
+ bsd/kern/sweet_amfi.c			standard
+ bsd/kern/kern_csr.c			optional config_csr
+ bsd/kern/kern_debug.c			standard
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -978,6 +978,10 @@
+ 		devfs_kernel_mount(mounthere);
+ 	}
+ #endif /* DEVFS */
++#if defined(SWEET)
++	extern void xcover5_mmc_dev_init(void);
++	xcover5_mmc_dev_init();
++#endif
+ 
+ #if CONFIG_BASESYSTEMROOT
+ #if CONFIG_IMAGEBOOT
