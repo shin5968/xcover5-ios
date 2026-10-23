@@ -6,7 +6,7 @@ OUT=${2:?OUT required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
-hdiutil create -size 16m -layout NONE -fs 'Case-sensitive HFS+' -volname XCOVER5TEST -format UDRW "$WORK/root.dmg" >/dev/null
+hdiutil create -size 16m -layout NONE -fs 'Case-sensitive HFS+' -volname XCOVER5TEST "$WORK/root.dmg" >/dev/null
 hdiutil attach -nobrowse -mountpoint "$WORK/mnt" "$WORK/root.dmg" >/dev/null
 sudo mkdir -p "$WORK/mnt/sbin" "$WORK/mnt/dev" "$WORK/mnt/private/var"
 sudo cp "$INIT" "$WORK/mnt/sbin/launchd"

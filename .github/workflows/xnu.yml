@@ -92,6 +92,13 @@ jobs:
           test -s "fakeroot/System/Library/Kernels/kernel.development.sweet" || \
             find fakeroot/System/Library/Kernels -type f -name 'kernel.*' -size +1M | grep -q .
 
+      - name: Save compiled kernel before image generation
+        if: steps.kernel-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: dxb/fakeroot/System/Library/Kernels
+          key: ${{ steps.kernel-cache.outputs.cache-primary-key }}
+
       - name: Build minimal userspace init
         run: |
           mkdir -p out
