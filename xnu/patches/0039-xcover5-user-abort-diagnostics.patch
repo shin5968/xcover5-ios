@@ -5,7 +5,7 @@
  
  #include <sys/errno.h>
 +#if defined(SWEET)
-+#include <sys/proc.h>
++extern int proc_selfpid(void);
 +#endif
  #include <sys/kdebug.h>
  #include <kperf/kperf.h>
