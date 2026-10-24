@@ -10,7 +10,7 @@
  static uint32_t rd(unsigned o) { return *(volatile uint32_t *)(mmio+o); }
  static void wr(unsigned o,uint32_t v) {
      *(volatile uint32_t *)(mmio+o)=v;
-@@ -120,8 +123,22 @@
+@@ -120,8 +123,23 @@
   if(!media_lock || lba>=media_sectors)return -1;
   IOLockLock(media_lock);
   struct result r;
@@ -25,12 +25,13 @@
  }
 +
 +/* Snapshot only; never print while holding the storage lock. */
-+extern "C" void xcover5_mmc_perf(uint64_t *reads,uint64_t *errors,uint64_t *ticks) {
++extern "C" void xcover5_mmc_perf(uint64_t *reads,uint64_t *errors,uint64_t *ticks,uint64_t *stamp) {
 + using namespace xcover5_mmc;
-+ *reads=*errors=*ticks=0;
++ *reads=*errors=*ticks=*stamp=0;
 + if(!media_lock)return;
 + IOLockLock(media_lock);
 + *reads=perf_reads;*errors=perf_errors;*ticks=perf_ticks;
++ *stamp=mach_absolute_time();
 + IOLockUnlock(media_lock);
 +}
 --- a/bsd/kern/sweet_exec_diag.c
@@ -53,10 +54,10 @@
 +  * This is a milestone, not proof that the target reached its entry point. */
 + if (kind == 1 && file &&
 +     (!strcmp(file, "launchd.ios") || !strcmp(file, "xpcproxy") || !strcmp(file, "m35-proof"))) {
-+  extern void xcover5_mmc_perf(uint64_t *, uint64_t *, uint64_t *);
++  extern void xcover5_mmc_perf(uint64_t *, uint64_t *, uint64_t *, uint64_t *);
 +  uint64_t reads, errors, ticks, now_ns, io_ns;
-+  uint64_t now = mach_absolute_time();
-+  xcover5_mmc_perf(&reads, &errors, &ticks);
++  uint64_t now;
++  xcover5_mmc_perf(&reads, &errors, &ticks, &now);
 +  absolutetime_to_nanoseconds(now, &now_ns);
 +  absolutetime_to_nanoseconds(ticks, &io_ns);
 +  printf("XCOVER5 PERF LOAD pid=%d file=%s ret=%llu ms=%llu sectors=%llu io_ms=%llu errors=%llu\n",
