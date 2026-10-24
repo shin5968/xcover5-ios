@@ -15,6 +15,8 @@ dynamic = tuple(Path(p).read_bytes() for p in sys.argv[4:6]) or None
 mapped = tuple(Path(p).read_bytes() for p in sys.argv[6:8]) or None
 cow = (Path(sys.argv[8]).read_bytes(), mapped[1]) if len(sys.argv) > 8 else None
 library = tuple(Path(p).read_bytes() for p in sys.argv[9:11]) or None
+symbols = tuple(Path(p).read_bytes() for p in sys.argv[11:13]) or None
+if b'M26 USER PASS' in code: assert symbols and len(symbols)==2
 if b'M25 USER PASS' in code: assert library and len(library)==2
 if b'M24 USER PASS' in code: assert cow
 if b'M23 USER PASS' in code: assert mapped and len(mapped) == 2
@@ -126,12 +128,12 @@ def run(mode, expected_stage=None):
         elif n == 6: result(0)
         elif n == 2:
             child_state['forks'] += 1
-            prefix = ('m21', 'm22', 'm23', 'm24', 'm25')[child_state['forks']-1]
+            prefix = ('m21', 'm22', 'm23', 'm24', 'm25', 'm26')[child_state['forks']-1]
             child_state['prefix'] = prefix
             child_state['waits'] = 0
             if mode == prefix+'_fork': result(12, True)
             else:
-                status, child_output = child(u, code, probe, mode, dynamic if prefix == 'm22' else None, mapped if prefix == 'm23' else None, cow if prefix == 'm24' else None, library if prefix == 'm25' else None)
+                status, child_output = child(u, code, probe, mode, dynamic if prefix == 'm22' else None, mapped if prefix == 'm23' else None, cow if prefix == 'm24' else None, library if prefix == 'm25' else None, symbols if prefix == 'm26' else None)
                 output.extend(child_output)
                 child_state['status'] = status
                 u.reg_write(UC_ARM64_REG_X1, 0)
@@ -170,7 +172,7 @@ def run(mode, expected_stage=None):
     u.hook_add(UC_HOOK_INTR, syscall)
     u.emu_start(0x100000, 0x100000+len(code), count=20000000)
     out = ''.join(output)
-    if mode.startswith(('m21_', 'm22_', 'm23_', 'm24_', 'm25_')):
+    if mode.startswith(('m21_', 'm22_', 'm23_', 'm24_', 'm25_', 'm26_')):
         label = mode[:3].upper()
         if expected_stage is None:
             assert label+' USER PASS' in out, out
@@ -191,6 +193,7 @@ def run(mode, expected_stage=None):
         if b'M20 USER PASS' in code: assert 'M20 USER PASS' in out, out
         if b'M21 USER PASS' in code: assert 'M21 USER PASS' in out, out
         if b'M22 USER PASS' in code: assert 'M22 USER PASS' in out, out
+        if b'M26 USER PASS' in code: assert 'M26 USER PASS' in out, out
         if b'M25 USER PASS' in code: assert 'M25 USER PASS' in out, out
         if b'M24 USER PASS' in code: assert 'M24 USER PASS' in out, out
         if b'M23 USER PASS' in code: assert 'M23 USER PASS' in out, out
@@ -257,3 +260,13 @@ if b'M25 USER PASS' in code:
                         ('m25_child_return',73), ('m25_child_original',73),
                         ('m25_child_munmap',73), ('m25_child_write',73)]:
         run(mode,stage)
+
+if b'M26 USER PASS' in code:
+    for mode, stage in [('m26_fork',81), ('m26_wait',82), ('m26_timeout',84),
+                        ('m26_exec_error',83), ('m26_exit',83), ('m26_signal',83),
+                        ('m26_eintr',None), ('m26_order',None)]:
+        run(mode,stage)
+    for fault in ('pid','open','short','layout','commands','symcount','stroff',
+                  'missing','duplicate','type','section','value','index','unterminated',
+                  'mmap','map_data','pointer','protect','return','original','munmap','write'):
+        run('m26_child_'+fault,83)

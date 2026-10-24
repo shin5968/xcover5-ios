@@ -33,6 +33,8 @@ on:
       - "tools/sweet-cow.S"
       - "tools/sweet-segment.S"
       - "tools/mksegment.py"
+      - "tools/mksymbol.py"
+      - "tools/sweet-symbol.S"
       - "tools/sweet-mmap-code.S"
       - "tools/mkdynamic.py"
       - ".github/workflows/xnu.yml"
@@ -137,8 +139,12 @@ jobs:
           python3 tools/mkinit.py out/m25-probe.o out/m25-probe
           python3 tools/mksegment.py out/libm25.dylib
           shasum -a 256 out/m25-probe out/libm25.dylib > out/SEGMENT_SHA256SUMS
+          xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-symbol.S -o out/m26-probe.o
+          python3 tools/mkinit.py out/m26-probe.o out/m26-probe
+          python3 tools/mksymbol.py out/libm26.dylib
+          shasum -a 256 out/m26-probe out/libm26.dylib > out/SYMBOL_SHA256SUMS
           shasum -a 256 out/init-mockfs.img > out/INIT_SHA256SUMS
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Package build tree for local compiles

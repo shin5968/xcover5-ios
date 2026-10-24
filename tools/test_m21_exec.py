@@ -6,9 +6,29 @@ import struct
 from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM, UC_HOOK_INTR
 from unicorn.arm64_const import *
 
-def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, library=None):
-    label = 'M25' if library else 'M24' if cow else ('M23' if mapped else ('M22' if dynamic else 'M21'))
+def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, library=None, symbols=None):
+    if symbols:
+        library = symbols
+    label = 'M26' if symbols else 'M25' if library else 'M24' if cow else ('M23' if mapped else ('M22' if dynamic else 'M21'))
     prefix = label.lower()
+    if symbols:
+        data = bytearray(library[1])
+        off = 32
+        while struct.unpack_from('<I', data, off)[0] != 2:
+            off += struct.unpack_from('<I', data, off+4)[0]
+        if mode == 'm26_order': data[0x8000:0x8020] = data[0x8010:0x8020] + data[0x8000:0x8010]
+        if mode == 'm26_child_symcount': struct.pack_into('<I',data,off+12,9)
+        if mode == 'm26_child_stroff': struct.pack_into('<I',data,off+16,0xfffffff0)
+        if mode == 'm26_child_commands': struct.pack_into('<I',data,off+4,0)
+        if mode == 'm26_child_missing': data[0x8020+12] = ord('x')
+        if mode == 'm26_child_duplicate': data[0x8000:0x8010] = data[0x8010:0x8020]
+        if mode == 'm26_child_type': data[0x8014] = 1
+        if mode == 'm26_child_section': data[0x8015] = 2
+        if mode == 'm26_child_value': struct.pack_into('<Q',data,0x8018,0x100004000)
+        if mode == 'm26_child_index': struct.pack_into('<I',data,0x8010,0xffffffff)
+        if mode == 'm26_child_unterminated': data[0x8037] = ord('x')
+        library = (library[0], bytes(data))
+
     u = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
     for base, size in [(0x100000, 0x10000), (0x200000, 0x20000), (0x300000, 0x10000)]:
         u.mem_map(base, size)
@@ -50,8 +70,20 @@ def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, librar
                 assert a[1] == 2
                 result(3)
             else:
-                assert name == (b'/emmc/usr/lib/libm25.dylib' if library else b'/emmc/usr/lib/m23-code' if (mapped or cow) else b'/emmc/m20-proof.txt') and a[1] == 0
+                assert name == (f'/emmc/usr/lib/lib{prefix}.dylib'.encode() if library else b'/emmc/usr/lib/m23-code' if (mapped or cow) else b'/emmc/m20-proof.txt') and a[1] == 0
                 result(2, True) if mode == prefix+'_child_open' else result(6)
+        elif n == 153 and symbols:
+            count = state.get('pread',0)
+            state['pread'] = count+1
+            sp = u.reg_read(UC_ARM64_REG_SP)
+            expected = [(6,sp,1024,0),(6,sp+1024,32,0x8000),
+                        (6,sp+1152,24,0x8020),(6,sp+1408,8,0x4000)]
+            assert tuple(a) == expected[count], (a, expected[count])
+            data = bytearray(library[1][a[3]:a[3]+a[2]])
+            if mode == 'm26_child_layout' and not count: data[72] ^= 1
+            if mode == 'm26_child_original' and count==3: data[0] ^= 1
+            u.mem_write(a[1],bytes(data))
+            result(a[2]-1 if mode=='m26_child_short' else a[2])
         elif n == 153 and library:
             count = state.get('pread', 0)
             state['pread'] = count + 1
@@ -66,20 +98,20 @@ def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, librar
             state['maps'] = count + 1
             args = [u.reg_read(r) for r in regs[:6]]
             assert args == [0, 16384, 3 if count else 5, 2, 6, 16384 if count else 0], args
-            if mode == ('m25_child_map_data' if count else 'm25_child_mmap'): result(13, True)
+            if mode == (prefix+'_child_map_data' if count else prefix+'_child_mmap'): result(13, True)
             else:
                 addr = 0x680000 if count else 0x600000 # deliberately non-contiguous
                 data = bytearray(library[1][count*16384:(count+1)*16384])
-                if mode == 'm25_child_pointer' and count: data[0] ^= 1
-                if mode == 'm25_child_return' and not count: data[1024:1028] = struct.pack('<I',0x528005a0)
+                if mode == prefix+'_child_pointer' and count: data[0] ^= 1
+                if mode == prefix+'_child_return' and not count: data[1040 if symbols else 1024:1044 if symbols else 1028] = struct.pack('<I',0x528005c0 if symbols else 0x528005a0)
                 u.mem_map(addr, 16384)
                 u.mem_write(addr, bytes(data))
                 u.mem_protect(addr, 16384, args[2])
                 result(addr)
         elif n == 74 and library:
             assert a[:3] == [0x680000, 16384, 1]
-            assert struct.unpack('<Q',u.mem_read(0x680000,8))[0] == 0x600400
-            if mode == 'm25_child_protect': result(13, True)
+            assert struct.unpack('<Q',u.mem_read(0x680000,8))[0] == (0x600410 if symbols else 0x600400)
+            if mode == prefix+'_child_protect': result(13, True)
             else:
                 u.mem_protect(a[0],a[1],a[2])
                 result(0)
@@ -87,7 +119,7 @@ def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, librar
             count = state.get('unmaps',0)
             state['unmaps'] = count+1
             assert a[:2] == [0x680000 if count else 0x600000, 16384]
-            if mode == 'm25_child_munmap': result(22,True)
+            if mode == prefix+'_child_munmap': result(22,True)
             else:
                 u.mem_unmap(a[0],a[1])
                 result(0)
@@ -192,9 +224,9 @@ def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, librar
         assert not state['exec'] and state['exit'] == 127
         assert 'child exec errno=00000008' in ''.join(output)
     elif mode.startswith(prefix+'_child_'):
-        assert state['exec'] and state['exit'] in (range(141, 153) if library else range(121, 131) if cow else (range(101, 109) if mapped else (111, 112))), state
+        assert state['exec'] and state['exit'] in (range(161, 178) if symbols else range(141, 153) if library else range(121, 131) if cow else (range(101, 109) if mapped else (111, 112))), state
     else:
-        assert state['exec'] and state['exit'] == (46 if library else 45 if cow else (44 if mapped else (43 if dynamic else 42))), state
+        assert state['exec'] and state['exit'] == (47 if symbols else 46 if library else 45 if cow else (44 if mapped else (43 if dynamic else 42))), state
         assert label+' CHILD PASS' in ''.join(output)
         if dynamic: assert 'M22 LOADER PASS' in ''.join(output)
     return state['exit'] << 8, output
