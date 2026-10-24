@@ -59,3 +59,11 @@ M35F부터 이미 통과한 회귀 실행을 생략한 빠른 경로를 사용�
 - tools/test_native_ios_policy.py: 실제 소스 정책 추출 검사.
 - xnu/patches/0044-sweet-native-ios-spawn-default.patch: 좁은 보드 전용 수정.
 - 이전 실기기 영상 분석은 xcover5/artifacts/m35*/video-*/review.txt.
+
+## 이번 산출물 검증 결과
+
+- CI40089586743 성공. 실제 패치된 커널 소스 정책200경우 검사와 전체 커널 빌드 통과.
+- M35H 패키지: xcover5/artifacts/m35h/AP_M35H_NATIVEIOS.tar.md5
+- SHA256: db2b6c4e34809ce7061083c0f58a42a332e9dcad1f79b7d56dba1453ef8a330e
+- 빠른 init/원본 Apple파일/시험 바이너리 불변, 실제 HFS59항목 소유권·모드 동일, boot-only/OdinMD5/파티션크기 검증 통과.
+- 실기기 M35 JOB PASS 및 정체/SIGKILL 해결 여부는 아직 검증 전이다.
