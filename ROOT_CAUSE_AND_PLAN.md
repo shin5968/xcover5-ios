@@ -5,7 +5,7 @@
 ## 현재 상태
 
 - 자체 XNU 커널, 내부 eMMC 읽기, HFS 마운트, Mach-O 실행, 원본 Apple dyld와 캐시, libSystem, pthread, Mach IPC까지 실기기 증거가 있다.
-- Apple launchd가 PID1로 초기화한 실행도 있으나 안정적이지 않다. 자체 RunAtLoad 작업의 M35 JOB PASS는 아직 없다.
+- M35H에서 Apple launchd가 자체 RunAtLoad 작업을 실행해 M35 JOB PASS 및 정상 종료0을 확인했다. 단일 부팅 성공이며 반복 안정성은 아직 미검증이다.
 - 두 실패는 분리한다: (A) 간헐적 사용자 코드/launchd 초기화 정체, (B) xpcproxy의 SIGKILL.
 - CS flags0x01000001은 VALID|KILLED다. 이것만으로 페이지 해시 손상 또는 특정 플랫폼 거부를 확정할 수 없다. 종료 reason0도 여전히 미해결이다.
 
@@ -66,4 +66,14 @@ M35F부터 이미 통과한 회귀 실행을 생략한 빠른 경로를 사용�
 - M35H 패키지: xcover5/artifacts/m35h/AP_M35H_NATIVEIOS.tar.md5
 - SHA256: db2b6c4e34809ce7061083c0f58a42a332e9dcad1f79b7d56dba1453ef8a330e
 - 빠른 init/원본 Apple파일/시험 바이너리 불변, 실제 HFS59항목 소유권·모드 동일, boot-only/OdinMD5/파티션크기 검증 통과.
-- 실기기 M35 JOB PASS 및 정체/SIGKILL 해결 여부는 아직 검증 전이다.
+- 실기기 사진204522에서 M35 JOB PASS 및 m35-proof 종료0 확인. 이번 실행의 시험 작업은 SIGKILL 없이 완료됐으나 긴 지연과 반복 안정성은 미해결이다.
+
+## 20:45 추가 증거: 같은 부팅에서 M35 성공
+
+사진203324 뒤 화면이 유지돼 정체로 판단했으나, 사용자가 계속 실행해 둔 같은 이미지에서 사진204522의 M35 JOB PASS와 종료0이 확인됐다. 영구 정체라는 판단을 철회한다. launchd의 Successfully spawned m35-proof, 자체 proof의 parent PID1 검사, 종료0, launchd EXITED code0이 함께 보인다. KeepAlive=false의 일회성 작업이므로 이후 inactive/not running은 정상 종료 상태다.
+
+초기 부팅 로그00:01:15.357732와 작업 시작00:08:55.079921 사이 게스트 시간 차이는 약7분40초다. 실행 지연과 화면 출력 지연 중 어느 쪽인지 사진만으로 단정할 수 없고, 게스트 시계의 실제 시간 정확도도 별도 검증 대상이다. 이번 성공으로 iOS GUI 부팅이나 반복 안정성을 주장하지 않는다.
+
+정체를 전제로 추가한0045 관측기는 철회했고 진행 중 CI40091257401 취소를 요청했다. M35H를 현재 성공 기준 이미지로 유지하며 새 설치본은 만들지 않는다.
+
+다음 순서: (1) 긴 지연을 실행 대기/파일 페이지인/출력 경로로 나눠 원인을 좁힌다. 소스상 framebuffer 출력에는 명시적 sleep이 없고, eMMC는512바이트 단위 동기PIO이지만 이것만으로7분40초의 원인이라고 확정하지 않는다. (2) 원인에 근거한 성능 변경 후 동일 성공 기준과 소요시간을 비교한다. (3) 최소 bootstrap 등록/조회/요청-응답 및 launchd 반복 안정성 검증으로 진행한다. 그 후 최소 시스템 서비스, 프레임워크, 화면/입력 순서를 따른다.
