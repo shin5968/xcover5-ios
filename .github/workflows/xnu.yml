@@ -141,7 +141,7 @@ jobs:
 
       - name: Verify launchd child diagnostics
         run: |
-          python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks; assert all(b"XCOVER5 M35D EXIT" in k.read_bytes() and b"XCOVER5 M35D LOAD" in k.read_bytes() and b"XCOVER5 M35E SIGN" in k.read_bytes() and b"XCOVER5 M35E PAGE" in k.read_bytes() for k in ks), "M35 diagnostics missing"'
+          python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks; assert all(b"XCOVER5 M35D EXIT" in k.read_bytes() and b"XCOVER5 M35D LOAD" in k.read_bytes() and b"XCOVER5 M35E SIGN" in k.read_bytes() and b"XCOVER5 M35E PAGE" in k.read_bytes() and b"XCOVER5 M35F SIGPROC_BEGIN" in k.read_bytes() and b"XCOVER5 M35F SIGTHREAD_END" in k.read_bytes() and b"XCOVER5 M35F WAKE_END" in k.read_bytes() for k in ks), "M35 diagnostics missing"'
 
       - name: Save compiled kernel before image generation
         if: steps.kernel-cache.outputs.cache-hit != 'true'

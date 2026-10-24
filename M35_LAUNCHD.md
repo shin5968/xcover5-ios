@@ -21,3 +21,7 @@ Video175340 confirms job registration and PID17 xpcproxy SIGKILL in user/501 dom
 ## M35D signing-invalidity details
 
 Photo183617: xpcproxy uid0 rv9 cs0x01000001 (CS_KILLED|CS_VALID), no committed reason. Add SIGN diagnostic with image vnode/errno/spawn/vfexec/signature-failure namespace/code, and PAGE diagnostic with virtual address/prior csflags/force flags. Enable existing page-invalidity detail log on SWEET; no page-validation, entitlement or exec policy change. Package M35D retains M35E SIGN/PAGE marker names to distinguish from M35D LOAD/EXIT. Hardware diagnosis pending.
+
+## M35E exec-stage diagnostics
+
+Video185413: M34 PASS, launchd PID1 load/platform accepted, then no libignition through243s. Add begin/end markers around process-signature, thread-signature and posix_spawn final return-wait clear. Marker prefix M35F distinguishes stage logs from existing LOAD/EXIT and SIGN/PAGE. No scheduling, signature or exec behavior change. Exact stall cause remains unknown.

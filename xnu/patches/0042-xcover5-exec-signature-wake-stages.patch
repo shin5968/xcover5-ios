@@ -1,0 +1,44 @@
+--- a/bsd/kern/kern_exec.c
++++ b/bsd/kern/kern_exec.c
+@@ -4645,7 +4645,13 @@
+ 	/* Release the thread ref returned by cloneproc/fork1 */
+ 	if (imgp != NULL && imgp->ip_new_thread) {
+ 		/* wake up the new thread */
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++		printf("XCOVER5 M35F WAKE_BEGIN pid=%d error=%d\n", proc_getpid(p), error);
++#endif
+ 		task_clear_return_wait(get_threadtask(imgp->ip_new_thread), TCRW_CLEAR_FINAL_WAIT);
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++		printf("XCOVER5 M35F WAKE_END pid=%d\n", proc_getpid(p));
++#endif
+ 		thread_deallocate(imgp->ip_new_thread);
+ 		imgp->ip_new_thread = NULL;
+ 	}
+@@ -7526,7 +7532,13 @@
+ 		 * state.
+ 		 */
+ 
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++		printf("XCOVER5 M35F SIGPROC_BEGIN pid=%d\n", proc_getpid(p));
++#endif
+ 		error = proc_process_signature(p, &signature_failure_reason);
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++		printf("XCOVER5 M35F SIGPROC_END pid=%d error=%d\n", proc_getpid(p), error);
++#endif
+ 	}
+ 
+ 	if (0 == error) {
+@@ -7536,7 +7548,13 @@
+ 		 * but for the main thread the signature was not yet attached
+ 		 * at that time.
+ 		 */
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++		printf("XCOVER5 M35F SIGTHREAD_BEGIN pid=%d\n", proc_getpid(p));
++#endif
+ 		kr = thread_process_signature(imgp->ip_new_thread, proc_get_task_raw(p));
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++		printf("XCOVER5 M35F SIGTHREAD_END pid=%d kr=%d\n", proc_getpid(p), kr);
++#endif
+ 
+ 		if (kr != KERN_SUCCESS) {
+ 			error = EINVAL;
