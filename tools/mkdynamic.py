@@ -10,11 +10,11 @@ import mkinit as m
 
 LOADER = b'/emmc/usr/lib/m22-loader\0'
 
-def path_command(cmd):
-    size = (12 + len(LOADER) + 7) & ~7
-    return struct.pack('<III', cmd, size, 12) + LOADER + bytes(size-12-len(LOADER))
+def path_command(cmd, loader=LOADER):
+    size = (12 + len(loader) + 7) & ~7
+    return struct.pack('<III', cmd, size, 12) + loader + bytes(size-12-len(loader))
 
-def build(obj, kind):
+def build(obj, kind, loader=LOADER):
     assert kind in ('app', 'loader')
     code, start = m.text_of(obj)
     assert m.CODE_OFF + len(code) <= m.SEG
@@ -26,11 +26,11 @@ def build(obj, kind):
     cmds += [m.segment('__TEXT', base, m.SEG, 0, m.SEG, 5, [sect]),
              m.segment('__LINKEDIT', base+m.SEG, m.SEG, m.SEG, sig_size, 1)]
     if kind == 'app':
-        cmds += [path_command(0xe), struct.pack('<IIQQ', 0x80000028, 24, m.CODE_OFF+start, 0)]
+        cmds += [path_command(0xe, loader), struct.pack('<IIQQ', 0x80000028, 24, m.CODE_OFF+start, 0)]
     else:
         state = [0]*33
         state[32] = m.CODE_OFF+start
-        cmds += [path_command(0xf), struct.pack('<4I33QII', 5, 288, 6, 68, *state, 0, 0)]
+        cmds += [path_command(0xf, loader), struct.pack('<4I33QII', 5, 288, 6, 68, *state, 0, 0)]
     # These are our no-import diagnostic binaries for the macOS-target SWEET
     # kernel. PLATFORM_IOS makes exec reject them before loader entry (M22D).
     # This does not change Apple binaries or relax kernel execution policy.

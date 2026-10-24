@@ -13,6 +13,8 @@ SEGMENT=${9:?SEGMENT required}
 LIBRARY=${10:?LIBRARY required}
 SYMBOL=${11:?SYMBOL required}
 SYMLIB=${12:?SYMLIB required}
+APPLEAPP=${13:?APPLEAPP required}
+APPLEPLACEHOLDER=${14:?APPLEPLACEHOLDER required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
@@ -38,6 +40,9 @@ sudo chmod 755 "$WORK/mnt/sbin/m25-probe" "$WORK/mnt/usr/lib/libm25.dylib"
 sudo cp "$SYMBOL" "$WORK/mnt/sbin/m26-probe"
 sudo cp "$SYMLIB" "$WORK/mnt/usr/lib/libm26.dylib"
 sudo chmod 755 "$WORK/mnt/sbin/m26-probe" "$WORK/mnt/usr/lib/libm26.dylib"
+sudo cp "$APPLEAPP" "$WORK/mnt/sbin/m27-probe"
+sudo cp "$APPLEPLACEHOLDER" "$WORK/mnt/usr/lib/m27-apple-dyld"
+sudo chmod 755 "$WORK/mnt/sbin/m27-probe" "$WORK/mnt/usr/lib/m27-apple-dyld"
 printf 'XCOVER5 M20 eMMC file read verified\n' | sudo tee "$WORK/mnt/m20-proof.txt" >/dev/null
 echo 'XCOVER5 HFS root test' | sudo tee "$WORK/mnt/root-test.txt" >/dev/null
 sync

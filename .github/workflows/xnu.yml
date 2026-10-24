@@ -37,6 +37,8 @@ on:
       - "tools/sweet-symbol.S"
       - "tools/sweet-mmap-code.S"
       - "tools/mkdynamic.py"
+      - "tools/mkappleprobe.py"
+      - "tools/sweet-apple-dyld.S"
       - ".github/workflows/xnu.yml"
 
 concurrency:
@@ -143,8 +145,11 @@ jobs:
           python3 tools/mkinit.py out/m26-probe.o out/m26-probe
           python3 tools/mksymbol.py out/libm26.dylib
           shasum -a 256 out/m26-probe out/libm26.dylib > out/SYMBOL_SHA256SUMS
+          xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-apple-dyld.S -o out/m27-probe.o
+          python3 tools/mkappleprobe.py out/m27-probe.o out/m27-probe out/m27-apple-dyld.placeholder
+          shasum -a 256 out/m27-probe out/m27-apple-dyld.placeholder > out/APPLE_PROBE_SHA256SUMS
           shasum -a 256 out/init-mockfs.img > out/INIT_SHA256SUMS
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Package build tree for local compiles

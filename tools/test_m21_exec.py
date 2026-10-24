@@ -6,10 +6,10 @@ import struct
 from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM, UC_HOOK_INTR
 from unicorn.arm64_const import *
 
-def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, library=None, symbols=None):
+def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, library=None, symbols=None, apple=None):
     if symbols:
         library = symbols
-    label = 'M26' if symbols else 'M25' if library else 'M24' if cow else ('M23' if mapped else ('M22' if dynamic else 'M21'))
+    label = 'M27' if apple else 'M26' if symbols else 'M25' if library else 'M24' if cow else ('M23' if mapped else ('M22' if dynamic else 'M21'))
     prefix = label.lower()
     if symbols:
         data = bytearray(library[1])
@@ -50,8 +50,15 @@ def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, librar
     def syscall(uc, intr, _):
         n = u.reg_read(UC_ARM64_REG_X16)
         a = [u.reg_read(r) for r in regs[:4]]
-        if n == 59:
+        if n == 90 and apple:
             assert not state['exec']
+            count = state.get('dups', 0)
+            assert a[:2] == [3, count]
+            state['dups'] = count+1
+            result(9, True) if mode == 'm27_dup'+str(count) else result(count)
+        elif n == 59:
+            assert not state['exec']
+            if apple: assert state['dups'] == 3
             assert string(a[0]) == f'/emmc/sbin/{prefix}-probe'.encode()
             argv = struct.unpack('<QQ', u.mem_read(a[1], 16))
             assert argv == (a[0], 0)
@@ -211,7 +218,17 @@ def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, librar
         u.mem_write(0x100000, bytes(len(code)))
         u.mem_write(0x200000, bytes(0x20000))
         for reg in regs: u.reg_write(reg, 0)
-        if dynamic:
+        if apple:
+            # Model LC_MAIN handoff ONLY. This does not execute or validate Apple dyld.
+            u.mem_write(0x300000, apple)
+            u.mem_write(0x210000, b'/emmc/sbin/m27-probe\0')
+            u.mem_write(0x210100, struct.pack('<QQ', 0x210000, 0))
+            u.reg_write(UC_ARM64_REG_X0, 1)
+            u.reg_write(UC_ARM64_REG_X1, 0x210100)
+            u.reg_write(UC_ARM64_REG_X2, 0x210108)
+            u.reg_write(UC_ARM64_REG_SP, 0x21fff0)
+            u.emu_start(0x300000, 0x310000, count=100000)
+        elif dynamic:
             from test_m22_loader import prepare
             pc = prepare(u, *dynamic)
             u.emu_start(pc, 0x600000, count=100000)
@@ -220,13 +237,16 @@ def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None, librar
             u.reg_write(UC_ARM64_REG_SP, 0x21ffe8)
             u.emu_start(0x300000, 0x310000, count=100000)
     assert state['exit'] is not None, state
-    if mode == prefix+'_exec_error':
+    if apple and mode.startswith('m27_dup'):
         assert not state['exec'] and state['exit'] == 127
-        assert 'child exec errno=00000008' in ''.join(output)
+        assert 'setup/exec errno=00000009' in ''.join(output)
+    elif mode == prefix+'_exec_error':
+        assert not state['exec'] and state['exit'] == 127
+        assert ('child setup/exec errno=00000008' if apple else 'child exec errno=00000008') in ''.join(output)
     elif mode.startswith(prefix+'_child_'):
         assert state['exec'] and state['exit'] in (range(161, 178) if symbols else range(141, 153) if library else range(121, 131) if cow else (range(101, 109) if mapped else (111, 112))), state
     else:
-        assert state['exec'] and state['exit'] == (47 if symbols else 46 if library else 45 if cow else (44 if mapped else (43 if dynamic else 42))), state
+        assert state['exec'] and state['exit'] == (48 if apple else 47 if symbols else 46 if library else 45 if cow else (44 if mapped else (43 if dynamic else 42))), state
         assert label+' CHILD PASS' in ''.join(output)
         if dynamic: assert 'M22 LOADER PASS' in ''.join(output)
     return state['exit'] << 8, output
