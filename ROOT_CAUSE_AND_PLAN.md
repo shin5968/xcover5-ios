@@ -143,3 +143,15 @@ M35의 원본 proof와 PID1 인계는 유지한다. 새 org.xcover5.m36.echo 작
 이 시험은 이름 조회와 launchd 제공 포트 사용을 검증한다. 서로 독립적으로 exec된 클라이언트나 on-demand 서비스 재기동, 일반 XPC 객체 메시징, GUI는 아직 검증하지 않는다. 다음 단계는 M36 실제 성공 후 독립 클라이언트 및 재기동 검증이다.
 
 M36 build/package complete: CI40095942062 SUCCESS, source efd687f. ARM64 mocked imports11 cases PASS; independent Mach-O/binding/signature decoder PASS. Independent HFS extraction verifies12 executables including unchanged M35 and original Apple assets; both job plists/account records valid. Boot-only/Odin MD5/44MiB fit and RTC/PERF markers PASS. AP artifacts/m36/AP_M36_BOOTSTRAP.tar.md5 SHA25684ffd5a9b54e63fe53a9a06d8cb464e4b846b99fd190b7d5d85060ed6cc5dc42. Hardware M36 remains pending.
+
+
+## M36 video220556 hardware failure
+
+Service check-in PASS, but launchd denies the forked client pid7 lookup of org.xcover5.m36.echo with error159 Sandbox restriction. Client exit121; server exit109 after approximately5.011s, consistent with its receive timeout. M36 request/reply is not verified. The root authorization cause remains unknown; next inspect client identity/audit context and lookup policy, then validate lookup and request/reply with real launchd. Do not treat mock import tests as policy coverage. Evidence: artifacts/m36/video-220556/review.txt. No firmware changes in this review.
+
+
+## M36A scoped bootstrap compatibility
+
+Original launchd 0x1000300fc calls its sandbox wrapper; 0x1000154c0 calls sandbox_check_by_audit_token and considers only zero allowed. iOS16.5 libsystem_sandbox at0x1d0c2eb18 passes PID/pidversion into call2 of policy Sandbox through syscall381. The check core at0x1d0c2ee70 returns -1 on syscall error. Stock mac_base.c returns ENOPOLICY when the policy is absent. This explains how missing policy support produces the observed restriction; hardware confirmation of the new handler remains required.
+
+0047 adds an XCOVER5-only fallback after unsuccessful policy dispatch. Existing registered policy callbacks always retain their results. It accepts only PID1/64-bit caller, call2/Sandbox, exact mach-lookup operation, global-name filter7, audit-version flag0x40000000, exact org.xcover5.m36.echo service, live root m36-probe client with matching pidversion, and m36-probe parent whose parent is PID1. Copies are bounded and checked; other requests remain errors. This bring-up allowlist does not implement general Sandbox security or enable arbitrary services. Host positive/negative checks pass; original userspace/probe remains unchanged.

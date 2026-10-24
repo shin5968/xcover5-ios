@@ -1,0 +1,93 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -69,6 +69,9 @@
+  * found in src/sys/mac/.  Sample policies may be found in src/sys/mac*.
+  */
+ 
++#if defined(__arm64__)
++#include <pexpert/arm64/board_config.h>
++#endif
+ #include <stdarg.h>
+ #include <string.h>
+ #include <security/mac_internal.h>
+@@ -1563,6 +1566,60 @@
+  *                !0                      Not success
+  *
+  */
++#if defined(XCOVER5)
++/* iOS 16.5 libsystem_sandbox call 2 ABI, observed in the shipped arm64
++ * library. This is a bring-up allowlist, NOT a Sandbox implementation.
++ * Only used when no registered Sandbox handler accepted this call. */
++static int
++xcover5_bootstrap_check(proc_t caller, user_addr_t address)
++{
++    struct {
++        uint64_t result, pid, operation, filter_type, filter, flags, pidversion;
++    } a;
++    char operation[32], service[64];
++    size_t length;
++    proc_t client, parent;
++    kauth_cred_t cred;
++    boolean_t allowed;
++    uint64_t decision = 0;
++    int error;
++
++    if (proc_pid(caller) != 1 || !proc_is64bit_data(caller)) {
++        return ENOPOLICY;
++    }
++    error = copyin(address, &a, sizeof(a));
++    if (error) { return error; }
++    if (a.pid == 0 || a.pid > INT_MAX || a.pidversion > UINT32_MAX ||
++        a.filter_type != 7 || a.flags != 0x40000000ULL) {
++        return ENOPOLICY;
++    }
++    error = copyinstr(a.operation, operation, sizeof(operation), &length);
++    if (error) { return error; }
++    if (strcmp(operation, "mach-lookup") != 0) { return ENOPOLICY; }
++    error = copyinstr(a.filter, service, sizeof(service), &length);
++    if (error) { return error; }
++    if (strcmp(service, "org.xcover5.m36.echo") != 0) { return ENOPOLICY; }
++    client = proc_find((pid_t)a.pid);
++    if (client == PROC_NULL) { return ESRCH; }
++    cred = kauth_cred_proc_ref(client);
++    allowed = kauth_cred_issuser(cred) &&
++        (uint32_t)proc_pidversion(client) == a.pidversion &&
++        strcmp(client->p_comm, "m36-probe") == 0;
++    kauth_cred_unref(&cred);
++    parent = proc_find(proc_ppid(client));
++    allowed = allowed && parent != PROC_NULL && proc_ppid(parent) == 1 &&
++        strcmp(parent->p_comm, "m36-probe") == 0;
++    if (parent != PROC_NULL) { proc_rele(parent); }
++    proc_rele(client);
++    if (!allowed) { return EPERM; }
++    error = copyout(&decision, a.result, sizeof(decision));
++    if (!error) {
++        printf("XCOVER5 M36A: scoped Sandbox mach-lookup allowed pid=%llu\n", (unsigned long long)a.pid);
++    }
++    return error;
++}
++#endif
++
+ int
+ __mac_syscall(proc_t p, struct __mac_syscall_args *uap, int *retv __unused)
+ {
+@@ -1610,11 +1667,18 @@
+ 			    mpc->mpc_ops->mpo_policy_syscall != NULL) {
+ 				error = mpc->mpc_ops->mpo_policy_syscall(p,
+ 				    uap->call, uap->arg);
+-				break;
++				mac_policy_list_unbusy();
++				goto done;
+ 			}
+ 		}
+ 		mac_policy_list_unbusy();
+ 	}
++
++#if defined(XCOVER5)
++    if (uap->call == 2 && strcmp(target, "Sandbox") == 0) {
++        error = xcover5_bootstrap_check(p, uap->arg);
++    }
++#endif
+ 
+ done:
+ 	return error;
