@@ -17,7 +17,8 @@ cow = (Path(sys.argv[8]).read_bytes(), mapped[1]) if len(sys.argv) > 8 else None
 library = tuple(Path(p).read_bytes() for p in sys.argv[9:11]) or None
 symbols = tuple(Path(p).read_bytes() for p in sys.argv[11:13]) or None
 apple = Path(sys.argv[13]).read_bytes() if len(sys.argv) > 13 else None
-if b'M27 USER PASS' in code: assert apple
+cache = b'M28 USER PASS' in code
+if b'M27 USER PASS' in code and not cache: assert apple
 if b'M26 USER PASS' in code: assert symbols and len(symbols)==2
 if b'M25 USER PASS' in code: assert library and len(library)==2
 if b'M24 USER PASS' in code: assert cow
@@ -64,6 +65,7 @@ def run(mode, expected_stage=None):
     u.reg_write(UC_ARM64_REG_SP, 0x21fff0)
     output, reads = [], []
     counts = {}
+    mount_cache = [False]
     child_state = {'status': None, 'waits': 0, 'killed': False, 'forks': 0}
     def result(value, error=False):
         u.reg_write(UC_ARM64_REG_X0, value)
@@ -92,7 +94,10 @@ def run(mode, expected_stage=None):
             if name == b'/dev/console': result(3)
             else:
                 assert a[1] == 0
-                if name == b'/emmc/m20-proof.txt':
+                if name == b'/System/Library/Caches/com.apple.dyld/m28-cache-proof.txt':
+                    assert cache and mount_cache[0]
+                    result(6)
+                elif name == b'/emmc/m20-proof.txt':
                     result(2, True) if mode == 'm20_open' else result(6)
                 else:
                     assert name == b'/dev/xcmmc'
@@ -104,13 +109,14 @@ def run(mode, expected_stage=None):
         elif n == 20: result(1)
         elif n == 167:
             assert bytes(u.mem_read(a[0], 4)) == b'hfs\0'
-            assert bytes(u.mem_read(a[1], 6)) == b'/emmc\0'
+            mount_cache[0] = bytes(u.mem_read(a[1], 6)) != b'/emmc\0'
+            assert not mount_cache[0] or (cache and bytes(u.mem_read(a[1],len(b"/System/Library/Caches/com.apple.dyld\0"))) == b'/System/Library/Caches/com.apple.dyld\0')
             assert a[2] == 1
             dev = struct.unpack('<Q', u.mem_read(a[3], 8))[0]
-            assert bytes(u.mem_read(dev, 11)) == b'/dev/xchfs\0'
+            assert bytes(u.mem_read(dev, 16 if mount_cache[0] else 11)) == (b'/dev/xcuserdata\0' if mount_cache[0] else b'/dev/xchfs\0')
             result(6, True) if mode == 'm20_mount' else result(0)
         elif n == 3 and a[0] == 6:
-            data = b'XCOVER5 M20 eMMC file read verified\n'
+            data = b'XCOVER5 M28 userdata cache volume verified\n' if mount_cache[0] else b'XCOVER5 M20 eMMC file read verified\n'
             if mode == 'm20_short': data = data[:-1]
             if mode == 'm20_content': data = b'!'+data[1:]
             if mode == 'm20_read': result(5, True)
@@ -130,12 +136,13 @@ def run(mode, expected_stage=None):
         elif n == 6: result(0)
         elif n == 2:
             child_state['forks'] += 1
-            prefix = ('m21', 'm22', 'm23', 'm24', 'm25', 'm26', 'm27')[child_state['forks']-1]
+            prefix = ('m21', 'm22', 'm23', 'm24', 'm25', 'm26', 'm28' if cache else 'm27')[child_state['forks']-1]
             child_state['prefix'] = prefix
             child_state['waits'] = 0
             if mode == prefix+'_fork': result(12, True)
             else:
-                status, child_output = child(u, code, probe, mode, dynamic if prefix == 'm22' else None, mapped if prefix == 'm23' else None, cow if prefix == 'm24' else None, library if prefix == 'm25' else None, symbols if prefix == 'm26' else None, apple if prefix == 'm27' else None)
+                # M28 child text/faults are executed separately in test_m28_cache.py.
+                status, child_output = (49<<8, []) if prefix == 'm28' else child(u, code, probe, mode, dynamic if prefix == 'm22' else None, mapped if prefix == 'm23' else None, cow if prefix == 'm24' else None, library if prefix == 'm25' else None, symbols if prefix == 'm26' else None, apple if prefix == 'm27' else None)
                 output.extend(child_output)
                 child_state['status'] = status
                 u.reg_write(UC_ARM64_REG_X1, 0)
@@ -195,7 +202,8 @@ def run(mode, expected_stage=None):
         if b'M20 USER PASS' in code: assert 'M20 USER PASS' in out, out
         if b'M21 USER PASS' in code: assert 'M21 USER PASS' in out, out
         if b'M22 USER PASS' in code: assert 'M22 USER PASS' in out, out
-        if b'M27 USER PASS' in code: assert 'M27 USER PASS' in out, out
+        if b'M27 USER PASS' in code and not cache: assert 'M27 USER PASS' in out, out
+        if cache: assert out.count('M28 USER PASS') == 2 and 'M27 USER:' not in out, out
         if b'M26 USER PASS' in code: assert 'M26 USER PASS' in out, out
         if b'M25 USER PASS' in code: assert 'M25 USER PASS' in out, out
         if b'M24 USER PASS' in code: assert 'M24 USER PASS' in out, out
@@ -274,6 +282,6 @@ if b'M26 USER PASS' in code:
                   'mmap','map_data','pointer','protect','return','original','munmap','write'):
         run('m26_child_'+fault,83)
 
-if apple:
+if apple and not cache:
     for mode, stage in [('m27_fork',91), ('m27_wait',92), ('m27_timeout',94), ('m27_exec_error',93), ('m27_exit',93), ('m27_signal',93), ('m27_eintr',None), ('m27_dup0',93), ('m27_dup1',93), ('m27_dup2',93), ('m27_child_pid',93), ('m27_child_open',93), ('m27_child_short',93), ('m27_child_content',93), ('m27_child_read',93), ('m27_child_write',93)]:
         run(mode,stage)
