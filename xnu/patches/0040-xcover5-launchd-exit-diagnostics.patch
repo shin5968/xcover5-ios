@@ -4,7 +4,7 @@
  	struct rusage_superset *rup;
  	int kr = 0;
  	int create_corpse = FALSE;
-+#if defined(SWEET)
++#if defined(ARM64_BOARD_CONFIG_SWEET)
 +	/* Log committed exit metadata; do not change signal or exec policy. */
 +	if (proc_getpid(p) <= 64) {
 +		printf("XCOVER5 M35D EXIT pid=%d name=%s uid=%u rv=%x cs=%x reason=%u code=%llx flags=%llx\n",
@@ -21,7 +21,7 @@
 +++ b/bsd/kern/kern_exec.c
 @@ -1317,1 +1317,5 @@
  	lret = load_machfile(imgp, mach_header, thread, &map, &load_result);
-+#if defined(SWEET)
++#if defined(ARM64_BOARD_CONFIG_SWEET)
 +	printf("XCOVER5 M35D LOAD pid=%d uid=%u file=%s ret=%d\n",
 +	    proc_getpid(p), proc_getuid(p), imgp->ip_vp->v_name, lret);
 +#endif
