@@ -182,3 +182,10 @@ M36B build40099788753 SUCCESS, source b2642dc. Packaged artifacts/m36b/AP_M36B_L
 ## M36B hardware PASS - video230102
 
 Observed scoped mach-lookup allowed pid7 filter6, client rv3800(exit56), server rv0 and launchd exit(0). Probe source reserves those exits for validated request/reply and rights cleanup. Literal M36 PASS lines not captured in inspected frames; verdict rests on lookup and success exits. Confirms filter6 omission mattered on device. Single-run scoped test, not full Sandbox/XPC/GUI validation. Evidence artifacts/m36b/video-230102/review.txt. Next: independent exec client before higher-level XPC.
+
+
+## M37 - separate exec client
+
+Retain M36 regression. Add launchd org.xcover5.m37.echo -> m37-server. Fork child executes separate m37-client; fresh entry reinitializes imports/task port and gets parent PID, resolves bootstrap service, validates response and cleans rights. Expected client57/server0. Exec failure128, client parent120, lookup121; bounded Mach timeout5s and waitpid loop. Scoped policy accepts only exact M37 service/client/server tuple with root client and matching audit PID version. Build1eb33c9 / CI40101315737; hardware pending.
+
+M37 CI40101315737 SUCCESS. Built ARM64 mock13cases PASS, scoped policy positive/negative PASS, HFS extracted new files/plist and old61paths/35files unchanged, boot-only MD5/size/shim/DTB PASS. Artifact artifacts/m37/AP_M37_EXEC_CLIENT.tar.md5 SHA256ce63011e4fd0f74b24812c6cf11107f213ff61c32af385d1002202906fbd74de. Hardware pending; no phone writes performed.
