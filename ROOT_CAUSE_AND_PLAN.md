@@ -127,3 +127,19 @@ IOStartIOKit.cpp의 IOKitInitializeTime은 IORTC 서비스를 최대30초 기다
 다음 실기기 판정: RTC skip 메시지, launchd/proof PERF 시간, M34 PASS, M35 JOB PASS와 종료0. M35I launchd72549ms/proof78063ms를 비교 기준으로 삼되 단일 부팅의 차이를 반복 안정성으로 해석하지 않는다. 이후 최소 bootstrap 이름 등록/조회/요청-응답을 구현한다.
 
 M35J verification complete: CI40094554593 SUCCESS (a72a508fcc7b749ae3a94f49e88a4b14dba5b13f). Actual kernel RTC skip/PERF markers verified. Boot-only archive, Odin MD5, partition fit, unchanged probes/init/proof/shim/DTB, independent HFS extraction and accounts PASS. AP: xcover5/artifacts/m35j/AP_M35J_RTC_WAIT.tar.md5; SHA256 d30bd6653b4fe17db9d5be9d91a3b3d52b648eca22dee638370d1fff43211171. Hardware speedup remains pending.
+
+
+## M35J 영상214720 실기기 결과
+
+M34 PASS(exit55), M35 JOB PASS(parent PID1), proof 종료0 확인. launchd LOAD 42759ms/42333sectors/io3795ms/errors0, proof LOAD 48270ms/96701sectors/io8748ms/errors0. M35I 대비 각각29790ms/29793ms 단축. launchd 이후 구간은5511ms로 이전5514ms와 거의 같고 읽기량·누적전송시간도 동일하다. 이번 부팅은 RTC 대기 제거에 따른 약29.8초 단축을 뒷받침한다. 반복 안정성과 과거 간헐적 지연의 완전 해결은 아직 입증하지 않았다. 다음은 launchd 이름 기반 서비스 등록/조회/요청-응답 검증. 원본과 분석은 artifacts/m35j/video-214720에 저장했다.
+
+
+## M36: launchd 이름 기반 Mach 서비스 시험
+
+M35의 원본 proof와 PID1 인계는 유지한다. 새 org.xcover5.m36.echo 작업은 MachServices 이름을 선언하고 RunAtLoad=true/KeepAlive=false로 한 번 실행된다. 서버는 부모PID1을 검사하고 task_get_special_port로 얻은 기존 bootstrap에 bootstrap_check_in을 요청한다. 서버가 fork한 별도 클라이언트는 bootstrap_look_up으로 서비스 send right를 얻는다. 기존 M34의 임시 bootstrap 포트 교체 방식은 사용하지 않는다.
+
+요청/응답은 메시지 크기·ID·payload·서로의 PID·send-once 권리를 확인한다. Mach send/receive 각각5000ms timeout; 부모는 WNOHANG으로 자식 exit56을 제한 횟수만 기다리고, 성공 시 수신 포트를 정리한 뒤0으로 종료한다. 실패에는100~127 단계 종료코드가 남고 부모 실패 시 아직 회수하지 않은 자식만 종료한다. bootstrap 라이브러리 호출 자체에는 새 timeout을 추가하지 않는다.
+
+이 시험은 이름 조회와 launchd 제공 포트 사용을 검증한다. 서로 독립적으로 exec된 클라이언트나 on-demand 서비스 재기동, 일반 XPC 객체 메시징, GUI는 아직 검증하지 않는다. 다음 단계는 M36 실제 성공 후 독립 클라이언트 및 재기동 검증이다.
+
+M36 build/package complete: CI40095942062 SUCCESS, source efd687f. ARM64 mocked imports11 cases PASS; independent Mach-O/binding/signature decoder PASS. Independent HFS extraction verifies12 executables including unchanged M35 and original Apple assets; both job plists/account records valid. Boot-only/Odin MD5/44MiB fit and RTC/PERF markers PASS. AP artifacts/m36/AP_M36_BOOTSTRAP.tar.md5 SHA25684ffd5a9b54e63fe53a9a06d8cb464e4b846b99fd190b7d5d85060ed6cc5dc42. Hardware M36 remains pending.
