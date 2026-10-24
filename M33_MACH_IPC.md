@@ -36,3 +36,5 @@ Hardware result pending.
 
 Outputs: xcover5/artifacts/m33. Boot-only AP; retain installed userdata cache.
 No Apple runtime modification. No device flashing performed by the agent.
+
+Hardware video151347 confirms M33 CHILD/USER PASS exit54 and M31/M32 PASS.

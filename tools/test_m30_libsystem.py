@@ -53,6 +53,7 @@ while i < len(stream):
 names = ([b'_malloc',b'_free',b'_pthread_create',b'_pthread_join',b'_pthread_self'] if '--thread' in sys.argv else [b'_getpid',b'_strlen',b'_memcmp',b'_read',b'_write'])
 if '--mutex' in sys.argv: names=[b'_pthread_mutex_init',b'_pthread_mutex_lock',b'_pthread_mutex_unlock',b'_pthread_mutex_destroy',b'_pthread_create',b'_pthread_join']
 if '--ipc' in sys.argv: names=[b'_mach_task_self_',b'_mach_port_allocate',b'_mach_port_insert_right',b'_mach_msg',b'_mach_port_destroy',b'_pthread_create',b'_pthread_join']
+if '--process-ipc' in sys.argv: names=list((b'_mach_task_self_',b'_mach_port_allocate',b'_mach_port_insert_right',b'_mach_msg',b'_mach_port_destroy',b'_task_get_special_port',b'_task_set_special_port',b'_mach_port_deallocate',b'_fork',b'_waitpid',b'_getpid',b'_kill'))
 assert binds == [(1,1,2,8*j,n) for j,n in enumerate(names)]
 so, ns, st, ss = struct.unpack_from('<4I', commands[2], 8)
 assert ns == len(names)
