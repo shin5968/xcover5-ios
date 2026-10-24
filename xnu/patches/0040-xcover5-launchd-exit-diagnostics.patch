@@ -17,11 +17,3 @@
  
  	if (p->p_crash_behavior != 0 || p == initproc) {
  		proc_handle_critical_exit(p, rv);
---- a/bsd/kern/kern_exec.c
-+++ b/bsd/kern/kern_exec.c
-@@ -1317,1 +1317,5 @@
- 	lret = load_machfile(imgp, mach_header, thread, &map, &load_result);
-+#if defined(ARM64_BOARD_CONFIG_SWEET)
-+	printf("XCOVER5 M35D LOAD pid=%d uid=%u file=%s ret=%d\n",
-+	    proc_getpid(p), proc_getuid(p), imgp->ip_vp->v_name, lret);
-+#endif

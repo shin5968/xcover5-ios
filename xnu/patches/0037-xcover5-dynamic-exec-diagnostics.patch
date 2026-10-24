@@ -46,10 +46,14 @@
  		if (result->threadstate) {
 --- a/bsd/kern/kern_exec.c
 +++ b/bsd/kern/kern_exec.c
-@@ -1315,6 +1315,11 @@
+@@ -1315,6 +1315,15 @@
  	 * Actually load the image file we previously decided to load.
  	 */
  	lret = load_machfile(imgp, mach_header, thread, &map, &load_result);
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++	printf("XCOVER5 M35D LOAD pid=%d uid=%u file=%s ret=%d\n",
++	    proc_getpid(p), proc_getuid(p), imgp->ip_vp->v_name, lret);
++#endif
 +#if defined(SWEET)
 +	if (mach_header->flags & MH_DYLDLINK) {
 +		printf("XCOVER5 M22D: exec load ret=%d pid=%d\n", lret, proc_getpid(p));
