@@ -158,3 +158,15 @@ Original launchd 0x1000300fc calls its sandbox wrapper; 0x1000154c0 calls sandbo
 
 
 M36A complete: CI40098125628 SUCCESS, source fd0a3c9. Original ARM64 sandbox-check ABI emulation and host helper/dispatch negative tests PASS. Package marker confirms0047 compiled. Independent HFS comparison:61 paths/modes and35 files unchanged fromM36; volume metadata timestamps/ID differ. Boot33472512bytes, boot-only/OdinMD5/partitionfit PASS. AP artifacts/m36a/AP_M36A_LOOKUP.tar.md5 SHA256ad676168b570ffe81c335785600410d9c4a5268376d4681557da914c40c0711c. Actual hardware pending. This is an exact M36 service bring-up allowlist, not generic Sandbox support. Next: verify M36 CHECKIN, scoped allow, PEER/CHILD PASS, server exit0; only then expand to independent service client/on-demand lifecycle. Evidence research/launchd-rootcause/M36A-analysis.txt.
+
+
+## M36A video223917: hardware failure persists
+
+M36A hardware review: video223917 (59.84 seconds)
+FAIL: M36 CHECKIN PASS, then launchd denied lookup org.xcover5.m36.echo by m36-probe[7], error159 Sandbox restriction.
+Evidence frame009 and frame011/012: client pid7 rv7900 => exit121; server pid6 rv6d00 => exit109, also explicitly logged exit(109).
+Lookup denial at00:00:49.841437; server exit at00:00:54.843808 (~5.002371s).
+No scoped M36A allow marker, PEER PASS or CHILD PASS in these frames. The proposed compatibility fix has not resolved this hardware failure. Absence of the success marker alone does not establish which guard/path rejected the call or prove the flashed image identity.
+Next inspect actual syscall dispatch and capture return/guard reason plus runtime build identity before changing the allowlist. Host/emulator tests validated selected inputs only, not actual launchd request and kernel dispatch.
+No new firmware created during this review.
+

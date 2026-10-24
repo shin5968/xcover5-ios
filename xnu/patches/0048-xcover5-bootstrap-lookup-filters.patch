@@ -1,0 +1,56 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -1588,19 +1588,32 @@
+         return ENOPOLICY;
+     }
+     error = copyin(address, &a, sizeof(a));
+-    if (error) { return error; }
++    if (error) { printf("XCOVER5 M36B: argument copy error=%d\n", error); return error; }
+     if (a.pid == 0 || a.pid > INT_MAX || a.pidversion > UINT32_MAX ||
+-        a.filter_type != 7 || a.flags != 0x40000000ULL) {
++        a.flags != 0x40000000ULL) {
++        printf("XCOVER5 M36B: ABI rejected pid=%llu filter=%llu flags=%llx version=%llu\n",
++            (unsigned long long)a.pid, (unsigned long long)a.filter_type,
++            (unsigned long long)a.flags, (unsigned long long)a.pidversion);
+         return ENOPOLICY;
+     }
+     error = copyinstr(a.operation, operation, sizeof(operation), &length);
+     if (error) { return error; }
+-    if (strcmp(operation, "mach-lookup") != 0) { return ENOPOLICY; }
++    /* launchd wrapper API filters 2/3/12 become
++     * internal 6/7/50. Cross-domain lookup uses internal filter 6. */
++    boolean_t lookup = strcmp(operation, "mach-lookup") == 0;
++    boolean_t cross = strcmp(operation, "mach-cross-domain-lookup") == 0;
++    if (!lookup && !cross) { return ENOPOLICY; }
++    if ((lookup && a.filter_type != 6 && a.filter_type != 7 && a.filter_type != 50) ||
++        (cross && a.filter_type != 6)) {
++        printf("XCOVER5 M36B: lookup rejected filter=%llu op=%s\n",
++            (unsigned long long)a.filter_type, operation);
++        return ENOPOLICY;
++    }
+     error = copyinstr(a.filter, service, sizeof(service), &length);
+     if (error) { return error; }
+     if (strcmp(service, "org.xcover5.m36.echo") != 0) { return ENOPOLICY; }
+     client = proc_find((pid_t)a.pid);
+-    if (client == PROC_NULL) { return ESRCH; }
++    if (client == PROC_NULL) { printf("XCOVER5 M36B: missing client pid=%llu\n", (unsigned long long)a.pid); return ESRCH; }
+     cred = kauth_cred_proc_ref(client);
+     allowed = kauth_cred_issuser(cred) &&
+         (uint32_t)proc_pidversion(client) == a.pidversion &&
+@@ -1611,10 +1624,14 @@
+         strcmp(parent->p_comm, "m36-probe") == 0;
+     if (parent != PROC_NULL) { proc_rele(parent); }
+     proc_rele(client);
+-    if (!allowed) { return EPERM; }
++    if (!allowed) {
++        printf("XCOVER5 M36B: lookup identity rejected pid=%llu version=%llu\n",
++            (unsigned long long)a.pid, (unsigned long long)a.pidversion);
++        return EPERM;
++    }
+     error = copyout(&decision, a.result, sizeof(decision));
+     if (!error) {
+-        printf("XCOVER5 M36A: scoped Sandbox mach-lookup allowed pid=%llu\n", (unsigned long long)a.pid);
++        printf("XCOVER5 M36B: scoped lookup allowed pid=%llu filter=%llu op=%s\n", (unsigned long long)a.pid, (unsigned long long)a.filter_type, operation);
+     }
+     return error;
+ }
