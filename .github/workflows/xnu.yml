@@ -123,7 +123,7 @@ jobs:
 
       - name: Verify terminal user-abort diagnostics
         run: |
-          python3 -c 'from pathlib import Path; ks=list(Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*")); assert ks; assert all(b"XCOVER5 M29D ABORT" in k.read_bytes() and b"XCOVER5 M29D PC=" in k.read_bytes() for k in ks)'
+          python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks; assert all(b"XCOVER5 M29D ABORT" in k.read_bytes() and b"XCOVER5 M29D PC=" in k.read_bytes() for k in ks)'
 
       - name: Save compiled kernel before image generation
         if: steps.kernel-cache.outputs.cache-hit != 'true'
