@@ -30,7 +30,7 @@
   * Copyright (c) 2000-2022 Apple Inc. All rights reserved.
   */
  
-+#include <arm64/board_config.h>
++#include <pexpert/arm64/board_config.h>
 +#include <os/atomic_private.h>
  #include <kern/bits.h>
  #include <kern/task.h>
