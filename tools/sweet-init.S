@@ -103,21 +103,13 @@ mmc_report:
  bl m19_test
  bl m20_test
  cbz w0, tick /* Do not exec unless the eMMC mount/file proof succeeded. */
- bl m21_test
- bl m22_test
- bl m23_test
- bl m24_test
- bl m25_test
- bl m26_test
+ /* Fast diagnostic path: do not rerun already-proven regression probes. */
+ adr x1, fast_notice
+ adr x2, fast_notice_end
+ sub x2, x2, x1
+ bl write_console
  bl m28_mount
  cbz w0, tick
- bl m28_test
- cbz w0, tick
- bl m29_test
- bl m30_test
- bl m31_test
- bl m32_test
- bl m33_test
  bl m34_test
  cbz w0, tick
  bl m35_handoff
@@ -2981,3 +2973,6 @@ m35_error: .ascii "XCOVER5 M35 PREP FAIL stage="
 m35_error_end:
 m35_errno: .ascii "XCOVER5 M35 errno="
 m35_errno_end:
+
+fast_notice: .ascii "XCOVER5 FAST: skip M21-M33 regression probes; keep storage/cache mount and M34 gate\n"
+fast_notice_end:

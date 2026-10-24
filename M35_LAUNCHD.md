@@ -25,3 +25,7 @@ Photo183617: xpcproxy uid0 rv9 cs0x01000001 (CS_KILLED|CS_VALID), no committed r
 ## M35E exec-stage diagnostics
 
 Video185413: M34 PASS, launchd PID1 load/platform accepted, then no libignition through243s. Add begin/end markers around process-signature, thread-signature and posix_spawn final return-wait clear. Marker prefix M35F distinguishes stage logs from existing LOAD/EXIT and SIGN/PAGE. No scheduling, signature or exec behavior change. Exact stall cause remains unknown.
+
+## M35F fast diagnostic route
+
+Skip M21-M26 and M28inventory/M29-M33 regression executions at boot; retain M18/M19/M20 storage checks, M28 cache mount and M34 success gate before M35. Print explicit FAST notice so skipped probes are not mistaken for new PASS evidence. All probe files and kernel diagnostics remain available and unchanged. This avoids earlier-probe 60second timeout waits and repeated cache logging; it does not solve pre-main stalls in M34/launchd or xpcproxy SIGKILL. PID numbers differ.
