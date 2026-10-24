@@ -105,6 +105,7 @@ mmc_report:
  cbz w0, tick /* Do not exec unless the eMMC mount/file proof succeeded. */
  bl m21_test
  bl m22_test
+ bl m23_test
 
 tick:
 	/* Reap any late child after a timed-out M21; never block PID 1. */
@@ -844,3 +845,129 @@ m22_detail_end:
 m22_exec_error:
  .ascii "XCOVER5 M22 child exec errno="
 m22_exec_error_end:
+
+/* M23: same bounded process harness, separate dynamic image. */
+.p2align 2
+m23_test:
+ sub sp, sp, #96
+ str x30, [sp]
+ mov w28, #51
+ adr x1, m23_start
+ adr x2, m23_start_end
+ sub x2, x2, x1
+ bl write_console
+ mov x16, #2 /* fork */
+ svc #0x80
+ b.cs m23_sysfail
+ cbnz x1, m23_child
+ mov x20, x0 /* exact child PID, never wait for an unrelated process */
+ mov w21, #100 /* at most 100 x 100ms waits */
+ mov w28, #52
+m23_wait:
+ str wzr, [sp, #16]
+ mov x0, x20
+ add x1, sp, #16
+ mov x2, #1 /* WNOHANG */
+ mov x3, #0
+ mov x16, #7 /* wait4 */
+ svc #0x80
+ b.cs m23_wait_error
+ cbz x0, m23_delay
+ cmp x0, x20
+ b.ne m23_bad_status
+ ldr w27, [sp, #16]
+ mov w9, #0x2c00 /* WIFEXITED && WEXITSTATUS == 44 */
+ cmp w27, w9
+ b.ne m23_bad_status
+ adr x1, m23_ok
+ adr x2, m23_ok_end
+ sub x2, x2, x1
+ bl write_console
+ b m23_return
+m23_wait_error:
+ cmp w0, #4 /* EINTR still consumes a bounded retry */
+ b.ne m23_sysfail
+m23_delay:
+ subs w21, w21, #1
+ b.eq m23_timeout
+ stp xzr, xzr, [sp, #32]
+ mov w9, #34464
+ movk w9, #1, lsl #16 /* timeval.tv_usec = 100000 */
+ str w9, [sp, #40]
+ mov x0, #0
+ mov x1, #0
+ mov x2, #0
+ mov x3, #0
+ add x4, sp, #32
+ mov x16, #93
+ svc #0x80
+ b m23_wait
+m23_timeout:
+ mov x0, x20
+ mov x1, #9 /* SIGKILL; the created child only */
+ mov x2, #1
+ mov x16, #37
+ svc #0x80
+ /* The alive loop reaps this child if termination is not immediate. */
+ mov w28, #54
+ mov w27, #0
+ b m23_fail
+m23_bad_status:
+ mov w28, #53
+ ldr w27, [sp, #16]
+ b m23_fail
+m23_sysfail:
+ mov w27, w0
+m23_fail:
+ adr x1, m23_error
+ adr x2, m23_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w28
+ bl m19_hex
+ adr x1, m23_detail
+ adr x2, m23_detail_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+m23_return:
+ ldr x30, [sp]
+ add sp, sp, #96
+ ret
+m23_child:
+ adr x0, m23_path
+ stp x0, xzr, [sp, #48] /* argv = { path, NULL } */
+ str xzr, [sp, #64] /* envp = { NULL } */
+ add x1, sp, #48
+ add x2, sp, #64
+ mov x16, #59 /* execve: success never returns */
+ svc #0x80
+ mov w27, w0
+ adr x1, m23_exec_error
+ adr x2, m23_exec_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+ mov x0, #127
+ mov x16, #1 /* child only: exit */
+ svc #0x80
+ b hang
+m23_path:
+ .asciz "/emmc/sbin/m23-probe"
+m23_start:
+ .ascii "XCOVER5 M23 USER: fork + exec /emmc/sbin/m23-probe\n"
+m23_start_end:
+m23_ok:
+ .ascii "XCOVER5 M23 USER PASS: RX file mapping + child exit 44\n"
+m23_ok_end:
+m23_error:
+ .ascii "XCOVER5 M23 USER FAIL stage="
+m23_error_end:
+m23_detail:
+ .ascii "XCOVER5 M23 errno/status="
+m23_detail_end:
+m23_exec_error:
+ .ascii "XCOVER5 M23 child exec errno="
+m23_exec_error_end:
