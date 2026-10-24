@@ -107,3 +107,23 @@ M35F부터 이미 통과한 회귀 실행을 생략한 빠른 경로를 사용�
 진단은 기존 signing/exec/스토리지 동작을 변경하지 않는다. 섹터별 printf나 새 타이머 스레드는 없다. 원본 사용자 공간 파일, proof와 plist는 그대로 유지한다. 적용 검사와 실제 읽기/스냅샷 함수의 호스트 컴파일 검사를 통과했다. 검사에는 성공, 전송 실패, R1 오류, 범위 밖 요청, 반복 스냅샷, 장치 미준비가 포함된다. 실제 하드웨어 속도 개선을 입증하는 검사는 아니다.
 
 M35I build/package verification: CI40092579110 success, source0d50e212d03fdfa27d548ed7fa9bd84eed0603fc. PERF marker present in actual kernel. AP boot-only/Odin MD5/44MiB partition fit passed. Independent HFS extraction checks passed; all59 catalog entries match M35H. AP SHA256 1f273f6d198c0a633c3d310c1592b643c7c55ed283230ca47633b8451f96ec01. Output: xcover5/artifacts/m35i/AP_M35I_TIMING.tar.md5. Hardware timing result pending; no speedup claim.
+
+
+## M35I 영상211657: 실기기 성공 및 시간 측정
+
+M34 PASS(exit55), M35 JOB PASS(parentPID1), proof 종료0 확인. launchd.ios LOAD는72549ms/42333sectors/io3795ms/errors0, proof LOAD는78063ms/96701sectors/io8748ms/errors0이다. 두 지점 차이는5.514초이고 전송 누적시간 차이는4.953초(약89.8%)다. 전송 시간은 선점을 포함하므로 CPU 점유율로 해석하지 않는다. xpcproxy 개별 PERF 값은 판독한 프레임에서 확보하지 못했다.
+
+이 실행에서는 early-boot flush→spawn이 약4.436초로, 이전459.7초 지연은 재현되지 않았다. 진단 계측이 타이밍에 영향을 줄 수 있으므로 수정으로 해결됐다고 단정하지 않는다. launchd LOAD 이전72.549초 중 누적 전송시간은3.795초다. 따라서 남은 전체 부팅 시간을 줄이려면 launchd 이전 초기화/대기를 먼저 살펴야 한다. 화면에 오래 남은 ifnet/dlil 메시지 자체가 원인임을 입증하지는 않는다. 분석 프레임·원본 영상·수치는 프로젝트 artifacts/m35i/video-211657에 저장했다. 이번 영상 검토에서는 새 펌웨어를 만들지 않았다.
+
+
+## M35J: 현재 포트에 없는 RTC 서비스 대기 제거
+
+IOStartIOKit.cpp의 IOKitInitializeTime은 IORTC 서비스를 최대30초 기다린 뒤 clock_initialize_calendar를 실행한다. 현재 보드 포트와 빌드에 IORTC 제공 드라이버가 없다. 0046은 XCOVER5에만 이 서비스 대기를 생략하며 달력 초기화는 유지한다. BCM2837의 기존 예외와 다른 보드/x86의 동작을 유지한다. 향후 RTC 드라이버를 연결할 때 이 예외도 재검토해야 한다.
+
+전체72.549초의 원인이 모두 RTC라는 주장은 하지 않는다. 루트 IOBSD 준비에도 최대30초 대기가 있지만 실제 timeout 증거를 확보하지 못했으므로 변경하지 않았다. dlil/ifnet의 준비 predicate, lock, wakeup을 검사했으며 대기 제거 근거를 찾지 못했다. 오래 남은 영상에는 이 스레드들이 Proceeding에 도달한 메시지도 있다.
+
+패치 적용 검사와 추출한 실제 IOKitInitializeTime 함수의 호스트 검사 통과: XCover5/BCM2837/기타ARM/x86 네 구성에서 기대한 서비스 대기와 달력 초기화 횟수를 확인했다. 호스트의 내장 x86_64 매크로는 시험 함수에서만 TEST_X86_64로 치환해 ARM 분기를 검사했다. 전체 커널 CI40094554593 진행 중.
+
+다음 실기기 판정: RTC skip 메시지, launchd/proof PERF 시간, M34 PASS, M35 JOB PASS와 종료0. M35I launchd72549ms/proof78063ms를 비교 기준으로 삼되 단일 부팅의 차이를 반복 안정성으로 해석하지 않는다. 이후 최소 bootstrap 이름 등록/조회/요청-응답을 구현한다.
+
+M35J verification complete: CI40094554593 SUCCESS (a72a508fcc7b749ae3a94f49e88a4b14dba5b13f). Actual kernel RTC skip/PERF markers verified. Boot-only archive, Odin MD5, partition fit, unchanged probes/init/proof/shim/DTB, independent HFS extraction and accounts PASS. AP: xcover5/artifacts/m35j/AP_M35J_RTC_WAIT.tar.md5; SHA256 d30bd6653b4fe17db9d5be9d91a3b3d52b648eca22dee638370d1fff43211171. Hardware speedup remains pending.
