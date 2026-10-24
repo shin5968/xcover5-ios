@@ -4,4 +4,8 @@ After M34 success, own PID1 updates only md0 RAM HFS root to writable, checks an
 
 Image includes native dyld symlink, locally injected original launchd/xpcproxy, temporary state directories and one RunAtLoad proof job. No stock aggregate job list. No Apple bytes in CI or git. Proof requires parentPID1 and ownPID>1, prints M35 JOB PASS, then exits0. This establishes only this job path, not bootstrap lookup, XPC services, SpringBoard or stability.
 
-Stages351 remount;352 write/close/unlink;353 console;354 exec. No fallback after PID1 replacement. 11 mocked handoff cases,3 proof identity cases,14 M34 parent regressions and placeholder/hash/job checks pass. Hardware pending.
+Stages351 remount;352 write/close/unlink;353 console;354 exec. No fallback after PID1 replacement. 11 mocked handoff cases,3 proof identity cases,14 M34 parent regressions and placeholder/hash/job checks pass. Hardware video161303: Apple launchd PID1/libignition reached, then username mobile resolution failed and PID1 exited; no JOB PASS. M30 separately timed out before main.
+
+## M35A account files
+
+Add owned locked-password root/mobile/nobody records, /etc -> private/etc, passwd/group0644 and master.passwd0600, mobile home501:501 mode0700. Kernel, init, probes and Apple binaries remain identical to M35. This targets the observed missing mobile identity only; runtime lookup and proof job require hardware verification. M30 intermittent timeout remains unresolved.
