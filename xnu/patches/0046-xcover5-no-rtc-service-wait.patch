@@ -1,0 +1,26 @@
+--- a/iokit/Kernel/IOStartIOKit.cpp
++++ b/iokit/Kernel/IOStartIOKit.cpp
+@@ -47,6 +47,9 @@
+ #include <IOKit/IOInterruptAccountingPrivate.h>
+ #include <IOKit/assert.h>
+ #include <sys/conf.h>
++#if defined(__arm64__)
++#include <pexpert/arm64/board_config.h>
++#endif
+ 
+ #include "IOKitKernelInternal.h"
+ 
+@@ -77,8 +80,11 @@
+ 	t.tv_sec = 30;
+ 	t.tv_nsec = 0;
+ 
+-// RTC is not present on this target
+-#ifndef BCM2837
++// These bring-up targets do not provide an IORTC service.
++#if defined(XCOVER5)
++	IOLog("XCOVER5: no IORTC driver; skipping RTC service wait\n");
++#endif
++#if !defined(BCM2837) && !defined(XCOVER5)
+ 	IOService::waitForService(
+ 		IOService::resourceMatching("IORTC"), &t );
+ #endif
