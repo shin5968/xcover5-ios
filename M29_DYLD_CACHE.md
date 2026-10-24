@@ -37,3 +37,8 @@ Device M29D: entry0x1009f11b0, PC0x100a37238, LR0x100a37230, FAR0x48, ESR0x92000
 The own M29 probe omitted LC_DYLD_INFO_ONLY and LC_DYSYMTAB, selecting the classic-relocation fallback. M29E explicitly describes empty rebase/bind/export streams (LC_DYLD_INFO_ONLY), an empty LC_SYMTAB with one-byte NUL string table, and empty LC_DYSYMTAB. The 16-byte linkedit prefix is signed and the CodeDirectory is regenerated, including its new partial page. This is opt-in only for M29; legacy M22/M27 binaries remain byte-identical. M29 executable instructions and PC-relative data remain byte-identical. Apple dyld/cache bytes and all kernel policies are unchanged.
 
 `test_m29_metadata.py` verifies legacy reproduction, unchanged code, load-command bounds, empty streams/symbol ranges, linkedit containment and every CodeDirectory page digest. Device success remains pending; this fixes the identified malformed metadata, not a claim of completed libSystem/main or iOS UI. Reuse installed root-owned userdata cache. Save all new outputs under the project xcover5 directory per user preference.
+
+
+## M29E hardware result (2026-10-24 13:34)
+
+User photos 133438/133440/133442 confirm M29 CHILD PASS (Apple dyld main + shared cache + eMMC file read) and USER PASS, child exit50. The not-in-trust-cache diagnostics remain but are not fatal for this path. This establishes the no-import probe, not explicit libSystem calls or iOS UI.
