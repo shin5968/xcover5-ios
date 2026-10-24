@@ -13,3 +13,7 @@ Add owned locked-password root/mobile/nobody records, /etc -> private/etc, passw
 ## M35B persistent HFS ownership
 
 Video174106: launchd passed account initialization and rejected proof plist with error122. Raw catalog confirms plist, ancestors and executable uid501/gid20 despite sudo staging. Enable owners when mounting CI image, assign all paths root0:0 after staging, retain mobile home501:501, and explicitly set job0644. Validate raw catalog ownership for every file/folder and launchd path modes after unmount. Prior host mode-only checks missed ownership; this check reads persisted metadata. Runtime JOB PASS remains pending.
+
+## M35C xpcproxy exit diagnostics
+
+Video175340 confirms job registration and PID17 xpcproxy SIGKILL in user/501 domain, no proof PASS. Add SWEET kernel logs for executable vnode name/load result/uid and committed exit namespace/code/flags/csflags for early PIDs1..64. Execution, signature and signal policy unchanged. Userspace image staging unchanged from M35B. This is a diagnostic build; root cause and JOB PASS remain pending.
