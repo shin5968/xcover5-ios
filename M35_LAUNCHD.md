@@ -9,3 +9,7 @@ Stages351 remount;352 write/close/unlink;353 console;354 exec. No fallback after
 ## M35A account files
 
 Add owned locked-password root/mobile/nobody records, /etc -> private/etc, passwd/group0644 and master.passwd0600, mobile home501:501 mode0700. Kernel, init, probes and Apple binaries remain identical to M35. This targets the observed missing mobile identity only; runtime lookup and proof job require hardware verification. M30 intermittent timeout remains unresolved.
+
+## M35B persistent HFS ownership
+
+Video174106: launchd passed account initialization and rejected proof plist with error122. Raw catalog confirms plist, ancestors and executable uid501/gid20 despite sudo staging. Enable owners when mounting CI image, assign all paths root0:0 after staging, retain mobile home501:501, and explicitly set job0644. Validate raw catalog ownership for every file/folder and launchd path modes after unmount. Prior host mode-only checks missed ownership; this check reads persisted metadata. Runtime JOB PASS remains pending.

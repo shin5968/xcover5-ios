@@ -27,7 +27,7 @@ WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 hdiutil create -size 16m -layout NONE -fs 'Case-sensitive HFS+' -volname XCOVER5TEST "$WORK/root.dmg" >/dev/null
-hdiutil attach -nobrowse -mountpoint "$WORK/mnt" "$WORK/root.dmg" >/dev/null
+hdiutil attach -owners on -nobrowse -mountpoint "$WORK/mnt" "$WORK/root.dmg" >/dev/null
 sudo mkdir -p "$WORK/mnt/sbin" "$WORK/mnt/dev" "$WORK/mnt/private/var" "$WORK/mnt/emmc"
 sudo cp "$INIT" "$WORK/mnt/sbin/launchd"
 sudo chmod 755 "$WORK/mnt/sbin/launchd"
@@ -71,6 +71,10 @@ sudo cp "$LAUNCHDPROOF" "$WORK/mnt/sbin/m35-proof"
 sudo chmod 755 "$WORK/mnt/sbin/m35-proof"
 printf 'XCOVER5 M20 eMMC file read verified\n' | sudo tee "$WORK/mnt/m20-proof.txt" >/dev/null
 echo 'XCOVER5 HFS root test' | sudo tee "$WORK/mnt/root-test.txt" >/dev/null
+# Persist actual root ownership; host images otherwise inherit runner uid501.
+sudo chown -hR 0:0 "$WORK/mnt"
+sudo chown 501:501 "$WORK/mnt/private/var/mobile"
+sudo chmod 644 "$WORK/mnt/System/Library/LaunchDaemons/org.xcover5.m35.proof.plist"
 sync
 hdiutil detach "$WORK/mnt" >/dev/null
 hdiutil convert "$WORK/root.dmg" -format UDTO -o "$WORK/raw" >/dev/null
@@ -84,3 +88,5 @@ block,count=struct.unpack_from('>II',h,40)
 assert block*count<=16*1024*1024
 print('Raw HFS root verified:',sys.argv[1],block,count)
 PY
+
+python3 tools/check_hfs_owners.py "$OUT"
