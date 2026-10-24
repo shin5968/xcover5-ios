@@ -1,0 +1,69 @@
+--- /dev/null
++++ b/bsd/kern/sweet_exec_diag.c
+@@ -0,0 +1,46 @@
++/* SWEET-only diagnostic snapshots. Never change signing or exec decisions. */
++#include <sys/types.h>
++#include <sys/proc.h>
++#include <sys/systm.h>
++#include <kern/locks.h>
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++struct sweet_diag_event { unsigned int kind; uint64_t a, b, c; char file[32]; };
++struct sweet_diag_slot { int pid; unsigned int next, count; struct sweet_diag_event events[4]; };
++static struct sweet_diag_slot sweet_diag_slots[64];
++static LCK_GRP_DECLARE(sweet_diag_grp, "sweet_exec_diag");
++static LCK_SPIN_DECLARE(sweet_diag_lock, &sweet_diag_grp);
++void sweet_exec_diag_record(proc_t p, unsigned int kind, uint64_t a, uint64_t b, uint64_t c, const char *file);
++void sweet_exec_diag_dump(proc_t p);
++void
++sweet_exec_diag_record(proc_t p, unsigned int kind, uint64_t a, uint64_t b, uint64_t c, const char *file)
++{
++ int pid = proc_getpid(p);
++ if (pid < 1 || pid > 63) return;
++ struct sweet_diag_event e = { .kind = kind, .a = a, .b = b, .c = c };
++ if (file) strlcpy(e.file, file, sizeof(e.file));
++ lck_spin_lock(&sweet_diag_lock);
++ struct sweet_diag_slot *slot = &sweet_diag_slots[pid];
++ /* A new load starts a fresh image history, including PID reuse. */
++ if (kind == 1 || slot->pid != pid) { slot->next = 0; slot->count = 0; slot->pid = pid; }
++ slot->events[slot->next] = e;
++ slot->next = (slot->next + 1) % 4;
++ if (slot->count < 4) slot->count++;
++ lck_spin_unlock(&sweet_diag_lock);
++}
++void
++sweet_exec_diag_dump(proc_t p)
++{
++ int pid = proc_getpid(p);
++ if (pid < 1 || pid > 63) return;
++ struct sweet_diag_slot copy;
++ lck_spin_lock(&sweet_diag_lock);
++ copy = sweet_diag_slots[pid];
++ lck_spin_unlock(&sweet_diag_lock);
++ printf("XCOVER5 M35G SNAP pid=%d count=%u [1=LOAD 2=SIGN 3=PAGE 4=MARK]\n", pid, copy.count);
++ for (unsigned int i = 0; i < copy.count; i++) {
++  struct sweet_diag_event *e = &copy.events[(copy.next + 4 - copy.count + i) % 4];
++  printf("XCOVER5 M35G EVENT=%u file=%s a=%llx b=%llx c=%llx\n", e->kind, e->file,
++      (unsigned long long)e->a, (unsigned long long)e->b, (unsigned long long)e->c);
++ }
++}
++#endif
+--- a/bsd/kern/kern_proc.c
++++ b/bsd/kern/kern_proc.c
+@@ -3235,6 +3235,10 @@
+ 			if ((proc_getcsflags(pt) & CS_KILL) == CS_KILL) {
+ 				proc_csflags_set(pt, CS_KILLED);
+ 				proc_unlock(pt);
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++				extern void sweet_exec_diag_record(proc_t, unsigned int, uint64_t, uint64_t, uint64_t, const char *);
++				sweet_exec_diag_record(pt, 4, proc_selfpid(), proc_getcsflags(pt), ops, pt->p_comm);
++#endif
+ 				if (cs_debug) {
+ 					printf("CODE SIGNING: marked invalid by pid %d: "
+ 					    "p=%d[%s] honoring CS_KILL, final status 0x%x\n",
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -383,3 +383,4 @@
+ bsd/kern/kern_csr.c			optional config_csr
+ bsd/kern/kern_debug.c			standard
++bsd/kern/sweet_exec_diag.c		standard
+ bsd/kern/kern_symfile.c			standard

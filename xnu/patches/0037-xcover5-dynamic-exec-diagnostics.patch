@@ -46,11 +46,13 @@
  		if (result->threadstate) {
 --- a/bsd/kern/kern_exec.c
 +++ b/bsd/kern/kern_exec.c
-@@ -1315,6 +1315,15 @@
+@@ -1315,6 +1315,17 @@
  	 * Actually load the image file we previously decided to load.
  	 */
  	lret = load_machfile(imgp, mach_header, thread, &map, &load_result);
 +#if defined(ARM64_BOARD_CONFIG_SWEET)
++	extern void sweet_exec_diag_record(proc_t, unsigned int, uint64_t, uint64_t, uint64_t, const char *);
++	sweet_exec_diag_record(p, 1, lret, proc_getuid(p), 0, imgp->ip_vp->v_name);
 +	printf("XCOVER5 M35D LOAD pid=%d uid=%u file=%s ret=%d\n",
 +	    proc_getpid(p), proc_getuid(p), imgp->ip_vp->v_name, lret);
 +#endif
@@ -82,12 +84,16 @@
  				signature_failure_reason = os_reason_create(OS_REASON_EXEC,
  				    EXEC_EXIT_REASON_WRONG_PLATFORM);
  				error = EACCES;
-@@ -7558,6 +7569,13 @@
+@@ -7558,6 +7569,17 @@
  			    "'%s' with cdhash %s\n", p->p_name, cdhash_string);
  		}
  	} else {
 +#if defined(SWEET)
 +		printf("XCOVER5 M22D: signature failure errno=%d pid=%d unexpected=%d\n", error, proc_getpid(p), unexpected_failure);
++		extern void sweet_exec_diag_record(proc_t, unsigned int, uint64_t, uint64_t, uint64_t, const char *);
++		sweet_exec_diag_record(p, 2, error,
++		    signature_failure_reason ? ((uint64_t)signature_failure_reason->osr_namespace << 32) | signature_failure_reason->osr_code : 0,
++		    ((unsigned int)spawn << 1) | (unsigned int)vfexec, imgp->ip_vp->v_name);
 +		printf("XCOVER5 M35E SIGN pid=%d name=%s file=%s errno=%d spawn=%d vfexec=%d reason=%u code=%llx\n",
 +		    proc_getpid(p), p->p_name, imgp->ip_vp->v_name, error, spawn, vfexec,
 +		    signature_failure_reason ? signature_failure_reason->osr_namespace : 0,

@@ -29,3 +29,7 @@ Video185413: M34 PASS, launchd PID1 load/platform accepted, then no libignition 
 ## M35F fast diagnostic route
 
 Skip M21-M26 and M28inventory/M29-M33 regression executions at boot; retain M18/M19/M20 storage checks, M28 cache mount and M34 success gate before M35. Print explicit FAST notice so skipped probes are not mistaken for new PASS evidence. All probe files and kernel diagnostics remain available and unchanged. This avoids earlier-probe 60second timeout waits and repeated cache logging; it does not solve pre-main stalls in M34/launchd or xpcproxy SIGKILL. PID numbers differ.
+
+## M35G retained failure snapshots
+
+Bounded four-event slots for early PID1..63 retain LOAD/SIGN/PAGE/csopsMARKINVALID events. A new load resets history. Copy under spinlock and print outside it on CS_KILLED exit, alongside final EXIT marker. Records are diagnostic only; no decision changes. Fixed filename32bytes and no user-memory dereference/allocation. PID reuse starts fresh at next load; the bounded early-PID scope is explicit. Fast route retained.

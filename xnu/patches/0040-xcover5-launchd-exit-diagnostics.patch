@@ -1,6 +1,6 @@
 --- a/bsd/kern/kern_exit.c
 +++ b/bsd/kern/kern_exit.c
-@@ -1844,6 +1844,16 @@
+@@ -1844,6 +1844,20 @@
  	struct rusage_superset *rup;
  	int kr = 0;
  	int create_corpse = FALSE;
@@ -12,6 +12,10 @@
 +		    p->p_exit_reason ? p->p_exit_reason->osr_namespace : 0,
 +		    p->p_exit_reason ? (unsigned long long)p->p_exit_reason->osr_code : 0ULL,
 +		    p->p_exit_reason ? (unsigned long long)p->p_exit_reason->osr_flags : 0ULL);
++	}
++	if (proc_getcsflags(p) & CS_KILLED) {
++		extern void sweet_exec_diag_dump(proc_t);
++		sweet_exec_diag_dump(p);
 +	}
 +#endif
  

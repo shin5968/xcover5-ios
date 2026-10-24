@@ -1,10 +1,13 @@
 --- a/bsd/kern/kern_cs.c
 +++ b/bsd/kern/kern_cs.c
-@@ -253,6 +253,12 @@
+@@ -253,6 +253,15 @@
  	uint64_t flags;
  
  	p = current_proc();
 +#if defined(ARM64_BOARD_CONFIG_SWEET)
++	extern void sweet_exec_diag_record(proc_t, unsigned int, uint64_t, uint64_t, uint64_t, const char *);
++	sweet_exec_diag_record(p, 3, vaddr, proc_getcsflags(p),
++	    ((unsigned int)cs_force_kill << 1) | (unsigned int)cs_force_hard, p->p_comm);
 +	printf("XCOVER5 M35E PAGE pid=%d name=%s va=%llx cs=%x force_kill=%d force_hard=%d\n",
 +	    proc_getpid(p), p->p_comm, (unsigned long long)vaddr,
 +	    proc_getcsflags(p), cs_force_kill, cs_force_hard);
