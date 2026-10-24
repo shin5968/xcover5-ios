@@ -2068,6 +2068,17 @@ m30_cache_env:
 m31_test:
  sub sp, sp, #512
  str x30, [sp]
+ mov x20, #0
+ mov w21, #600
+ mov x22, #0 /* failed select calls */
+ mov x23, #0 /* last select errno */
+ stp xzr, xzr, [sp, #96]
+ mov x0, #0
+ mov x1, #0
+ add x2, sp, #96
+ mov x16, #116 /* gettimeofday(NULL,NULL,&absolute_ticks) */
+ svc #0x80
+ csel x24, x0, xzr, cs /* timestamp errno, zero on success */
  mov w28, #221
  adr x1, m31_start
  adr x2, m31_start_end
@@ -2118,6 +2129,9 @@ m31_delay:
  add x4, sp, #32
  mov x16, #93
  svc #0x80
+ b.cc m31_wait
+ add x22, x22, #1
+ mov x23, x0
  b m31_wait
 m31_timeout:
  mov x0, x20
@@ -2125,6 +2139,13 @@ m31_timeout:
  mov x2, #1
  mov x16, #37
  svc #0x80
+ csel x25, x0, xzr, cs
+ adr x1, m31_kill_error
+ adr x2, m31_kill_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w25
+ bl m19_hex
  /* The alive loop reaps this child if termination is not immediate. */
  mov w28, #224
  mov w27, #0
@@ -2149,6 +2170,7 @@ m31_fail:
  mov w0, w27
  bl m19_hex
 m31_return:
+ bl m31_diagnostics
  ldr x30, [sp]
  add sp, sp, #512
  ret
@@ -2184,7 +2206,10 @@ m31_zero_spawn:
  adr x1, m31_path
  stp x1, xzr, [sp, #48]
  adr x9, m31_cache_env
- stp x9, xzr, [sp, #64]
+ adr x10, m31_print_libraries
+ stp x9, x10, [sp, #64]
+ adr x9, m31_print_initializers
+ stp x9, xzr, [sp, #80]
  mov x0, #0 /* pid pointer unused for SETEXEC */
  add x2, sp, #384
  add x3, sp, #48
@@ -2223,6 +2248,119 @@ m31_exec_error_end:
 
 m31_cache_env:
  .asciz "DYLD_SHARED_CACHE_DIR=/System/Library/Caches/com.apple.dyld"
+
+
+.p2align 2
+m31_diagnostics:
+ str x30, [sp, #120]
+ str xzr, [sp, #112]
+ mov x0, #0
+ mov x1, #0
+ add x2, sp, #112
+ mov x16, #116
+ svc #0x80
+ csel x26, x0, xzr, cs
+ adr x1, m31_d_pid
+ adr x2, m31_d_pid_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w20
+ bl m19_hex
+ adr x1, m31_d_retries_left
+ adr x2, m31_d_retries_left_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w21
+ bl m19_hex
+ adr x1, m31_d_select_errors
+ adr x2, m31_d_select_errors_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w22
+ bl m19_hex
+ adr x1, m31_d_last_select_errno
+ adr x2, m31_d_last_select_errno_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w23
+ bl m19_hex
+ adr x1, m31_d_start_clock_errno
+ adr x2, m31_d_start_clock_errno_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w24
+ bl m19_hex
+ adr x1, m31_d_end_clock_errno
+ adr x2, m31_d_end_clock_errno_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w26
+ bl m19_hex
+ adr x1, m31_d_start_ticks_hi
+ adr x2, m31_d_start_ticks_hi_end
+ sub x2, x2, x1
+ bl write_console
+ ldr x0, [sp, #96]
+ lsr x0, x0, #32
+ bl m19_hex
+ adr x1, m31_d_start_ticks_lo
+ adr x2, m31_d_start_ticks_lo_end
+ sub x2, x2, x1
+ bl write_console
+ ldr w0, [sp, #96]
+ bl m19_hex
+ adr x1, m31_d_end_ticks_hi
+ adr x2, m31_d_end_ticks_hi_end
+ sub x2, x2, x1
+ bl write_console
+ ldr x0, [sp, #112]
+ lsr x0, x0, #32
+ bl m19_hex
+ adr x1, m31_d_end_ticks_lo
+ adr x2, m31_d_end_ticks_lo_end
+ sub x2, x2, x1
+ bl write_console
+ ldr w0, [sp, #112]
+ bl m19_hex
+ ldr x30, [sp, #120]
+ ret
+m31_d_pid:
+ .ascii "XCOVER5 M31D pid="
+m31_d_pid_end:
+m31_d_retries_left:
+ .ascii "XCOVER5 M31D retries_left="
+m31_d_retries_left_end:
+m31_d_select_errors:
+ .ascii "XCOVER5 M31D select_errors="
+m31_d_select_errors_end:
+m31_d_last_select_errno:
+ .ascii "XCOVER5 M31D last_select_errno="
+m31_d_last_select_errno_end:
+m31_d_start_clock_errno:
+ .ascii "XCOVER5 M31D start_clock_errno="
+m31_d_start_clock_errno_end:
+m31_d_end_clock_errno:
+ .ascii "XCOVER5 M31D end_clock_errno="
+m31_d_end_clock_errno_end:
+m31_d_start_ticks_hi:
+ .ascii "XCOVER5 M31D start_ticks_hi="
+m31_d_start_ticks_hi_end:
+m31_d_start_ticks_lo:
+ .ascii "XCOVER5 M31D start_ticks_lo="
+m31_d_start_ticks_lo_end:
+m31_d_end_ticks_hi:
+ .ascii "XCOVER5 M31D end_ticks_hi="
+m31_d_end_ticks_hi_end:
+m31_d_end_ticks_lo:
+ .ascii "XCOVER5 M31D end_ticks_lo="
+m31_d_end_ticks_lo_end:
+m31_kill_error:
+ .ascii "XCOVER5 M31D timeout kill errno="
+m31_kill_error_end:
+m31_print_libraries:
+ .asciz "DYLD_PRINT_LIBRARIES=1"
+m31_print_initializers:
+ .asciz "DYLD_PRINT_INITIALIZERS=1"
 
 /* M32: actual Apple dyld against installed iOS cache. */
 .p2align 2

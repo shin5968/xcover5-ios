@@ -34,3 +34,6 @@ assumed by the device test, and a pass does not prove contention occurred.
 Hardware M32 result pending. No kernel or Apple runtime modifications.
 
 Outputs: xcover5/artifacts/m32, boot-only AP. Keep existing userdata cache.
+
+## Hardware result (2026-10-24)
+Photo 143016 confirms M32 CHILD/USER PASS: two workers, mutex counter 2048, joins, destroy, exit 53. The same run shows M31 timeout stage 224 before a visible main-entry marker. M31D investigates that intermittent failure before adding another milestone. A successful counter test does not prove blocking contention occurred.
