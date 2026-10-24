@@ -21,3 +21,11 @@ Fixed raw image SHA256: `0c170b631be57a45d47c32239e7ce0614bdb7dc998c12d419c5055c
 The template builder now enables mount ownership, explicitly assigns root ownership, and checks both mounted stat results and raw on-disk catalog records. The macOS template creation path requires a subsequent macOS run; the local repair uses the existing verified image. No kernel trust/ownership checks are weakened. No Apple binary contents change.
 
 Local output: `AP_M29B_ROOT_CACHE_ERASE_USERDATA.tar.md5`, containing only the unchanged M29 `boot.img` and corrected sparse-LZ4 `userdata.img.lz4`. This overwrites Android userdata when manually flashed. No PIT or repartition operation. Reusing the previous boot-only archive cannot fix the installed cache's ownership. Hardware validation is pending: confirm the uid501 rejection disappears, then capture any subsequent error or M29 CHILD/USER PASS (exit50). This repair does not imply iOS UI boot completion.
+
+## M29D: terminal user-abort diagnostics
+
+After the M29B ownership repair, the device reaches subcache42 without the uid501 error, then M29 exits with wait status0x0b (SIGSEGV). This does not prove successful cache mapping or main entry. The remaining not-in-trust-cache messages alone do not identify the crash.
+
+Patch0039 adds SWEET-only logging in handle_user_abort after recoverable VM faults have returned and immediately before existing exception delivery. It records PID, ESR, fault status/protection, Mach error, PC, FAR, LR, SP, FP, CPSR and X0-X7. It reads saved registers only, without reading user memory, changing state, retrying the fault, or weakening code-signing/ownership checks. Alignment and other exception paths outside this handler are not universally covered.
+
+This diagnostic uses the unchanged M29 userspace/root image and the installed root-owned cache. The boot-only AP must contain exactly boot.img; do not rewrite userdata. Hardware evidence required: the M29D ABORT/PC/LR lines and subsequent status. It is a diagnostic build, not a SIGSEGV fix or a new iOS execution milestone.

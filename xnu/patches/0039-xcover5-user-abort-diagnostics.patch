@@ -1,0 +1,38 @@
+--- a/osfmk/arm64/sleh.c
++++ b/osfmk/arm64/sleh.c
+@@ -62,6 +62,9 @@
+ #include <vm/vm_kern.h>
+ 
+ #include <sys/errno.h>
++#if defined(SWEET)
++#include <sys/proc.h>
++#endif
+ #include <sys/kdebug.h>
+ #include <kperf/kperf.h>
+ 
+@@ -1475,6 +1478,25 @@
+ 		codes[0] = KERN_FAILURE;
+ 	}
+ 
++#if defined(SWEET)
++	/* Terminal EL0 abort only; never dereference faulting user memory. */
++	printf("XCOVER5 M29D ABORT pid=%d esr=%08x fsc=%x prot=%x code=%llx\n",
++	    proc_selfpid(), esr, (unsigned int)fault_code, (unsigned int)fault_type,
++	    (unsigned long long)codes[0]);
++	printf("XCOVER5 M29D PC=%016llx FAR=%016llx\n",
++	    (unsigned long long)get_saved_state_pc(state), (unsigned long long)fault_addr);
++	printf("XCOVER5 M29D LR=%016llx SP=%016llx\n",
++	    (unsigned long long)get_saved_state_lr(state), (unsigned long long)get_saved_state_sp(state));
++	if (is_saved_state64(state)) {
++		printf("XCOVER5 M29D FP=%016llx CPSR=%08x\n",
++		    (unsigned long long)saved_state64(state)->fp, get_saved_state_cpsr(state));
++		for (unsigned int i = 0; i < 8; i += 2) {
++			printf("XCOVER5 M29D X%u=%016llx X%u=%016llx\n", i,
++			    (unsigned long long)saved_state64(state)->x[i], i + 1,
++			    (unsigned long long)saved_state64(state)->x[i + 1]);
++		}
++	}
++#endif
+ 	codes[1] = fault_addr;
+ #if __has_feature(ptrauth_calls)
+ 	bool is_data_abort = (ESR_EC(esr) == ESR_EC_DABORT_EL0);
