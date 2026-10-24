@@ -47,3 +47,5 @@ M31D changes only the PID1 harness. M31 and all other probe binaries stay unchan
 The parent records raw monotonic absolute ticks through XNU syscall 116's third argument, with both clock call errors, PID, retries remaining, select error count/last errno and timeout kill error. Each tick value is printed as separate hexadecimal high and low 32-bit words. Clock errors invalidate their timestamp. The existing 600-attempt wait behavior remains: this diagnostic does not claim a fixed elapsed-time deadline or a hang fix. The live init loop still reaps late children.
 
 Local test_m31_diagnostics.py executes assembled parent instructions using mocked syscalls across 17 cases, including clock/select/kill errors, exact-PID wait status, SETEXEC environment and child setup failures. This is not a real dyld/scheduler test. Boot-only artifact target: xcover5/artifacts/m31d. Preserve installed userdata cache.
+
+Video144227 confirms M31/M32 PASS with zero select/clock errors; user subsequently reports three further repeat boots passed. Original timeout cause remains unknown.
