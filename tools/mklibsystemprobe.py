@@ -14,12 +14,13 @@ from mkappleprobe import LOADER
 CODE_OFF = 2048
 IMPORTS = (b'_getpid', b'_strlen', b'_memcmp', b'_read', b'_write')
 
-def build_code(code, start=0):
+def build_code(code, start=0, imports=IMPORTS):
+    assert len(imports) == 5 and len(set(imports)) == 5
     assert start == 0, 'assembly computes DATA relative to _start'
     assert CODE_OFF + len(code) <= m.SEG
     # ordinal 1, pointer type, __DATA (segment index 2), offset zero.
     bind = bytearray(b'\x11\x51\x72\x00')
-    for name in IMPORTS:
+    for name in imports:
         bind += b'\x40' + name + b'\x00\x90'  # symbol, DO_BIND (advance 8)
     bind += b'\x00'
     linkoff = 2*m.SEG
@@ -27,7 +28,7 @@ def build_code(code, start=0):
     link += bytes((-len(link)) % 8)
     symoff = linkoff + len(link)
     strings = bytearray(b'\0')
-    for name in IMPORTS:
+    for name in imports:
         link += struct.pack('<IBBHQ', len(strings), 1, 0, 0x100, 0)
         strings += name + b'\0'
     stroff = linkoff + len(link)
@@ -47,8 +48,8 @@ def build_code(code, start=0):
     dylib = struct.pack('<6I', 0xc, libsize, 24, 0, 0x10000, 0x10000)+lib
     dylib += bytes(libsize-len(dylib))
     dysym = [0]*18
-    dysym[5] = len(IMPORTS)  # iundefsym=0, nundefsym=5
-    dysym[12:14] = [indirect, len(IMPORTS)]
+    dysym[5] = len(imports)  # iundefsym=0, nundefsym=5
+    dysym[12:14] = [indirect, len(imports)]
     cmds = [m.segment('__PAGEZERO', 0, m.BASE, 0, 0, 0),
             m.segment('__TEXT', m.BASE, m.SEG, 0, m.SEG, 5, [text]),
             m.segment('__DATA', m.BASE+m.SEG, m.SEG, m.SEG, m.SEG, 3, [pointers]),
@@ -56,7 +57,7 @@ def build_code(code, start=0):
             path_command(0xe, LOADER), struct.pack('<IIQQ', 0x80000028, 24, CODE_OFF, 0),
             dylib,
             struct.pack('<12I', 0x80000022, 48, 0, 0, linkoff, len(bind), 0, 0, 0, 0, 0, 0),
-            struct.pack('<6I', 2, 24, symoff, len(IMPORTS), stroff, len(strings)),
+            struct.pack('<6I', 2, 24, symoff, len(imports), stroff, len(strings)),
             struct.pack('<20I', 0xb, 80, *dysym),
             struct.pack('<6I', 0x32, 24, 2, 0x100000, 0x100000, 0),
             struct.pack('<4I', 0x1d, 16, sigoff, sigsize)]

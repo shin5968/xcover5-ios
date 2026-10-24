@@ -39,3 +39,7 @@ Package only boot.img, retain the root-owned userdata cache already installed
 for M29E, and save outputs under xcover5/artifacts/m30. No kernel policy or
 Apple runtime changes. This is a library-call milestone, not launchd,
 SpringBoard or a complete iOS app environment.
+
+## Hardware result 2026-10-24 13:55
+
+Photos 135503..135508 confirm M29 still passes and M30 CHILD PASS plus USER PASS exit51. Explicit original libSystem imports getpid/strlen/memcmp/read/write completed successfully. This does not establish malloc/pthread or iOS UI yet.

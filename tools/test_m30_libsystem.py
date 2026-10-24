@@ -50,7 +50,7 @@ while i < len(stream):
     elif op == 0x90:
         binds.append((ordinal,typ,segment,offset,symbol)); offset += 8
     else: raise AssertionError(hex(op))
-names = [b'_getpid',b'_strlen',b'_memcmp',b'_read',b'_write']
+names = ([b'_malloc',b'_free',b'_pthread_create',b'_pthread_join',b'_pthread_self'] if '--thread' in sys.argv else [b'_getpid',b'_strlen',b'_memcmp',b'_read',b'_write'])
 assert binds == [(1,1,2,8*j,n) for j,n in enumerate(names)]
 so, ns, st, ss = struct.unpack_from('<4I', commands[2], 8)
 assert ns == 5

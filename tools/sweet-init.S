@@ -115,6 +115,7 @@ mmc_report:
  cbz w0, tick
  bl m29_test
  bl m30_test
+ bl m31_test
 
 tick:
 	/* Reap any late child after a timed-out M21; never block PID 1. */
@@ -2059,4 +2060,165 @@ m30_exec_error:
 m30_exec_error_end:
 
 m30_cache_env:
+ .asciz "DYLD_SHARED_CACHE_DIR=/System/Library/Caches/com.apple.dyld"
+
+/* M31: actual Apple dyld against installed iOS cache. */
+.p2align 2
+m31_test:
+ sub sp, sp, #512
+ str x30, [sp]
+ mov w28, #221
+ adr x1, m31_start
+ adr x2, m31_start_end
+ sub x2, x2, x1
+ bl write_console
+ mov x16, #2 /* fork */
+ svc #0x80
+ b.cs m31_sysfail
+ cbnz x1, m31_child
+ mov x20, x0 /* exact child PID, never wait for an unrelated process */
+ mov w21, #600 /* at most 600 x 100ms waits */
+ mov w28, #222
+m31_wait:
+ str wzr, [sp, #16]
+ mov x0, x20
+ add x1, sp, #16
+ mov x2, #1 /* WNOHANG */
+ mov x3, #0
+ mov x16, #7 /* wait4 */
+ svc #0x80
+ b.cs m31_wait_error
+ cbz x0, m31_delay
+ cmp x0, x20
+ b.ne m31_bad_status
+ ldr w27, [sp, #16]
+ mov w9, #0x3400 /* WIFEXITED && WEXITSTATUS == 52 */
+ cmp w27, w9
+ b.ne m31_bad_status
+ adr x1, m31_ok
+ adr x2, m31_ok_end
+ sub x2, x2, x1
+ bl write_console
+ b m31_return
+m31_wait_error:
+ cmp w0, #4 /* EINTR still consumes a bounded retry */
+ b.ne m31_sysfail
+m31_delay:
+ subs w21, w21, #1
+ b.eq m31_timeout
+ stp xzr, xzr, [sp, #32]
+ mov w9, #34464
+ movk w9, #1, lsl #16 /* timeval.tv_usec = 100000 */
+ str w9, [sp, #40]
+ mov x0, #0
+ mov x1, #0
+ mov x2, #0
+ mov x3, #0
+ add x4, sp, #32
+ mov x16, #93
+ svc #0x80
+ b m31_wait
+m31_timeout:
+ mov x0, x20
+ mov x1, #9 /* SIGKILL; the created child only */
+ mov x2, #1
+ mov x16, #37
+ svc #0x80
+ /* The alive loop reaps this child if termination is not immediate. */
+ mov w28, #224
+ mov w27, #0
+ b m31_fail
+m31_bad_status:
+ mov w28, #223
+ ldr w27, [sp, #16]
+ b m31_fail
+m31_sysfail:
+ mov w27, w0
+m31_fail:
+ adr x1, m31_error
+ adr x2, m31_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w28
+ bl m19_hex
+ adr x1, m31_detail
+ adr x2, m31_detail_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+m31_return:
+ ldr x30, [sp]
+ add sp, sp, #512
+ ret
+m31_child:
+ /* Preserve console diagnostics from Apple dyld before our main runs. */
+ mov x22, #0
+m31_stdio:
+ mov x0, x19
+ mov x1, x22
+ mov x16, #90 /* dup2 */
+ svc #0x80
+ b.cs m31_child_error
+ add x22, x22, #1
+ cmp x22, #3
+ b.ne m31_stdio
+ /* XNU 8796 spawn_internal.h: attrs platform offset108, ports offset184.
+  * Reserve 256 zeroed bytes, plus 128-byte user args descriptor.
+  * SETEXEC replaces only this forked child, retaining the exact waited PID. */
+ add x9, sp, #128
+ mov x10, #24
+m31_zero_spawn:
+ stp xzr, xzr, [x9], #16
+ subs x10, x10, #1
+ b.ne m31_zero_spawn
+ mov w9, #0x40 /* POSIX_SPAWN_SETEXEC */
+ strh w9, [sp, #128]
+ mov w9, #2 /* PLATFORM_IOS, accepted by the existing exec policy */
+ str w9, [sp, #236]
+ mov x9, #184
+ str x9, [sp, #384]
+ add x9, sp, #128
+ str x9, [sp, #392]
+ adr x1, m31_path
+ stp x1, xzr, [sp, #48]
+ adr x9, m31_cache_env
+ stp x9, xzr, [sp, #64]
+ mov x0, #0 /* pid pointer unused for SETEXEC */
+ add x2, sp, #384
+ add x3, sp, #48
+ add x4, sp, #64
+ mov x16, #244 /* posix_spawn: success never returns */
+ svc #0x80
+m31_child_error:
+ mov w27, w0
+ adr x1, m31_exec_error
+ adr x2, m31_exec_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+ mov x0, #127
+ mov x16, #1 /* child only: exit */
+ svc #0x80
+ b hang
+m31_path:
+ .asciz "/emmc/sbin/m31-probe"
+m31_start:
+ .ascii "XCOVER5 M31 USER: fork + exec /emmc/sbin/m31-probe\n"
+m31_start_end:
+m31_ok:
+ .ascii "XCOVER5 M31 USER PASS: malloc/pthread/join/free + child exit 52\n"
+m31_ok_end:
+m31_error:
+ .ascii "XCOVER5 M31 USER FAIL stage="
+m31_error_end:
+m31_detail:
+ .ascii "XCOVER5 M31 errno/status="
+m31_detail_end:
+m31_exec_error:
+ .ascii "XCOVER5 M31 child setup/exec errno="
+m31_exec_error_end:
+
+m31_cache_env:
  .asciz "DYLD_SHARED_CACHE_DIR=/System/Library/Caches/com.apple.dyld"

@@ -18,6 +18,7 @@ APPLEPLACEHOLDER=${14:?APPLEPLACEHOLDER required}
 CACHEPROBE=${15:?CACHEPROBE required}
 CACHEDYLD=${16:?CACHEDYLD required}
 LIBSYSTEM=${17:?LIBSYSTEM required}
+THREAD=${18:?THREAD required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
@@ -53,6 +54,8 @@ sudo cp "$CACHEDYLD" "$WORK/mnt/sbin/m29-probe"
 sudo chmod 755 "$WORK/mnt/sbin/m29-probe"
 sudo cp "$LIBSYSTEM" "$WORK/mnt/sbin/m30-probe"
 sudo chmod 755 "$WORK/mnt/sbin/m30-probe"
+sudo cp "$THREAD" "$WORK/mnt/sbin/m31-probe"
+sudo chmod 755 "$WORK/mnt/sbin/m31-probe"
 printf 'XCOVER5 M20 eMMC file read verified\n' | sudo tee "$WORK/mnt/m20-proof.txt" >/dev/null
 echo 'XCOVER5 HFS root test' | sudo tee "$WORK/mnt/root-test.txt" >/dev/null
 sync

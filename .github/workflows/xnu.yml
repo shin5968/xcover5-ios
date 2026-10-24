@@ -50,6 +50,8 @@ on:
       - "tools/mkcacheprobe.py"
       - "tools/mklibsystemprobe.py"
       - "tools/sweet-libsystem.S"
+      - "tools/mkthreadprobe.py"
+      - "tools/sweet-thread.S"
       - "tools/test_m30_libsystem.py"
       - "tools/sweet-apple-dyld.S"
       - ".github/workflows/xnu.yml"
@@ -178,8 +180,12 @@ jobs:
           python3 tools/mklibsystemprobe.py out/m30-probe.o out/m30-probe
           python3 tools/test_m30_libsystem.py out/m30-probe
           shasum -a 256 out/m30-probe > out/LIBSYSTEM_SHA256SUMS
+          xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-thread.S -o out/m31-probe.o
+          python3 tools/mkthreadprobe.py out/m31-probe.o out/m31-probe
+          python3 tools/test_m30_libsystem.py out/m31-probe --thread
+          shasum -a 256 out/m31-probe > out/THREAD_SHA256SUMS
           shasum -a 256 out/init-mockfs.img > out/INIT_SHA256SUMS
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe out/m30-probe
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe out/m30-probe out/m31-probe
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Build synthetic cache volume template
