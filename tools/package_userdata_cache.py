@@ -15,7 +15,7 @@ def sha(f,n=None):
  assert n in (None,0)
  return h.hexdigest()
 def package(boot,data,out):
- assert out.name.startswith('AP_M28_ERASE_USERDATA') and out.suffix=='.md5' and not out.exists()
+ assert out.name.startswith(('AP_M28_ERASE_USERDATA','AP_M29B_ROOT_CACHE_ERASE_USERDATA')) and out.suffix=='.md5' and not out.exists()
  assert boot.is_file() and boot.stat().st_size<44*1024*1024
  with boot.open('rb') as f:
   h=f.read(48);assert h[:8]==b'ANDROID!' and struct.unpack_from('<I',h,40)[0]==2
