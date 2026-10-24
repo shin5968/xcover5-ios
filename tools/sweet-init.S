@@ -119,6 +119,8 @@ mmc_report:
  bl m32_test
  bl m33_test
  bl m34_test
+ cbz w0, tick
+ bl m35_handoff
 
 tick:
 	/* Reap any late child after a timed-out M21; never block PID 1. */
@@ -2723,6 +2725,7 @@ m34_wait:
  adr x2, m34_ok_end
  sub x2, x2, x1
  bl write_console
+ mov w26, #1
  b m34_return
 m34_wait_error:
  cmp w0, #4 /* EINTR still consumes a bounded retry */
@@ -2759,6 +2762,7 @@ m34_bad_status:
 m34_sysfail:
  mov w27, w0
 m34_fail:
+ mov w26, #0
  adr x1, m34_error
  adr x2, m34_error_end
  sub x2, x2, x1
@@ -2772,6 +2776,7 @@ m34_fail:
  mov w0, w27
  bl m19_hex
 m34_return:
+ mov w0, w26
  ldr x30, [sp]
  add sp, sp, #512
  ret
@@ -2846,3 +2851,133 @@ m34_exec_error_end:
 
 m34_cache_env:
  .asciz "DYLD_SHARED_CACHE_DIR=/System/Library/Caches/com.apple.dyld"
+
+/* M35: only the RAM root is updated. No eMMC write or PID1 exit. */
+.p2align 2
+m35_handoff:
+ sub sp, sp, #512
+ str x30, [sp]
+ mov w28, #351
+ adr x1, m35_start
+ adr x2, m35_start_end
+ sub x2, x2, x1
+ bl write_console
+ /* HFS user args: fspec pointer, then kernel hfs_mount_args.
+  * VNOVAL leaves owner/mask/encoding/timezone unchanged. */
+ mov x9, #-1
+ stp x9, x9, [sp, #32]
+ stp x9, x9, [sp, #48]
+ stp xzr, xzr, [sp, #64]
+ adr x9, m35_md0
+ str x9, [sp, #32]
+ str wzr, [sp, #64] /* flags: no extended args */
+ adr x0, m35_hfs
+ adr x1, m35_root
+ mov x2, #0x10000 /* MNT_UPDATE; no MNT_RDONLY */
+ add x3, sp, #32
+ mov x16, #167
+ svc #0x80
+ b.cs m35_fail
+ mov w28, #352
+ adr x0, m35_file
+ mov x1, #0xa02 /* O_RDWR | O_CREAT | O_TRUNC */
+ mov x2, #0x180 /* 0600 */
+ mov x16, #5
+ svc #0x80
+ b.cs m35_fail
+ mov x20, x0
+ adr x1, m35_token
+ mov x2, #8
+ mov x16, #4
+ svc #0x80
+ b.cs m35_close_fail
+ cmp x0, #8
+ b.ne m35_short_write
+ mov x0, x20
+ mov x16, #6
+ svc #0x80
+ b.cs m35_fail
+ adr x0, m35_file
+ mov x16, #10 /* unlink */
+ svc #0x80
+ b.cs m35_fail
+ mov w28, #353
+ mov x22, #0
+m35_stdio:
+ mov x0, x19
+ mov x1, x22
+ mov x16, #90
+ svc #0x80
+ b.cs m35_fail
+ add x22, x22, #1
+ cmp x22, #3
+ b.ne m35_stdio
+ adr x1, m35_ready
+ adr x2, m35_ready_end
+ sub x2, x2, x1
+ bl write_console
+ mov w28, #354
+ add x9, sp, #128
+ mov x10, #24
+m35_zero:
+ stp xzr, xzr, [x9], #16
+ subs x10, x10, #1
+ b.ne m35_zero
+ mov w9, #0x40
+ strh w9, [sp, #128]
+ mov w9, #2
+ str w9, [sp, #236]
+ mov x9, #184
+ str x9, [sp, #384]
+ add x9, sp, #128
+ str x9, [sp, #392]
+ adr x1, m35_launchd
+ stp x1, xzr, [sp, #80]
+ adr x9, m34_cache_env
+ stp x9, xzr, [sp, #96]
+ mov x0, #0
+ add x2, sp, #384
+ add x3, sp, #80
+ add x4, sp, #96
+ mov x16, #244
+ svc #0x80
+ b m35_fail /* successful SETEXEC never returns */
+m35_short_write:
+ mov x0, #5 /* EIO */
+m35_close_fail:
+ mov w27, w0
+ mov x0, x20
+ mov x16, #6
+ svc #0x80
+ mov w0, w27
+m35_fail:
+ mov w27, w0
+ adr x1, m35_error
+ adr x2, m35_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w28
+ bl m19_hex
+ adr x1, m35_errno
+ adr x2, m35_errno_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+ ldr x30, [sp]
+ add sp, sp, #512
+ ret
+m35_hfs: .asciz "hfs"
+m35_root: .asciz "/"
+m35_md0: .asciz "/dev/md0"
+m35_file: .asciz "/private/var/m35-write-check"
+m35_token: .ascii "M35RAMOK"
+m35_launchd: .asciz "/sbin/launchd.ios"
+m35_start: .ascii "XCOVER5 M35: preparing RAM root for Apple launchd\n"
+m35_start_end:
+m35_ready: .ascii "XCOVER5 M35: RAM write passed; handing PID1 to Apple launchd\n"
+m35_ready_end:
+m35_error: .ascii "XCOVER5 M35 PREP FAIL stage="
+m35_error_end:
+m35_errno: .ascii "XCOVER5 M35 errno="
+m35_errno_end:

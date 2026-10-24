@@ -56,6 +56,8 @@ on:
       - "tools/sweet-mutex.S"
       - "tools/sweet-ipc.S"
       - "tools/sweet-process-ipc.S"
+      - "tools/sweet-launchd-proof.S"
+      - "tools/stage_launchd.py"
       - "tools/mkprocessipcprobe.py"
       - "tools/mkipcprobe.py"
       - "tools/check_pthread_abi.c"
@@ -205,7 +207,9 @@ jobs:
           python3 tools/mkprocessipcprobe.py out/m34-probe.o out/m34-probe
           python3 tools/test_m30_libsystem.py out/m34-probe --process-ipc
           shasum -a 256 out/m34-probe > out/PROCESS_IPC_SHA256SUMS
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe out/m30-probe out/m31-probe out/m32-probe out/m33-probe out/m34-probe
+          xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-launchd-proof.S -o out/m35-proof.o
+          python3 tools/mkinit.py out/m35-proof.o out/m35-proof
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe out/m30-probe out/m31-probe out/m32-probe out/m33-probe out/m34-probe out/m35-proof
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Build synthetic cache volume template

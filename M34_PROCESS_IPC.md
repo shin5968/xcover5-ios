@@ -38,5 +38,5 @@ Peer:121 get bootstrap;122 allocate/PID;123 send;124 receive;125 reply validatio
 Validation:34 mocked parent/peer cases with distinct PID/task/port namespaces;
 14 outer-parent cases;14 M33 parent and17 M31D regressions; independent Mach-O
 binding/signature checks; iOS SDK layout/disposition static assertions. Mocks do
-not execute true fork or kernel IPC. Hardware pending. Artifacts/m34 boot-only;
+not execute true fork or kernel IPC. Hardware PASS in video153709 frame73: peer/child/user exit55 and init alive. Artifacts/m34 boot-only;
 retain installed userdata cache. No agent phone writes.

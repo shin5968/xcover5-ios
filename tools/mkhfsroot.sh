@@ -22,6 +22,7 @@ THREAD=${18:?THREAD required}
 MUTEX=${19:?MUTEX required}
 IPC=${20:?IPC required}
 PROCESSIPC=${21:?PROCESSIPC required}
+LAUNCHDPROOF=${22:?LAUNCHDPROOF required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
@@ -65,6 +66,9 @@ sudo cp "$IPC" "$WORK/mnt/sbin/m33-probe"
 sudo chmod 755 "$WORK/mnt/sbin/m33-probe"
 sudo cp "$PROCESSIPC" "$WORK/mnt/sbin/m34-probe"
 sudo chmod 755 "$WORK/mnt/sbin/m34-probe"
+sudo python3 tools/stage_launchd.py "$WORK/mnt"
+sudo cp "$LAUNCHDPROOF" "$WORK/mnt/sbin/m35-proof"
+sudo chmod 755 "$WORK/mnt/sbin/m35-proof"
 printf 'XCOVER5 M20 eMMC file read verified\n' | sudo tee "$WORK/mnt/m20-proof.txt" >/dev/null
 echo 'XCOVER5 HFS root test' | sudo tee "$WORK/mnt/root-test.txt" >/dev/null
 sync
