@@ -24,13 +24,17 @@ def inject(template,source,out):
  spans=[]
  with template.open('rb') as f,mmap.mmap(f.fileno(),0,access=mmap.ACCESS_READ) as m:
   assert m[1024:1028]==b'HX\0\5'
-  for item in items:
-   t=token(item['file']);pos=m.find(t);n=item['size'];assert pos>=0 and pos%4096==0
+  by_token={token(item['file']):item for item in items}
+  prefix=b'XCOVER5-M28-PLACEHOLDER\0';cursor=0;seen=set()
+  while (pos:=m.find(prefix,cursor))>=0:
+   t=m[pos:pos+len(prefix)+32];assert t in by_token, 'unknown placeholder'
+   item=by_token[t];n=item['size'];assert item['file'] not in seen, 'duplicate placeholder'
+   assert pos%4096==0 and pos+n<=len(m)
    pattern=block(item['file'])*256
    for offset in range(0,n,CHUNK):
     length=min(CHUNK,n-offset);assert m[pos+offset:pos+offset+length]==pattern[:length],('fragmented placeholder',item['file'],offset)
-   assert m.find(t,pos+n)<0,('duplicate placeholder',item['file'])
-   spans.append((pos,pos+n,item))
+   spans.append((pos,pos+n,item));seen.add(item['file']);cursor=pos+n
+  assert len(seen)==43, 'missing cache placeholder'
   ordered=sorted(spans)
   assert all(a[1]<=b[0] for a,b in zip(ordered,ordered[1:]))
  template_hash=digest(template)
