@@ -16,6 +16,10 @@ on:
         description: Upload full build tree and inspect KDK libraries
         type: boolean
         default: false
+      cache_template:
+        description: Rebuild synthetic userdata template (not needed for boot-only updates)
+        type: boolean
+        default: false
       keep_going:
         description: make -k (collect all compile errors in one run)
         default: "true"
@@ -42,6 +46,8 @@ on:
       - "tools/cache_placeholders.py"
       - "tools/mkhfscache.sh"
       - "tools/sweet-cache.S"
+      - "tools/sweet-cache-dyld.S"
+      - "tools/mkcacheprobe.py"
       - "tools/sweet-apple-dyld.S"
       - ".github/workflows/xnu.yml"
 
@@ -106,6 +112,8 @@ jobs:
           MAKEFLAGS: ${{ inputs.keep_going == 'false' && '' || '-k' }}
         run: |
           bash build.sh
+          python3 ../tools/verify_spawn_abi.py xnu ../spawn-abi.c
+          xcrun clang -target arm64-apple-macos13 -c ../spawn-abi.c -o ../spawn-abi.o
           test -s "fakeroot/System/Library/Kernels/kernel.development.sweet" || \
             find fakeroot/System/Library/Kernels -type f -name 'kernel.*' -size +1M | grep -q .
 
@@ -156,11 +164,15 @@ jobs:
           xcrun clang -target arm64-apple-ios16.0 -Iout -c tools/sweet-cache.S -o out/m28-probe.o
           python3 tools/mkinit.py out/m28-probe.o out/m28-probe
           shasum -a 256 out/m28-probe > out/CACHE_PROBE_SHA256SUMS
+          xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-cache-dyld.S -o out/m29-probe.o
+          python3 tools/mkcacheprobe.py out/m29-probe.o out/m29-probe
+          shasum -a 256 out/m29-probe > out/CACHE_DYLD_SHA256SUMS
           shasum -a 256 out/init-mockfs.img > out/INIT_SHA256SUMS
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Build synthetic cache volume template
+        if: inputs.cache_template == true
         run: |
           bash tools/mkhfscache.sh out/userdata-cache-template.img
           shasum -a 256 out/userdata-cache-template.img > out/CACHE_TEMPLATE_SHA256SUMS

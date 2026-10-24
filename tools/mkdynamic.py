@@ -14,7 +14,8 @@ def path_command(cmd, loader=LOADER):
     size = (12 + len(loader) + 7) & ~7
     return struct.pack('<III', cmd, size, 12) + loader + bytes(size-12-len(loader))
 
-def build(obj, kind, loader=LOADER):
+def build(obj, kind, loader=LOADER, platform=1):
+    assert platform in (1, 2)
     assert kind in ('app', 'loader')
     code, start = m.text_of(obj)
     assert m.CODE_OFF + len(code) <= m.SEG
@@ -31,10 +32,9 @@ def build(obj, kind, loader=LOADER):
         state = [0]*33
         state[32] = m.CODE_OFF+start
         cmds += [path_command(0xf, loader), struct.pack('<4I33QII', 5, 288, 6, 68, *state, 0, 0)]
-    # These are our no-import diagnostic binaries for the macOS-target SWEET
-    # kernel. PLATFORM_IOS makes exec reject them before loader entry (M22D).
-    # This does not change Apple binaries or relax kernel execution policy.
-    cmds += [struct.pack('<6I', 0x32, 24, 1, 0x0d0000, 0x0d0500, 0),
+    # Existing probes default to macOS. M29 explicitly uses iOS and supplies
+    # the matching spawn platform attribute; kernel policy is unchanged.
+    cmds += [struct.pack('<6I', 0x32, 24, platform, 0x100000 if platform == 2 else 0x0d0000, 0x100000 if platform == 2 else 0x0d0500, 0),
              struct.pack('<4I', 0x1d, 16, m.SEG, sig_size)]
     commands = b''.join(cmds)
     header = struct.pack('<8I', m.MH_MAGIC_64, m.CPU_TYPE_ARM64, 0,

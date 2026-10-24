@@ -136,13 +136,13 @@ def run(mode, expected_stage=None):
         elif n == 6: result(0)
         elif n == 2:
             child_state['forks'] += 1
-            prefix = ('m21', 'm22', 'm23', 'm24', 'm25', 'm26', 'm28' if cache else 'm27')[child_state['forks']-1]
+            prefix = ('m21', 'm22', 'm23', 'm24', 'm25', 'm26', 'm28' if cache else 'm27', 'm29')[child_state['forks']-1]
             child_state['prefix'] = prefix
             child_state['waits'] = 0
             if mode == prefix+'_fork': result(12, True)
             else:
-                # M28 child text/faults are executed separately in test_m28_cache.py.
-                status, child_output = (49<<8, []) if prefix == 'm28' else child(u, code, probe, mode, dynamic if prefix == 'm22' else None, mapped if prefix == 'm23' else None, cow if prefix == 'm24' else None, library if prefix == 'm25' else None, symbols if prefix == 'm26' else None, apple if prefix == 'm27' else None)
+                # M28/M29 child instructions/faults are covered by their focused test scripts.
+                status, child_output = ((49 if prefix == 'm28' else 50)<<8, []) if prefix in ('m28','m29') else child(u, code, probe, mode, dynamic if prefix == 'm22' else None, mapped if prefix == 'm23' else None, cow if prefix == 'm24' else None, library if prefix == 'm25' else None, symbols if prefix == 'm26' else None, apple if prefix == 'm27' else None)
                 output.extend(child_output)
                 child_state['status'] = status
                 u.reg_write(UC_ARM64_REG_X1, 0)
@@ -204,6 +204,7 @@ def run(mode, expected_stage=None):
         if b'M22 USER PASS' in code: assert 'M22 USER PASS' in out, out
         if b'M27 USER PASS' in code and not cache: assert 'M27 USER PASS' in out, out
         if cache: assert out.count('M28 USER PASS') == 2 and 'M27 USER:' not in out, out
+        if b'M29 USER PASS' in code: assert 'M29 USER PASS' in out, out
         if b'M26 USER PASS' in code: assert 'M26 USER PASS' in out, out
         if b'M25 USER PASS' in code: assert 'M25 USER PASS' in out, out
         if b'M24 USER PASS' in code: assert 'M24 USER PASS' in out, out

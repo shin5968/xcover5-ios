@@ -108,7 +108,7 @@ def parent(mode,mount):
   stage=({'mount':111,'open':112,'read':113,'content':114,'short':114} if mount else {'fork':101,'wait':102,'signal':103,'timeout':104})[mode]
   assert f'M28 USER FAIL stage={stage:08x}' in text and 'M28 USER PASS' not in text,text
  if mode=='timeout':assert waits==100 and killed
- if mount:assert u.reg_read(UC_ARM64_REG_X0)==(1 if mode=='valid' else 0)
+ if mount or mode!='exec':assert u.reg_read(UC_ARM64_REG_X0)==(1 if mode in ('valid','eintr') else 0)
  print('mount' if mount else 'parent',mode,'PASS')
 for mode in ('valid','mount','open','read','content','short'):parent(mode,True)
 for mode in ('valid','fork','wait','signal','timeout','eintr','exec'):parent(mode,False)

@@ -16,6 +16,7 @@ SYMLIB=${12:?SYMLIB required}
 APPLEAPP=${13:?APPLEAPP required}
 APPLEPLACEHOLDER=${14:?APPLEPLACEHOLDER required}
 CACHEPROBE=${15:?CACHEPROBE required}
+CACHEDYLD=${16:?CACHEDYLD required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
@@ -47,6 +48,8 @@ sudo chmod 755 "$WORK/mnt/sbin/m27-probe" "$WORK/mnt/usr/lib/m27-apple-dyld"
 sudo mkdir -p "$WORK/mnt/System/Library/Caches/com.apple.dyld"
 sudo cp "$CACHEPROBE" "$WORK/mnt/sbin/m28-probe"
 sudo chmod 755 "$WORK/mnt/sbin/m28-probe"
+sudo cp "$CACHEDYLD" "$WORK/mnt/sbin/m29-probe"
+sudo chmod 755 "$WORK/mnt/sbin/m29-probe"
 printf 'XCOVER5 M20 eMMC file read verified\n' | sudo tee "$WORK/mnt/m20-proof.txt" >/dev/null
 echo 'XCOVER5 HFS root test' | sudo tee "$WORK/mnt/root-test.txt" >/dev/null
 sync
