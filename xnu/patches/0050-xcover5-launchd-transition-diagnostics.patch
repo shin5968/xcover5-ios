@@ -1,0 +1,73 @@
+--- a/bsd/kern/kern_exit.c
++++ b/bsd/kern/kern_exit.c
+@@ -1312,7 +1312,13 @@
+ 		// Can only ever be set by launchd, and only once at boot
+ 		return EPERM;
+ 	}
+-	return sysctl_handle_int(oidp, &initproc_spawned, 0, req);
++	int error = sysctl_handle_int(oidp, &initproc_spawned, 0, req);
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++	if (req->newptr != 0) {
++		printf("XCOVER5 M37B MAIN pid=%d value=%d error=%d\n", proc_getpid(req->p), initproc_spawned, error);
++	}
++#endif
++	return error;
+ }
+ 
+ SYSCTL_PROC(_kern, OID_AUTO, initproc_spawned,
+@@ -1847,6 +1853,8 @@
+ #if defined(ARM64_BOARD_CONFIG_SWEET)
+ 	/* Log committed exit metadata; do not change signal or exec policy. */
+ 	if (proc_getpid(p) <= 64) {
++		printf("XCOVER5 M37B EXIT_KIND pid=%d shadow=%d live_init=%d\n",
++		    proc_getpid(p), proc_is_shadow(p), p == initproc);
+ 		printf("XCOVER5 M35D EXIT pid=%d name=%s uid=%u rv=%x cs=%x reason=%u code=%llx flags=%llx\n",
+ 		    proc_getpid(p), p->p_name, proc_getuid(p), rv, proc_getcsflags(p),
+ 		    p->p_exit_reason ? p->p_exit_reason->osr_namespace : 0,
+--- a/bsd/dev/arm/systemcalls.c
++++ b/bsd/dev/arm/systemcalls.c
+@@ -2,6 +2,8 @@
+  * Copyright (c) 2000-2022 Apple Inc. All rights reserved.
+  */
+ 
++#include <arm64/board_config.h>
++#include <os/atomic_private.h>
+ #include <kern/bits.h>
+ #include <kern/task.h>
+ #include <kern/thread.h>
+@@ -97,6 +99,10 @@
+ 	unsigned short  code, syscode;
+ 	pid_t           pid;
+ 	struct uthread *uthread = get_bsdthread_info(thread_act);
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++	static unsigned int sweet_pid1_calls;
++	unsigned int sweet_trace = 0;
++#endif
+ 
+ 	uthread_reset_proc_refcount(uthread);
+ 
+@@ -177,9 +183,24 @@
+ 	}
+ #endif /* CONFIG_DEBUG_SYSCALL_REJECTION */
+ 
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++	/* Bounded tracing of the new launchd image, not pre-exec init. */
++	if (pid == 1 && strcmp(proc->p_comm, "launchd.ios") == 0) {
++		unsigned int seq = os_atomic_inc_orig(&sweet_pid1_calls, relaxed);
++		if (seq < 64) {
++			sweet_trace = seq + 1;
++			printf("XCOVER5 M37B BSD_BEGIN seq=%u code=%u\n", sweet_trace, code);
++		}
++	}
++#endif
+ 	AUDIT_SYSCALL_ENTER(code, proc, uthread);
+ 	error = (*(callp->sy_call))(proc, &uthread->uu_arg[0], &(uthread->uu_rval[0]));
+ 	AUDIT_SYSCALL_EXIT(code, proc, uthread, error);
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++	if (sweet_trace != 0) {
++		printf("XCOVER5 M37B BSD_END seq=%u code=%u error=%d\n", sweet_trace, code, error);
++	}
++#endif
+ 
+ #if CONFIG_MACF
+ skip_syscall:

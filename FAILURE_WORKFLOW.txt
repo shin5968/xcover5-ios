@@ -1,0 +1,6 @@
+User-directed failure workflow (2026-10-24):
+On any failure, inspect full supplied evidence and compare the actual known-good/failing artifacts before proposing another flash.
+Separate observed facts, hypotheses and unverified claims. Never treat last screen line as causal proof.
+Check source/build/payload differences and existing tests. Make one evidence-backed change at a time; state what observation distinguishes competing causes.
+Do not label diagnostic images as fixes or host/mock passes as hardware passes. Preserve the last working artifact and results.
+Store all artifacts/reviews under the project, not Downloads. User performs Odin flashing; do not flash automatically.
