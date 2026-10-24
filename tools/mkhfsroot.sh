@@ -24,6 +24,8 @@ IPC=${20:?IPC required}
 PROCESSIPC=${21:?PROCESSIPC required}
 LAUNCHDPROOF=${22:?LAUNCHDPROOF required}
 BOOTSTRAP=${23:?BOOTSTRAP required}
+EXECSERVER=${24:?EXECSERVER required}
+EXECCLIENT=${25:?EXECCLIENT required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
@@ -73,6 +75,10 @@ sudo chmod 755 "$WORK/mnt/sbin/m35-proof"
 sudo cp "$BOOTSTRAP" "$WORK/mnt/sbin/m36-probe"
 sudo chmod 755 "$WORK/mnt/sbin/m36-probe"
 sudo chmod 644 "$WORK/mnt/System/Library/LaunchDaemons/org.xcover5.m36.echo.plist"
+sudo cp "$EXECSERVER" "$WORK/mnt/sbin/m37-server"
+sudo cp "$EXECCLIENT" "$WORK/mnt/sbin/m37-client"
+sudo chmod 755 "$WORK/mnt/sbin/m37-server" "$WORK/mnt/sbin/m37-client"
+sudo chmod 644 "$WORK/mnt/System/Library/LaunchDaemons/org.xcover5.m37.echo.plist"
 printf 'XCOVER5 M20 eMMC file read verified\n' | sudo tee "$WORK/mnt/m20-proof.txt" >/dev/null
 echo 'XCOVER5 HFS root test' | sudo tee "$WORK/mnt/root-test.txt" >/dev/null
 # Persist actual root ownership; host images otherwise inherit runner uid501.

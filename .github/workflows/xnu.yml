@@ -58,6 +58,7 @@ on:
       - "tools/sweet-process-ipc.S"
       - "tools/sweet-launchd-proof.S"
       - "tools/sweet-bootstrap.S"
+      - "tools/sweet-bootstrap-exec.S"
       - "tools/mkbootstrapprobe.py"
       - "tools/stage_launchd.py"
       - "tools/mkprocessipcprobe.py"
@@ -219,7 +220,13 @@ jobs:
           xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-bootstrap.S -o out/m36-probe.o
           python3 tools/mkbootstrapprobe.py out/m36-probe.o out/m36-probe
           python3 tools/test_m30_libsystem.py out/m36-probe --bootstrap
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe out/m30-probe out/m31-probe out/m32-probe out/m33-probe out/m34-probe out/m35-proof out/m36-probe
+          xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-bootstrap-exec.S -o out/m37-server.o
+          xcrun clang -target arm64-apple-ios16.0 -DM37_CLIENT -c tools/sweet-bootstrap-exec.S -o out/m37-client.o
+          python3 tools/mkbootstrapprobe.py out/m37-server.o out/m37-server
+          python3 tools/mkbootstrapprobe.py out/m37-client.o out/m37-client
+          python3 tools/test_m30_libsystem.py out/m37-server --bootstrap
+          python3 tools/test_m30_libsystem.py out/m37-client --bootstrap
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe out/m30-probe out/m31-probe out/m32-probe out/m33-probe out/m34-probe out/m35-proof out/m36-probe out/m37-server out/m37-client
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Build synthetic cache volume template

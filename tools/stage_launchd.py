@@ -41,5 +41,7 @@ if __name__=='__main__':
  (root/'System/Library/LaunchDaemons/org.xcover5.m35.proof.plist').write_bytes(plistlib.dumps(job,fmt=plistlib.FMT_BINARY))
  job36={'Label':'org.xcover5.m36.echo','ProgramArguments':['/sbin/m36-probe'],'MachServices':{'org.xcover5.m36.echo':True},'RunAtLoad':True,'KeepAlive':False,'StandardOutPath':'/dev/console','StandardErrorPath':'/dev/console'}
  (root/'System/Library/LaunchDaemons/org.xcover5.m36.echo.plist').write_bytes(plistlib.dumps(job36,fmt=plistlib.FMT_BINARY))
+ job37=dict(job36,Label='org.xcover5.m37.echo',ProgramArguments=['/sbin/m37-server'],MachServices={'org.xcover5.m37.echo':True})
+ (root/'System/Library/LaunchDaemons/org.xcover5.m37.echo.plist').write_bytes(plistlib.dumps(job37,fmt=plistlib.FMT_BINARY))
  assert not (root/'System/Library/xpc/launchd.plist').exists()
  print('M35 staged: M35 proof and M36 named-service jobs; local Apple substitution required')
