@@ -1,0 +1,69 @@
+--- a/iokit/Kernel/arm/XCover5MMCProbe.h
++++ b/iokit/Kernel/arm/XCover5MMCProbe.h
+@@ -4,6 +4,9 @@
+ static vm_offset_t mmio;
+ static IOLock *media_lock;
+ static uint32_t media_sectors;
++/* Protected by media_lock. Transfer ticks exclude lock acquisition, but can
++ * include preemption; these are elapsed times, not CPU consumption. */
++static uint64_t perf_reads, perf_errors, perf_ticks;
+ static uint32_t rd(unsigned o) { return *(volatile uint32_t *)(mmio+o); }
+ static void wr(unsigned o,uint32_t v) {
+     *(volatile uint32_t *)(mmio+o)=v;
+@@ -120,8 +123,22 @@
+  if(!media_lock || lba>=media_sectors)return -1;
+  IOLockLock(media_lock);
+  struct result r;
++ uint64_t begin=mach_absolute_time();
+  int rc=transfer((uint8_t *)buffer,17,lba,&r);
+  if(r.response&0xfdffa080U)rc=-1;
++ perf_ticks+=mach_absolute_time()-begin;
++ perf_reads++;
++ if(rc)perf_errors++;
+  IOLockUnlock(media_lock);
+  return rc;
+ }
++
++/* Snapshot only; never print while holding the storage lock. */
++extern "C" void xcover5_mmc_perf(uint64_t *reads,uint64_t *errors,uint64_t *ticks) {
++ using namespace xcover5_mmc;
++ *reads=*errors=*ticks=0;
++ if(!media_lock)return;
++ IOLockLock(media_lock);
++ *reads=perf_reads;*errors=perf_errors;*ticks=perf_ticks;
++ IOLockUnlock(media_lock);
++}
+--- a/bsd/kern/sweet_exec_diag.c
++++ b/bsd/kern/sweet_exec_diag.c
+@@ -4,6 +4,8 @@
+ #include <sys/proc_internal.h>
+ #include <sys/systm.h>
+ #include <kern/locks.h>
++#include <kern/clock.h>
++#include <mach/mach_time.h>
+ #if defined(ARM64_BOARD_CONFIG_SWEET)
+ struct sweet_diag_event { unsigned int kind; uint64_t a, b, c; char file[32]; };
+ struct sweet_diag_slot { int pid; unsigned int next, count; struct sweet_diag_event events[4]; };
+@@ -17,6 +19,22 @@
+ {
+  int pid = proc_getpid(p);
+  if (pid < 1 || pid > 63) return;
++#if defined(XCOVER5)
++ /* LOAD occurs after load_machfile returns, before dyld/main executes.
++  * This is a milestone, not proof that the target reached its entry point. */
++ if (kind == 1 && file &&
++     (!strcmp(file, "launchd.ios") || !strcmp(file, "xpcproxy") || !strcmp(file, "m35-proof"))) {
++  extern void xcover5_mmc_perf(uint64_t *, uint64_t *, uint64_t *);
++  uint64_t reads, errors, ticks, now_ns, io_ns;
++  uint64_t now = mach_absolute_time();
++  xcover5_mmc_perf(&reads, &errors, &ticks);
++  absolutetime_to_nanoseconds(now, &now_ns);
++  absolutetime_to_nanoseconds(ticks, &io_ns);
++  printf("XCOVER5 PERF LOAD pid=%d file=%s ret=%llu ms=%llu sectors=%llu io_ms=%llu errors=%llu\n",
++      pid, file, (unsigned long long)a, (unsigned long long)(now_ns / 1000000),
++      (unsigned long long)reads, (unsigned long long)(io_ns / 1000000), (unsigned long long)errors);
++ }
++#endif
+  struct sweet_diag_event e = { .kind = kind, .a = a, .b = b, .c = c };
+  if (file) strlcpy(e.file, file, sizeof(e.file));
+  lck_spin_lock(&sweet_diag_lock);
