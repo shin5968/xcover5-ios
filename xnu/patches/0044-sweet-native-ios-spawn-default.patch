@@ -1,0 +1,31 @@
+--- a/bsd/kern/kern_exec.c
++++ b/bsd/kern/kern_exec.c
+@@ -7392,7 +7392,13 @@
+ 		struct _posix_spawnattr *psa = (struct _posix_spawnattr *) imgp->ip_px_sa;
+ 		if (psa == NULL || psa->psa_platform == 0) {
+ 			boolean_t no_sandbox_entitled = FALSE;
+-#if DEBUG || DEVELOPMENT
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++			/* Native iOS port: omitted simulator platform is not a mismatch.
++			 * Explicit incompatible platforms still fail below. This does not
++			 * change signature/page validation or grant an entitlement. */
++			no_sandbox_entitled = TRUE;
++#endif
++#if (DEBUG || DEVELOPMENT) && !defined(ARM64_BOARD_CONFIG_SWEET)
+ 			/*
+ 			 * Allow iOS binaries to spawn on internal systems
+ 			 * if no-sandbox entitlement is present of unentitled_ios_sim_launch
+@@ -7411,9 +7417,13 @@
+ 				error = EACCES;
+ 				goto done;
+ 			}
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++			printf("XCOVER5 NATIVE IOS: %s omitted simulator platform attribute\n", p->p_name);
++#else
+ 			printf("Allowing spawn of iOS binary %s since it has "
+ 			    "com.apple.private.security.no-sandbox entitlement or unentitled_ios_sim_launch "
+ 			    "boot-arg set to true\n", p->p_name);
++#endif
+ 		} else if (psa->psa_platform != PLATFORM_IOS) {
+ 			/* Simulator binary spawned with wrong platform */
+ 			signature_failure_reason = os_reason_create(OS_REASON_EXEC,

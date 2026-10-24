@@ -126,6 +126,7 @@ jobs:
           MAKEFLAGS: ${{ inputs.keep_going == 'false' && '' || '-k' }}
         run: |
           bash build.sh
+          python3 ../tools/test_native_ios_policy.py xnu
           python3 ../tools/verify_spawn_abi.py xnu ../spawn-abi.c
           xcrun clang -target arm64-apple-macos13 -c ../spawn-abi.c -o ../spawn-abi.o
           test -s "fakeroot/System/Library/Kernels/kernel.development.sweet" || \
@@ -141,7 +142,7 @@ jobs:
 
       - name: Verify launchd child diagnostics
         run: |
-          python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks; assert all(b"XCOVER5 M35D EXIT" in k.read_bytes() and b"XCOVER5 M35D LOAD" in k.read_bytes() and b"XCOVER5 M35E SIGN" in k.read_bytes() and b"XCOVER5 M35E PAGE" in k.read_bytes() and b"XCOVER5 M35F SIGPROC_BEGIN" in k.read_bytes() and b"XCOVER5 M35F SIGTHREAD_END" in k.read_bytes() and b"XCOVER5 M35F WAKE_END" in k.read_bytes() and b"XCOVER5 M35G SNAP" in k.read_bytes() and b"XCOVER5 M35G EVENT" in k.read_bytes() for k in ks), "M35 diagnostics missing"'
+          python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks; assert all(b"XCOVER5 M35D EXIT" in k.read_bytes() and b"XCOVER5 M35D LOAD" in k.read_bytes() and b"XCOVER5 M35E SIGN" in k.read_bytes() and b"XCOVER5 M35E PAGE" in k.read_bytes() and b"XCOVER5 M35F SIGPROC_BEGIN" in k.read_bytes() and b"XCOVER5 M35F SIGTHREAD_END" in k.read_bytes() and b"XCOVER5 M35F WAKE_END" in k.read_bytes() and b"XCOVER5 M35G SNAP" in k.read_bytes() and b"XCOVER5 M35G EVENT" in k.read_bytes() and b"XCOVER5 NATIVE IOS:" in k.read_bytes() for k in ks), "M35 diagnostics missing"'
 
       - name: Save compiled kernel before image generation
         if: steps.kernel-cache.outputs.cache-hit != 'true'
