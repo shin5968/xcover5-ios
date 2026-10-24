@@ -109,7 +109,9 @@ mmc_report:
  bl m24_test
  bl m25_test
  bl m26_test
- bl m27_test
+ bl m28_mount
+ cbz w0, tick
+ bl m28_test
 
 tick:
 	/* Reap any late child after a timed-out M21; never block PID 1. */
@@ -1491,3 +1493,243 @@ m27_detail_end:
 m27_exec_error:
  .ascii "XCOVER5 M27 child setup/exec errno="
 m27_exec_error_end:
+
+/* M28: mount the bounded eMMC-backed HFS view and read a known file. */
+.p2align 2
+m28_mount:
+ sub sp, sp, #256
+ str x30, [sp]
+ str wzr, [sp, #208]
+ mov x20, #-1
+ mov w28, #111
+ stp xzr, xzr, [sp, #16]
+ stp xzr, xzr, [sp, #32]
+ stp xzr, xzr, [sp, #48]
+ stp xzr, xzr, [sp, #64]
+ adr x9, m28_mount_device
+ str x9, [sp, #16]
+ mov w9, #493
+ strh w9, [sp, #32]
+ adr x0, m28_mount_fstype
+ adr x1, m28_mount_mountpoint
+ mov x2, #1 /* MNT_RDONLY */
+ add x3, sp, #16
+ mov x16, #167 /* mount */
+ svc #0x80
+ b.cs m28_mount_sysfail
+ adr x1, m28_mount_mounted
+ adr x2, m28_mount_mounted_end
+ sub x2, x2, x1
+ bl write_console
+ mov w28, #112
+ adr x0, m28_mount_file
+ mov x1, #0
+ mov x2, #0
+ mov x16, #5
+ svc #0x80
+ b.cs m28_mount_sysfail
+ mov x20, x0
+ mov w28, #113
+ add x1, sp, #80
+ mov x2, #128
+ mov x16, #3
+ svc #0x80
+ b.cs m28_mount_sysfail
+ mov w28, #114
+ mov w27, #0
+ adr x9, m28_mount_expected
+ adr x10, m28_mount_expected_end
+ sub x10, x10, x9
+ cmp x0, x10
+ b.ne m28_mount_fail
+ add x11, sp, #80
+m28_mount_compare:
+ ldrb w12, [x9], #1
+ ldrb w13, [x11], #1
+ cmp w12, w13
+ b.ne m28_mount_fail
+ subs x10, x10, #1
+ b.ne m28_mount_compare
+ mov w9, #1
+ str w9, [sp, #208]
+ adr x1, m28_mount_ok
+ adr x2, m28_mount_ok_end
+ sub x2, x2, x1
+ bl write_console
+ b m28_mount_finish
+m28_mount_sysfail:
+ mov w27, w0
+m28_mount_fail:
+ adr x1, m28_mount_error
+ adr x2, m28_mount_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w28
+ bl m19_hex
+ adr x1, m28_mount_errno
+ adr x2, m28_mount_errno_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+m28_mount_finish:
+ cmp x20, #0
+ b.lt m28_mount_return
+ mov x0, x20
+ mov x16, #6
+ svc #0x80
+m28_mount_return:
+ ldr w0, [sp, #208]
+ ldr x30, [sp]
+ add sp, sp, #256
+ ret
+m28_mount_device:
+ .asciz "/dev/xcuserdata"
+m28_mount_fstype:
+ .asciz "hfs"
+m28_mount_mountpoint:
+ .asciz "/System/Library/Caches/com.apple.dyld"
+m28_mount_file:
+ .asciz "/System/Library/Caches/com.apple.dyld/m28-cache-proof.txt"
+m28_mount_expected:
+ .ascii "XCOVER5 M28 userdata cache volume verified\n"
+m28_mount_expected_end:
+m28_mount_mounted:
+ .ascii "XCOVER5 M28 USER: userdata cache mounted read-only\n"
+m28_mount_mounted_end:
+m28_mount_ok:
+ .ascii "XCOVER5 M28 USER PASS: userdata cache volume proof\n"
+m28_mount_ok_end:
+m28_mount_error:
+ .ascii "XCOVER5 M28 USER FAIL stage="
+m28_mount_error_end:
+m28_mount_errno:
+ .ascii "XCOVER5 M28 errno="
+m28_mount_errno_end:
+
+
+/* M28: bounded cache inventory child process. */
+.p2align 2
+m28_test:
+ sub sp, sp, #96
+ str x30, [sp]
+ mov w28, #101
+ adr x1, m28_start
+ adr x2, m28_start_end
+ sub x2, x2, x1
+ bl write_console
+ mov x16, #2 /* fork */
+ svc #0x80
+ b.cs m28_sysfail
+ cbnz x1, m28_child
+ mov x20, x0 /* exact child PID, never wait for an unrelated process */
+ mov w21, #100 /* at most 100 x 100ms waits */
+ mov w28, #102
+m28_wait:
+ str wzr, [sp, #16]
+ mov x0, x20
+ add x1, sp, #16
+ mov x2, #1 /* WNOHANG */
+ mov x3, #0
+ mov x16, #7 /* wait4 */
+ svc #0x80
+ b.cs m28_wait_error
+ cbz x0, m28_delay
+ cmp x0, x20
+ b.ne m28_bad_status
+ ldr w27, [sp, #16]
+ mov w9, #0x3100 /* WIFEXITED && WEXITSTATUS == 49 */
+ cmp w27, w9
+ b.ne m28_bad_status
+ adr x1, m28_ok
+ adr x2, m28_ok_end
+ sub x2, x2, x1
+ bl write_console
+ b m28_return
+m28_wait_error:
+ cmp w0, #4 /* EINTR still consumes a bounded retry */
+ b.ne m28_sysfail
+m28_delay:
+ subs w21, w21, #1
+ b.eq m28_timeout
+ stp xzr, xzr, [sp, #32]
+ mov w9, #34464
+ movk w9, #1, lsl #16 /* timeval.tv_usec = 100000 */
+ str w9, [sp, #40]
+ mov x0, #0
+ mov x1, #0
+ mov x2, #0
+ mov x3, #0
+ add x4, sp, #32
+ mov x16, #93
+ svc #0x80
+ b m28_wait
+m28_timeout:
+ mov x0, x20
+ mov x1, #9 /* SIGKILL; the created child only */
+ mov x2, #1
+ mov x16, #37
+ svc #0x80
+ /* The alive loop reaps this child if termination is not immediate. */
+ mov w28, #104
+ mov w27, #0
+ b m28_fail
+m28_bad_status:
+ mov w28, #103
+ ldr w27, [sp, #16]
+ b m28_fail
+m28_sysfail:
+ mov w27, w0
+m28_fail:
+ adr x1, m28_error
+ adr x2, m28_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w28
+ bl m19_hex
+ adr x1, m28_detail
+ adr x2, m28_detail_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+m28_return:
+ ldr x30, [sp]
+ add sp, sp, #96
+ ret
+m28_child:
+ adr x0, m28_path
+ stp x0, xzr, [sp, #48] /* argv = { path, NULL } */
+ str xzr, [sp, #64] /* envp = { NULL } */
+ add x1, sp, #48
+ add x2, sp, #64
+ mov x16, #59 /* execve: success never returns */
+ svc #0x80
+ mov w27, w0
+ adr x1, m28_exec_error
+ adr x2, m28_exec_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+ mov x0, #127
+ mov x16, #1 /* child only: exit */
+ svc #0x80
+ b hang
+m28_path:
+ .asciz "/emmc/sbin/m28-probe"
+m28_start:
+ .ascii "XCOVER5 M28 USER: fork + exec /emmc/sbin/m28-probe\n"
+m28_start_end:
+m28_ok:
+ .ascii "XCOVER5 M28 USER PASS: cache inventory + child exit 49\n"
+m28_ok_end:
+m28_error:
+ .ascii "XCOVER5 M28 USER FAIL stage="
+m28_error_end:
+m28_detail:
+ .ascii "XCOVER5 M28 errno/status="
+m28_detail_end:
+m28_exec_error:
+ .ascii "XCOVER5 M28 child exec errno="
+m28_exec_error_end:

@@ -38,6 +38,10 @@ on:
       - "tools/sweet-mmap-code.S"
       - "tools/mkdynamic.py"
       - "tools/mkappleprobe.py"
+      - "tools/cache-layout.json"
+      - "tools/cache_placeholders.py"
+      - "tools/mkhfscache.sh"
+      - "tools/sweet-cache.S"
       - "tools/sweet-apple-dyld.S"
       - ".github/workflows/xnu.yml"
 
@@ -107,7 +111,7 @@ jobs:
 
       - name: Verify required storage kernel code
         run: |
-          python3 -c 'from pathlib import Path; p=Path("dxb/fakeroot/System/Library/Kernels"); ks=[k for k in p.glob("kernel.*") if k.is_file()]; assert ks, "No kernels"; assert all(b"XCOVER5 M18: /dev/xcmmc read-only registered" in k.read_bytes() for k in ks), "M18 patch missing from kernel"; assert all(b"XCOVER5 M20: /dev/xchfs read-only HFS view" in k.read_bytes() for k in ks), "M20 patch missing from kernel"; assert all(b"XCOVER5 M22D: main parse ret=" in k.read_bytes() and b"XCOVER5 M22D: signature failure errno=" in k.read_bytes() for k in ks), "M22D diagnostics missing from kernel"'
+          python3 -c 'from pathlib import Path; p=Path("dxb/fakeroot/System/Library/Kernels"); ks=[k for k in p.glob("kernel.*") if k.is_file()]; assert ks, "No kernels"; assert all(b"XCOVER5 M18: /dev/xcmmc read-only registered" in k.read_bytes() for k in ks), "M18 patch missing from kernel"; assert all(b"XCOVER5 M20: /dev/xchfs read-only HFS view" in k.read_bytes() for k in ks), "M20 patch missing from kernel"; assert all(b"XCOVER5 M22D: main parse ret=" in k.read_bytes() and b"XCOVER5 M22D: signature failure errno=" in k.read_bytes() for k in ks), "M22D diagnostics missing from kernel"; assert all(b"XCOVER5 M28: /dev/xcuserdata read-only HFS view" in k.read_bytes() for k in ks), "M28 driver missing from kernel"'
 
       - name: Save compiled kernel before image generation
         if: steps.kernel-cache.outputs.cache-hit != 'true'
@@ -148,9 +152,18 @@ jobs:
           xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-apple-dyld.S -o out/m27-probe.o
           python3 tools/mkappleprobe.py out/m27-probe.o out/m27-probe out/m27-apple-dyld.placeholder
           shasum -a 256 out/m27-probe out/m27-apple-dyld.placeholder > out/APPLE_PROBE_SHA256SUMS
+          python3 tools/cache_placeholders.py assembly out/cache-records.inc
+          xcrun clang -target arm64-apple-ios16.0 -Iout -c tools/sweet-cache.S -o out/m28-probe.o
+          python3 tools/mkinit.py out/m28-probe.o out/m28-probe
+          shasum -a 256 out/m28-probe > out/CACHE_PROBE_SHA256SUMS
           shasum -a 256 out/init-mockfs.img > out/INIT_SHA256SUMS
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
+
+      - name: Build synthetic cache volume template
+        run: |
+          bash tools/mkhfscache.sh out/userdata-cache-template.img
+          shasum -a 256 out/userdata-cache-template.img > out/CACHE_TEMPLATE_SHA256SUMS
 
       - name: Package build tree for local compiles
         if: always() && inputs.diagnostics == true && steps.kernel-cache.outputs.cache-hit != 'true'

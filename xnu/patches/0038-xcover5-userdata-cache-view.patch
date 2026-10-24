@@ -1,0 +1,123 @@
+--- a/bsd/dev/xcmmc.c
++++ b/bsd/dev/xcmmc.c
+@@ -38,3 +38,4 @@
+ };
+ #include "xchfs.h"
++#include "xcuserland.h"
+ void xcover5_mmc_dev_init(void) {
+@@ -48,3 +49,4 @@
+  printf("XCOVER5 M18: /dev/xcmmc read-only registered\n");
+  xchfs_init();
++ xcuserland_init();
+ }
+--- /dev/null
++++ b/bsd/dev/xcuserland.h
+@@ -0,0 +1,108 @@
++/* Dedicated userdata HFS cache view. Read-only; reuses xc_bytes bounds/sector lock. */
++static struct xc_hfs_view xu_view;
++static uint32_t xu_blocksize=512;
++/* Discover only the named userdata partition; no partition/media writes. */
++static int xu_discover(struct xc_hfs_view *v) {
++ uint8_t h[512],b[512]; uint64_t cap=xcover5_mmc_capacity(),first,last,start=0,end=0;
++ uint32_t crc=~0U,expected; memset(v,0,sizeof(*v));
++ if(cap<34 || xc_bytes(512,h,512) || memcmp(h,"EFI PART",8))return 1;
++ uint32_t hs=xc_le32(h+12),hc=xc_le32(h+16); memset(h+16,0,4);
++ if(hs<92 || hs>512 || xc_le32(h+8)!=0x10000 || (~xc_crc(~0U,h,hs))!=hc)return 1;
++ first=xc_le64(h+40);last=xc_le64(h+48);
++ if(xc_le64(h+24)!=1 || xc_le64(h+32)!=cap-1 || first<34 || last<first || last>=cap-1 ||
++    xc_le64(h+72)!=2 || xc_le32(h+80)!=128 || xc_le32(h+84)!=128)return 2;
++ expected=xc_le32(h+88);
++ for(unsigned i=0;i<32;i++) {
++  if(xc_bytes((uint64_t)(2+i)*512,b,512))return 3;
++  crc=xc_crc(crc,b,512);
++  for(unsigned j=0;j<4;j++) {
++   const uint8_t *e=b+j*128;
++   if(!(xc_le64(e)|xc_le64(e+8)))continue;
++   if(memcmp(e+56,"u\0s\0e\0r\0d\0a\0t\0a\0\0\0",18))continue;
++   if(start)return 4;
++   start=xc_le64(e+32);end=xc_le64(e+40);
++   if(start<first || end<start || end>last)return 4;
++  }
++ }
++ if((~crc)!=expected || !start)return 3;
++ /* Refuse overlapping GPT entries even when the CRC is consistent. */
++ for(unsigned i=0;i<32;i++) {
++  if(xc_bytes((uint64_t)(2+i)*512,b,512))return 3;
++  for(unsigned j=0;j<4;j++) {
++   const uint8_t *e=b+j*128;
++   if(!(xc_le64(e)|xc_le64(e+8)))continue;
++   if(!memcmp(e+56,"u\0s\0e\0r\0d\0a\0t\0a\0\0\0",18))continue;
++   uint64_t lo=xc_le64(e+32),hi=xc_le64(e+40);
++   if(lo<first || hi<lo || hi>last || (lo<=end && hi>=start))return 4;
++  }
++ }
++ uint64_t size=(end-start+1)*512,base=start*512;
++ if(size<4096 || xc_bytes(base+1024,h,512) || h[0]!='H' || h[1]!='X')return 5;
++ uint32_t bs=xc_be32(h+40),bc=xc_be32(h+44);
++ uint64_t vs=(uint64_t)bs*bc;
++ if(bs!=4096 || vs!=3ULL*1024*1024*1024 || vs>size || (h[2]!=0 || h[3]!=5))return 6;
++ /* Require clean unmounted and non-journaled volume; this driver never repairs. */
++ uint32_t attr=xc_be32(h+4);
++ if(!(attr&(1U<<8)) || (attr&((1U<<11)|(1U<<13))))return 7;
++ if(xc_bytes(base+vs-1024,b,512) || memcmp(h,b,4) || memcmp(h+40,b+40,8) || memcmp(h+104,b+104,8))return 8;
++ v->base=base;v->size=vs;return 0;
++}
++#ifndef XCHFS_HOST_TEST
++static int xu_hfs_open(dev_t dev,int flags,int type,struct proc *p) {
++ (void)dev;(void)type;(void)p;
++ if(flags&FWRITE)return EROFS;
++ return xu_view.size?0:ENXIO;
++}
++static int xu_hfs_ioctl(dev_t dev,u_long cmd,caddr_t data,int flags,struct proc *p) {
++ (void)dev;(void)flags;(void)p;
++ if(!xu_view.size)return ENXIO;
++ switch(cmd) {
++ case DKIOCGETBLOCKSIZE:*(uint32_t *)data=xu_blocksize;return 0;
++ case DKIOCGETPHYSICALBLOCKSIZE:*(uint32_t *)data=512;return 0;
++ case DKIOCSETBLOCKSIZE:
++  if(*(uint32_t *)data!=512 && *(uint32_t *)data!=4096)return EINVAL;
++  xu_blocksize=*(uint32_t *)data;return 0;
++ case DKIOCGETBLOCKCOUNT:*(uint64_t *)data=xu_view.size/xu_blocksize;return 0;
++ case DKIOCISWRITABLE:*(uint32_t *)data=0;return 0;
++ case DKIOCISFORMATTED:*(uint32_t *)data=1;return 0;
++ case DKIOCGETMAXBLOCKCOUNTREAD:*(uint64_t *)data=65536/xu_blocksize;return 0;
++ case DKIOCGETMAXBYTECOUNTREAD:*(uint64_t *)data=65536;return 0;
++ default:return ENOTTY;
++ }
++}
++static void xu_hfs_strategy(struct buf *bp) {
++ uint32_t n=buf_count(bp),bs=xu_blocksize;
++ daddr64_t blk=buf_blkno(bp);caddr_t addr=NULL;int err=0;
++ static int reported;
++ buf_setresid(bp,n);
++ if(!(buf_flags(bp)&B_READ)){err=EROFS;goto done;}
++ if(!xu_view.size){err=ENXIO;goto done;}
++ if(blk<0 || (uint64_t)blk>xu_view.size/bs){err=EINVAL;goto done;}
++ uint64_t off=(uint64_t)blk*bs;
++ if(n>xu_view.size-off || n>1024*1024){err=EINVAL;goto done;}
++ if(!n)goto done;
++ err=buf_map(bp,&addr);if(err)goto done;
++ if(!reported){reported=1;printf("XCOVER5 M28: first userdata HFS block read from eMMC\n");}
++ err=xc_bytes(xu_view.base+off,addr,n);
++ buf_unmap(bp);
++ if(!err)buf_setresid(bp,0);
++done:
++ if(err){buf_seterror(bp,err);printf("XCOVER5 M28: block error=%d\n",err);}
++ buf_biodone(bp);
++}
++static int xu_hfs_psize(dev_t dev) {(void)dev;return (int)xu_blocksize;}
++static const struct bdevsw xu_hfs_sw={
++ .d_open=xu_hfs_open,.d_close=xc_close,.d_strategy=xu_hfs_strategy,
++ .d_ioctl=xu_hfs_ioctl,.d_dump=eno_dump,.d_psize=xu_hfs_psize,.d_type=D_DISK
++};
++static void xcuserland_init(void) {
++ int stage=xu_discover(&xu_view);
++ if(stage){printf("XCOVER5 M28: HFS view discovery failed stage=%d\n",stage);return;}
++ int maj=bdevsw_add(-1,&xu_hfs_sw);
++ if(maj<0){printf("XCOVER5 M28: bdevsw_add failed\n");return;}
++ if(!devfs_make_node(makedev(maj,0),DEVFS_BLOCK,0,0,0400,"xcuserdata")) {
++  bdevsw_remove(maj,&xu_hfs_sw);printf("XCOVER5 M28: devfs failed\n");return;
++ }
++ printf("XCOVER5 M28: /dev/xcuserdata read-only HFS view base=%llu size=%llu\n",xu_view.base,xu_view.size);
++}
++#endif
