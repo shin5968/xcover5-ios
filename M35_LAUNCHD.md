@@ -17,3 +17,7 @@ Video174106: launchd passed account initialization and rejected proof plist with
 ## M35C xpcproxy exit diagnostics
 
 Video175340 confirms job registration and PID17 xpcproxy SIGKILL in user/501 domain, no proof PASS. Add SWEET kernel logs for executable vnode name/load result/uid and committed exit namespace/code/flags/csflags for early PIDs1..64. Execution, signature and signal policy unchanged. Userspace image staging unchanged from M35B. This is a diagnostic build; root cause and JOB PASS remain pending.
+
+## M35D signing-invalidity details
+
+Photo183617: xpcproxy uid0 rv9 cs0x01000001 (CS_KILLED|CS_VALID), no committed reason. Add SIGN diagnostic with image vnode/errno/spawn/vfexec/signature-failure namespace/code, and PAGE diagnostic with virtual address/prior csflags/force flags. Enable existing page-invalidity detail log on SWEET; no page-validation, entitlement or exec policy change. Package M35D retains M35E SIGN/PAGE marker names to distinguish from M35D LOAD/EXIT. Hardware diagnosis pending.

@@ -82,12 +82,16 @@
  				signature_failure_reason = os_reason_create(OS_REASON_EXEC,
  				    EXEC_EXIT_REASON_WRONG_PLATFORM);
  				error = EACCES;
-@@ -7558,6 +7569,9 @@
+@@ -7558,6 +7569,13 @@
  			    "'%s' with cdhash %s\n", p->p_name, cdhash_string);
  		}
  	} else {
 +#if defined(SWEET)
 +		printf("XCOVER5 M22D: signature failure errno=%d pid=%d unexpected=%d\n", error, proc_getpid(p), unexpected_failure);
++		printf("XCOVER5 M35E SIGN pid=%d name=%s file=%s errno=%d spawn=%d vfexec=%d reason=%u code=%llx\n",
++		    proc_getpid(p), p->p_name, imgp->ip_vp->v_name, error, spawn, vfexec,
++		    signature_failure_reason ? signature_failure_reason->osr_namespace : 0,
++		    signature_failure_reason ? (unsigned long long)signature_failure_reason->osr_code : 0ULL);
 +#endif
  		if (!unexpected_failure) {
  			proc_csflags_set(p, CS_KILLED);
