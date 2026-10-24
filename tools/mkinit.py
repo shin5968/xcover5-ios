@@ -65,7 +65,7 @@ def segment(name, vmaddr, vmsize, fileoff, filesize, prot, sections=()):
     return cmd + b''.join(sections)
 
 
-def code_signature(image, code_limit, text_size, entitlements=None):
+def code_signature(image, code_limit, text_size, entitlements=None, exec_flags=1):
     """SuperBlob holding one ad-hoc CodeDirectory (version 0x20400) over image[:code_limit],
     plus an XML entitlements blob (special slot 5) when entitlements (plist bytes) are given."""
     page = 1 << CS_PAGE_SHIFT
@@ -86,7 +86,7 @@ def code_signature(image, code_limit, text_size, entitlements=None):
                      hash_off, ident_off, nspecial, nslots, code_limit,
                      32, 2, 0, CS_PAGE_SHIFT, 0)			# SHA-256, 4K pages
     cd += struct.pack('>III', 0, 0, 0)		# scatterOffset, teamOffset, spare3
-    cd += struct.pack('>QQQQ', 0, 0, text_size, 1)	# codeLimit64, execSeg base/limit, MAIN_BINARY
+    cd += struct.pack('>QQQQ', 0, 0, text_size, exec_flags)	# codeLimit64, execSeg base/limit/flags
     assert len(cd) == hdr_len
     cd += IDENT + hashes
     if ent_blob is None:

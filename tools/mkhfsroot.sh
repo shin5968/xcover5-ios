@@ -9,6 +9,8 @@ LOADER=${5:?LOADER required}
 MMAP=${6:?MMAP required}
 CODE=${7:?CODE required}
 COW=${8:?COW required}
+SEGMENT=${9:?SEGMENT required}
+LIBRARY=${10:?LIBRARY required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
@@ -28,6 +30,9 @@ sudo cp "$CODE" "$WORK/mnt/usr/lib/m23-code"
 sudo chmod 755 "$WORK/mnt/sbin/m23-probe" "$WORK/mnt/usr/lib/m23-code"
 sudo cp "$COW" "$WORK/mnt/sbin/m24-probe"
 sudo chmod 755 "$WORK/mnt/sbin/m24-probe"
+sudo cp "$SEGMENT" "$WORK/mnt/sbin/m25-probe"
+sudo cp "$LIBRARY" "$WORK/mnt/usr/lib/libm25.dylib"
+sudo chmod 755 "$WORK/mnt/sbin/m25-probe" "$WORK/mnt/usr/lib/libm25.dylib"
 printf 'XCOVER5 M20 eMMC file read verified\n' | sudo tee "$WORK/mnt/m20-proof.txt" >/dev/null
 echo 'XCOVER5 HFS root test' | sudo tee "$WORK/mnt/root-test.txt" >/dev/null
 sync

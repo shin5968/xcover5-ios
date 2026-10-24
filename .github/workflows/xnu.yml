@@ -31,6 +31,8 @@ on:
       - "tools/sweet-loader.S"
       - "tools/sweet-mmap.S"
       - "tools/sweet-cow.S"
+      - "tools/sweet-segment.S"
+      - "tools/mksegment.py"
       - "tools/sweet-mmap-code.S"
       - "tools/mkdynamic.py"
       - ".github/workflows/xnu.yml"
@@ -131,8 +133,12 @@ jobs:
           xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-cow.S -o out/m24-probe.o
           python3 tools/mkinit.py out/m24-probe.o out/m24-probe
           shasum -a 256 out/m24-probe > out/COW_SHA256SUMS
+          xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-segment.S -o out/m25-probe.o
+          python3 tools/mkinit.py out/m25-probe.o out/m25-probe
+          python3 tools/mksegment.py out/libm25.dylib
+          shasum -a 256 out/m25-probe out/libm25.dylib > out/SEGMENT_SHA256SUMS
           shasum -a 256 out/init-mockfs.img > out/INIT_SHA256SUMS
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Package build tree for local compiles
