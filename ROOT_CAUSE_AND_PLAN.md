@@ -98,3 +98,12 @@ M35F부터 이미 통과한 회귀 실행을 생략한 빠른 경로를 사용�
 4. 실제 기기에서 M35 JOB PASS, 정상 종료0, 전후 지연 측정이 함께 나와야 개선을 주장한다. 동일 이미지 반복 부팅은 그 다음 안정성 검증으로 한다.
 
 이후 기능 단계는 bootstrap 서비스 등록/조회/요청-응답이다. 현재 성공은 launchd가 단일 자체 작업을 실행한 범위이며 iOS 홈 화면 도달 시점은 아직 산정할 수 없다.
+
+
+## M35I 시간 측정 구현
+
+0045-xcover5-launch-timing.patch는 launchd.ios / xpcproxy / m35-proof의 LOAD 완료 지점에서 `XCOVER5 PERF LOAD`를 출력한다. ms는 단조 시계의 밀리초, sectors/io_ms/errors는 부팅 후 장치 읽기의 누적값이다. io_ms는 media_lock 획득 이후 CMD17 처리 구간이며 잠금 대기는 제외하고 선점은 포함한다. LOAD는 dyld나 main 진입을 증명하지 않으므로 기존 JOB PASS와 함께 판단한다. 콘솔 출력 비용은 이번 구현에서 별도 계측하지 않는다.
+
+진단은 기존 signing/exec/스토리지 동작을 변경하지 않는다. 섹터별 printf나 새 타이머 스레드는 없다. 원본 사용자 공간 파일, proof와 plist는 그대로 유지한다. 적용 검사와 실제 읽기/스냅샷 함수의 호스트 컴파일 검사를 통과했다. 검사에는 성공, 전송 실패, R1 오류, 범위 밖 요청, 반복 스냅샷, 장치 미준비가 포함된다. 실제 하드웨어 속도 개선을 입증하는 검사는 아니다.
+
+M35I build/package verification: CI40092579110 success, source0d50e212d03fdfa27d548ed7fa9bd84eed0603fc. PERF marker present in actual kernel. AP boot-only/Odin MD5/44MiB partition fit passed. Independent HFS extraction checks passed; all59 catalog entries match M35H. AP SHA256 1f273f6d198c0a633c3d310c1592b643c7c55ed283230ca47633b8451f96ec01. Output: xcover5/artifacts/m35i/AP_M35I_TIMING.tar.md5. Hardware timing result pending; no speedup claim.
