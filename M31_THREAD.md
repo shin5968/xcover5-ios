@@ -33,3 +33,7 @@ and stack, shared heap, callback callee-save checks and injected failures;
 fourteen parent spawn/wait paths; M30 byte reproduction and ten M30 mocked
 import paths. These mocks do not validate Apple's scheduler/runtime. Hardware
 result pending. Package boot only in xcover5/artifacts/m31; retain userdata.
+
+## Hardware result 2026-10-24 14:11
+
+Photo141145 confirms worker entry, M31 CHILD PASS and USER PASS exit52; M29 and M30 also pass. Original libSystem malloc/free and pthread create/join with a distinct worker and checked shared heap are established.

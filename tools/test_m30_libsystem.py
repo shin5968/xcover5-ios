@@ -51,17 +51,18 @@ while i < len(stream):
         binds.append((ordinal,typ,segment,offset,symbol)); offset += 8
     else: raise AssertionError(hex(op))
 names = ([b'_malloc',b'_free',b'_pthread_create',b'_pthread_join',b'_pthread_self'] if '--thread' in sys.argv else [b'_getpid',b'_strlen',b'_memcmp',b'_read',b'_write'])
+if '--mutex' in sys.argv: names=[b'_pthread_mutex_init',b'_pthread_mutex_lock',b'_pthread_mutex_unlock',b'_pthread_mutex_destroy',b'_pthread_create',b'_pthread_join']
 assert binds == [(1,1,2,8*j,n) for j,n in enumerate(names)]
 so, ns, st, ss = struct.unpack_from('<4I', commands[2], 8)
-assert ns == 5
+assert ns == len(names)
 for j,name in enumerate(names):
     sx,ty,se,de,val = struct.unpack_from('<IBBHQ', b, so+16*j)
     assert (ty,se,de,val) == (1,0,0x100,0)
     assert b[st+sx:st+ss].split(b'\0')[0] == name
 dysym = struct.unpack_from('<18I', commands[0xb], 8)
-assert dysym[:6] == (0,0,0,0,0,5)
+assert dysym[:6] == (0,0,0,0,0,len(names))
 ind, count = dysym[12:14]
-assert count == 5 and struct.unpack_from('<5I', b, ind) == tuple(range(5))
+assert count == len(names) and struct.unpack_from('<%dI' % count, b, ind) == tuple(range(count))
 sigoff, sigsize = struct.unpack_from('<II', commands[0x1d], 8)
 linkoff,linksize = struct.unpack_from('<QQ', segments[3], 40)
 assert linkoff <= info[2] < so < st < ind < sigoff
@@ -72,7 +73,7 @@ hashoff,_,special,slots,limit = struct.unpack_from('>5I',cd,16)
 assert special == 0 and limit == sigoff and slots == (limit+4095)//4096
 for j in range(slots):
     assert cd[hashoff+32*j:hashoff+32*(j+1)] == hashlib.sha256(b[j*4096:min(limit,(j+1)*4096)]).digest()
-print('PASS: load commands, RW data/RX text, five ordinal-1 imports, bind stream, symbol/indirect tables, every signature page')
+print('PASS: load commands, RW data/RX text, ordinal-1 imports, bind stream, symbol/indirect tables, every signature page')
 
 if '--emulate' in sys.argv:
     from unicorn import Uc,UC_ARCH_ARM64,UC_MODE_ARM,UC_HOOK_INTR,UC_HOOK_CODE

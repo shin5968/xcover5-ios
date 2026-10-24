@@ -15,7 +15,7 @@ CODE_OFF = 2048
 IMPORTS = (b'_getpid', b'_strlen', b'_memcmp', b'_read', b'_write')
 
 def build_code(code, start=0, imports=IMPORTS):
-    assert len(imports) == 5 and len(set(imports)) == 5
+    assert 1 <= len(imports) <= 16 and len(set(imports)) == len(imports)
     assert start == 0, 'assembly computes DATA relative to _start'
     assert CODE_OFF + len(code) <= m.SEG
     # ordinal 1, pointer type, __DATA (segment index 2), offset zero.
@@ -35,14 +35,14 @@ def build_code(code, start=0, imports=IMPORTS):
     link += strings
     link += bytes((-len(link)) % 4)
     indirect = linkoff + len(link)
-    link += struct.pack('<5I', *range(5))
+    link += struct.pack('<%dI' % len(imports), *range(len(imports)))
     link += bytes((-len(link)) % 16)
     sigoff = linkoff + len(link)
     sigsize = len(m.code_signature(bytes(sigoff), sigoff, m.SEG))
     text = struct.pack('<16s16sQQIIIIIIII', b'__text', b'__TEXT',
                        m.BASE+CODE_OFF, len(code), CODE_OFF, 2, 0, 0, m.S_ATTR_CODE, 0, 0, 0)
     pointers = struct.pack('<16s16sQQIIIIIIII', b'__nl_symbol_ptr', b'__DATA',
-                           m.BASE+m.SEG, 40, m.SEG, 3, 0, 0, 6, 0, 0, 0)
+                           m.BASE+m.SEG, 8*len(imports), m.SEG, 3, 0, 0, 6, 0, 0, 0)
     lib = b'/usr/lib/libSystem.B.dylib\0'
     libsize = (24+len(lib)+7)&~7
     dylib = struct.pack('<6I', 0xc, libsize, 24, 0, 0x10000, 0x10000)+lib
