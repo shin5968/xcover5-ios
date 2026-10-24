@@ -170,3 +170,10 @@ No scoped M36A allow marker, PEER PASS or CHILD PASS in these frames. The propos
 Next inspect actual syscall dispatch and capture return/guard reason plus runtime build identity before changing the allowlist. Host/emulator tests validated selected inputs only, not actual launchd request and kernel dispatch.
 No new firmware created during this review.
 
+
+
+## M36B: correct lookup filter variants
+
+M36A hardware still failed159/121/109. Static audit found its filter7-only allowlist rejects launchd ordinary lookup (wrapper type1 -> API2 -> internal6). Original ARM64 emulator also verifies API3->7 and API12->50. Patch0048 handles those exact mach-lookup variants and observed cross-domain filter6, preserving service/client/version/parent restrictions and existing registered-policy decisions. Host positive/negative and dispatch tests pass. Actual hardware fix remains pending. Evidence: research/launchd-rootcause/M36B-analysis.txt. Next gate is peer+server request/reply PASS and server exit0, before any next milestone.
+
+M36B build40099788753 SUCCESS, source b2642dc. Packaged artifacts/m36b/AP_M36B_LOOKUP_FILTERS.tar.md5 SHA25643a18b385651363f97dcf4d88def70374c7accd56ee55ebf7a049fe00059835c. Actual kernel marker, manifest, boot-only archive/MD5/size, unchanged shim/DTB, and independent HFS61paths/35files comparison PASS. Hardware pending; no device write performed.
