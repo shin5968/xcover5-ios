@@ -13,6 +13,8 @@ boot = Path(sys.argv[2]).read_bytes()
 probe = Path(sys.argv[3]).read_bytes() if len(sys.argv) > 3 else None
 dynamic = tuple(Path(p).read_bytes() for p in sys.argv[4:6]) or None
 mapped = tuple(Path(p).read_bytes() for p in sys.argv[6:8]) or None
+cow = (Path(sys.argv[8]).read_bytes(), mapped[1]) if len(sys.argv) > 8 else None
+if b'M24 USER PASS' in code: assert cow
 if b'M23 USER PASS' in code: assert mapped and len(mapped) == 2
 if b'M22 USER PASS' in code: assert dynamic and len(dynamic) == 2
 if b'M21 USER PASS' in code:
@@ -122,12 +124,12 @@ def run(mode, expected_stage=None):
         elif n == 6: result(0)
         elif n == 2:
             child_state['forks'] += 1
-            prefix = ('m21', 'm22', 'm23')[child_state['forks']-1]
+            prefix = ('m21', 'm22', 'm23', 'm24')[child_state['forks']-1]
             child_state['prefix'] = prefix
             child_state['waits'] = 0
             if mode == prefix+'_fork': result(12, True)
             else:
-                status, child_output = child(u, code, probe, mode, dynamic if prefix == 'm22' else None, mapped if prefix == 'm23' else None)
+                status, child_output = child(u, code, probe, mode, dynamic if prefix == 'm22' else None, mapped if prefix == 'm23' else None, cow if prefix == 'm24' else None)
                 output.extend(child_output)
                 child_state['status'] = status
                 u.reg_write(UC_ARM64_REG_X1, 0)
@@ -166,7 +168,7 @@ def run(mode, expected_stage=None):
     u.hook_add(UC_HOOK_INTR, syscall)
     u.emu_start(0x100000, 0x100000+len(code), count=20000000)
     out = ''.join(output)
-    if mode.startswith(('m21_', 'm22_', 'm23_')):
+    if mode.startswith(('m21_', 'm22_', 'm23_', 'm24_')):
         label = mode[:3].upper()
         if expected_stage is None:
             assert label+' USER PASS' in out, out
@@ -187,6 +189,7 @@ def run(mode, expected_stage=None):
         if b'M20 USER PASS' in code: assert 'M20 USER PASS' in out, out
         if b'M21 USER PASS' in code: assert 'M21 USER PASS' in out, out
         if b'M22 USER PASS' in code: assert 'M22 USER PASS' in out, out
+        if b'M24 USER PASS' in code: assert 'M24 USER PASS' in out, out
         if b'M23 USER PASS' in code: assert 'M23 USER PASS' in out, out
         kernel_size = struct.unpack_from('<I', boot, 8)[0]
         offset = 2048 + ((kernel_size+2047)//2048)*2048
@@ -231,4 +234,13 @@ if b'M21 USER PASS' in code:
                         ('m21_eintr', None), ('m21_child_pid', 33), ('m21_child_open', 33),
                         ('m21_child_read', 33), ('m21_child_short', 33),
                         ('m21_child_content', 33), ('m21_child_write', 33)]:
+        run(mode, stage)
+
+if b'M24 USER PASS' in code:
+    for mode, stage in [('m24_fork', 61), ('m24_wait', 62), ('m24_timeout', 64),
+                        ('m24_exec_error', 63), ('m24_exit', 63), ('m24_signal', 63),
+                        ('m24_eintr', None), ('m24_child_pid', 63), ('m24_child_open', 63),
+                        ('m24_child_short', 63), ('m24_child_mmap', 63), ('m24_child_map_ro', 63),
+                        ('m24_child_content', 63), ('m24_child_original', 63),
+                        ('m24_child_protect', 63), ('m24_child_munmap', 63), ('m24_child_write', 63)]:
         run(mode, stage)

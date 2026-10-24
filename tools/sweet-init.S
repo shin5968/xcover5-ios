@@ -106,6 +106,7 @@ mmc_report:
  bl m21_test
  bl m22_test
  bl m23_test
+ bl m24_test
 
 tick:
 	/* Reap any late child after a timed-out M21; never block PID 1. */
@@ -971,3 +972,129 @@ m23_detail_end:
 m23_exec_error:
  .ascii "XCOVER5 M23 child exec errno="
 m23_exec_error_end:
+
+/* M24: same bounded process harness, private data mapping probe. */
+.p2align 2
+m24_test:
+ sub sp, sp, #96
+ str x30, [sp]
+ mov w28, #61
+ adr x1, m24_start
+ adr x2, m24_start_end
+ sub x2, x2, x1
+ bl write_console
+ mov x16, #2 /* fork */
+ svc #0x80
+ b.cs m24_sysfail
+ cbnz x1, m24_child
+ mov x20, x0 /* exact child PID, never wait for an unrelated process */
+ mov w21, #100 /* at most 100 x 100ms waits */
+ mov w28, #62
+m24_wait:
+ str wzr, [sp, #16]
+ mov x0, x20
+ add x1, sp, #16
+ mov x2, #1 /* WNOHANG */
+ mov x3, #0
+ mov x16, #7 /* wait4 */
+ svc #0x80
+ b.cs m24_wait_error
+ cbz x0, m24_delay
+ cmp x0, x20
+ b.ne m24_bad_status
+ ldr w27, [sp, #16]
+ mov w9, #0x2d00 /* WIFEXITED && WEXITSTATUS == 45 */
+ cmp w27, w9
+ b.ne m24_bad_status
+ adr x1, m24_ok
+ adr x2, m24_ok_end
+ sub x2, x2, x1
+ bl write_console
+ b m24_return
+m24_wait_error:
+ cmp w0, #4 /* EINTR still consumes a bounded retry */
+ b.ne m24_sysfail
+m24_delay:
+ subs w21, w21, #1
+ b.eq m24_timeout
+ stp xzr, xzr, [sp, #32]
+ mov w9, #34464
+ movk w9, #1, lsl #16 /* timeval.tv_usec = 100000 */
+ str w9, [sp, #40]
+ mov x0, #0
+ mov x1, #0
+ mov x2, #0
+ mov x3, #0
+ add x4, sp, #32
+ mov x16, #93
+ svc #0x80
+ b m24_wait
+m24_timeout:
+ mov x0, x20
+ mov x1, #9 /* SIGKILL; the created child only */
+ mov x2, #1
+ mov x16, #37
+ svc #0x80
+ /* The alive loop reaps this child if termination is not immediate. */
+ mov w28, #64
+ mov w27, #0
+ b m24_fail
+m24_bad_status:
+ mov w28, #63
+ ldr w27, [sp, #16]
+ b m24_fail
+m24_sysfail:
+ mov w27, w0
+m24_fail:
+ adr x1, m24_error
+ adr x2, m24_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w28
+ bl m19_hex
+ adr x1, m24_detail
+ adr x2, m24_detail_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+m24_return:
+ ldr x30, [sp]
+ add sp, sp, #96
+ ret
+m24_child:
+ adr x0, m24_path
+ stp x0, xzr, [sp, #48] /* argv = { path, NULL } */
+ str xzr, [sp, #64] /* envp = { NULL } */
+ add x1, sp, #48
+ add x2, sp, #64
+ mov x16, #59 /* execve: success never returns */
+ svc #0x80
+ mov w27, w0
+ adr x1, m24_exec_error
+ adr x2, m24_exec_error_end
+ sub x2, x2, x1
+ bl write_console
+ mov w0, w27
+ bl m19_hex
+ mov x0, #127
+ mov x16, #1 /* child only: exit */
+ svc #0x80
+ b hang
+m24_path:
+ .asciz "/emmc/sbin/m24-probe"
+m24_start:
+ .ascii "XCOVER5 M24 USER: fork + exec /emmc/sbin/m24-probe\n"
+m24_start_end:
+m24_ok:
+ .ascii "XCOVER5 M24 USER PASS: private COW + protection + child exit 45\n"
+m24_ok_end:
+m24_error:
+ .ascii "XCOVER5 M24 USER FAIL stage="
+m24_error_end:
+m24_detail:
+ .ascii "XCOVER5 M24 errno/status="
+m24_detail_end:
+m24_exec_error:
+ .ascii "XCOVER5 M24 child exec errno="
+m24_exec_error_end:

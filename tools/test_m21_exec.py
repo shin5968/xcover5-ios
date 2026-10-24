@@ -6,8 +6,8 @@ import struct
 from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM, UC_HOOK_INTR
 from unicorn.arm64_const import *
 
-def child(parent, code, probe, mode, dynamic=None, mapped=None):
-    label = 'M23' if mapped else ('M22' if dynamic else 'M21')
+def child(parent, code, probe, mode, dynamic=None, mapped=None, cow=None):
+    label = 'M24' if cow else ('M23' if mapped else ('M22' if dynamic else 'M21'))
     prefix = label.lower()
     u = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
     for base, size in [(0x100000, 0x10000), (0x200000, 0x20000), (0x300000, 0x10000)]:
@@ -50,8 +50,48 @@ def child(parent, code, probe, mode, dynamic=None, mapped=None):
                 assert a[1] == 2
                 result(3)
             else:
-                assert name == (b'/emmc/usr/lib/m23-code' if mapped else b'/emmc/m20-proof.txt') and a[1] == 0
+                assert name == (b'/emmc/usr/lib/m23-code' if (mapped or cow) else b'/emmc/m20-proof.txt') and a[1] == 0
                 result(2, True) if mode == prefix+'_child_open' else result(6)
+        elif n == 153 and cow:
+            count = state.get('pread', 0)
+            state['pread'] = count + 1
+            assert a == [6, u.reg_read(UC_ARM64_REG_SP) + (32 if count else 0), 32, 0]
+            data = cow[1][:32]
+            if mode == 'm24_child_original' and count: data = b'!' + data[1:]
+            u.mem_write(a[1], data)
+            result(31 if mode == 'm24_child_short' else 32)
+        elif n == 197 and cow:
+            count = state.get('maps', 0)
+            state['maps'] = count + 1
+            args = [u.reg_read(r) for r in regs[:6]]
+            prot = 1 if count else 3
+            assert args == [0, 16384, prot, 2, 6, 0], args
+            if mode == ('m24_child_map_ro' if count else 'm24_child_mmap'):
+                result(13, True)
+            else:
+                addr = 0x600000 + count * 16384
+                data = bytearray(cow[1][:16384])
+                if mode == 'm24_child_content': data[0] ^= 1
+                u.mem_map(addr, 16384)
+                u.mem_write(addr, bytes(data))
+                u.mem_protect(addr, 16384, prot)
+                result(addr)
+        elif n == 74 and cow:
+            assert a[:3] == [0x600000, 16384, 1]
+            assert bytes(u.mem_read(0x600000, 8)) != cow[1][:8]
+            assert bytes(u.mem_read(0x604000, 32)) == cow[1][:32]
+            if mode == 'm24_child_protect': result(13, True)
+            else:
+                u.mem_protect(a[0], a[1], a[2])
+                result(0)
+        elif n == 73 and cow:
+            count = state.get('unmaps', 0)
+            state['unmaps'] = count + 1
+            assert a[:2] == [0x600000 + count * 16384, 16384]
+            if mode == 'm24_child_munmap': result(22, True)
+            else:
+                u.mem_unmap(a[0], a[1])
+                result(0)
         elif n == 153 and mapped:
             assert a == [6, u.reg_read(UC_ARM64_REG_SP), 32, 0]
             u.mem_write(a[1], mapped[1][:32])
@@ -105,7 +145,7 @@ def child(parent, code, probe, mode, dynamic=None, mapped=None):
             pc = prepare(u, *dynamic)
             u.emu_start(pc, 0x600000, count=100000)
         else:
-            u.mem_write(0x300000, mapped[0] if mapped else probe)
+            u.mem_write(0x300000, cow[0] if cow else (mapped[0] if mapped else probe))
             u.reg_write(UC_ARM64_REG_SP, 0x21ffe8)
             u.emu_start(0x300000, 0x310000, count=100000)
     assert state['exit'] is not None, state
@@ -113,9 +153,9 @@ def child(parent, code, probe, mode, dynamic=None, mapped=None):
         assert not state['exec'] and state['exit'] == 127
         assert 'child exec errno=00000008' in ''.join(output)
     elif mode.startswith(prefix+'_child_'):
-        assert state['exec'] and state['exit'] in (range(101, 109) if mapped else (111, 112)), state
+        assert state['exec'] and state['exit'] in (range(121, 131) if cow else (range(101, 109) if mapped else (111, 112))), state
     else:
-        assert state['exec'] and state['exit'] == (44 if mapped else (43 if dynamic else 42)), state
+        assert state['exec'] and state['exit'] == (45 if cow else (44 if mapped else (43 if dynamic else 42))), state
         assert label+' CHILD PASS' in ''.join(output)
         if dynamic: assert 'M22 LOADER PASS' in ''.join(output)
     return state['exit'] << 8, output
