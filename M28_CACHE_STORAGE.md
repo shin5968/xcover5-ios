@@ -1,14 +1,27 @@
 # M28: internal cache storage test
 
+**The initial raw `AP_M28_ERASE_USERDATA_CACHE.tar.md5` failed at `userdata.img`
+in Odin. Do not use it for another attempt. The revised candidate is
+`AP_M28_ERASE_USERDATA_CACHE_SPARSE_LZ4.tar.md5`. Device success is pending.**
+
+Stock SM-G525N firmware contains `userdata.img.lz4`, wrapping Android sparse v1
+(28-byte file header, 12-byte chunk header, 4096-byte blocks), in an LZ4 frame
+with independent 1 MiB blocks, content checksum, no block checksum, and stored
+content size. The stock PIT names USERDATA as `userdata.img`, matching our target.
+The revised transport uses the same format, with RAW/FILL chunks only (no skipped
+blocks). Its decoded raw image must exactly match the original verified HFS SHA256.
+This format difference is a compatibility hypothesis, not a confirmed cause of the failure.
+
+
 This build tests a dedicated read-only HFSX cache volume in the existing `userdata` partition.
 It does not establish successful iOS launch, libSystem initialization, or dyld shared-cache mapping.
 
 ## Destructive installation scope
 
-The locally generated `AP_M28_ERASE_USERDATA_CACHE.tar.md5` contains exactly:
+The revised locally generated `AP_M28_ERASE_USERDATA_CACHE_SPARSE_LZ4.tar.md5` contains exactly:
 
 - `boot.img`: the M28 test kernel, shim and 16 MiB RAM root.
-- `userdata.img`: a 3 GiB HFSX volume containing 43 locally supplied original cache files.
+- `userdata.img.lz4`: an Android sparse/LZ4 transport that expands to the same 3 GiB HFSX volume with 43 locally supplied original cache files.
 
 Flashing this archive **destroys the existing Android userdata filesystem and access to its apps,
 photos and files**. This is not a secure erase of every old byte. No PIT, GPT, `super`, bootloader,

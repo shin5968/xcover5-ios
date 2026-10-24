@@ -19,9 +19,18 @@ def package(boot,data,out):
  assert boot.is_file() and boot.stat().st_size<44*1024*1024
  with boot.open('rb') as f:
   h=f.read(48);assert h[:8]==b'ANDROID!' and struct.unpack_from('<I',h,40)[0]==2
- assert data.is_file() and data.stat().st_size==3*1024**3
- with data.open('rb') as f:f.seek(1024);assert f.read(4)==b'HX\0\5'
- sources={'boot.img':boot,'userdata.img':data};hashes={}
+ assert data.is_file()
+ if data.suffix=='.lz4':
+  import lz4.frame
+  with lz4.frame.open(data,'rb') as f:h=f.read(28)
+  magic,major,minor,fh,ch,bs,blocks,chunks,crc=struct.unpack('<IHHHHIIII',h)
+  assert (magic,major,minor,fh,ch,bs,blocks)==(0xed26ff3a,1,0,28,12,4096,786432) and chunks>0
+  member='userdata.img.lz4'
+ else:
+  assert data.stat().st_size==3*1024**3
+  with data.open('rb') as f:f.seek(1024);assert f.read(4)==b'HX\0\5'
+  member='userdata.img'
+ sources={'boot.img':boot,member:data};hashes={}
  with out.open('xb') as dst:
   with tarfile.open(fileobj=dst,mode='w',format=tarfile.GNU_FORMAT) as t:
    for name,p in sources.items():
@@ -39,6 +48,6 @@ def package(boot,data,out):
    hashes[name]=expected
  with out.open('rb') as f:hashes[out.name]=sha(f)
  out.with_suffix('.sha256.txt').write_text(''.join(f'{v}  {k}\n' for k,v in hashes.items()))
- print('Verified archive contains ONLY boot.img + userdata.img. ANDROID USERDATA WILL BE OVERWRITTEN.')
+ print('Verified archive contains ONLY boot.img + '+member+'. ANDROID USERDATA WILL BE OVERWRITTEN.')
  print(hashes)
 if __name__=='__main__':package(*(Path(p) for p in sys.argv[1:4]))
