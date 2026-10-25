@@ -81,48 +81,62 @@
  	struct cs_signer_info signer_info = {
 --- a/bsd/kern/kern_proc.c
 +++ b/bsd/kern/kern_proc.c
-@@ -76,6 +76,9 @@
+@@ -76,6 +76,10 @@
   */
  
  
 +#if defined(__arm64__)
 +#include <pexpert/arm64/board_config.h>
 +#endif
++#include <os/atomic_private.h>
  #include <sys/param.h>
  #include <sys/systm.h>
  #include <sys/kernel.h>
-@@ -3221,6 +3224,12 @@
+@@ -3221,10 +3225,23 @@
  			retflags &= (~CS_REQUIRE_LV);
  		}
  		proc_unlock(pt);
 +#if defined(XCOVER5)
-+        if (strcmp(pt->p_comm, "notifyd") == 0) {
-+            printf("XCOVER5 M38B CSOPS caller=%d target=%d status=%08x pb=%d\n",
-+                proc_selfpid(), proc_pid(pt), retflags, csproc_get_platform_binary(pt));
++        static unsigned int xcover5_status_reads;
++        unsigned int xcover5_seq = 0;
++        if (proc_selfpid() == 1 && proc_pid(pt) <= 64) {
++            xcover5_seq = os_atomic_inc_orig(&xcover5_status_reads, relaxed) + 1;
 +        }
 +#endif
  
  		if (uaddr != USER_ADDR_NULL) {
  			error = copyout(&retflags, uaddr, sizeof(uint32_t));
+ 		}
++#if defined(XCOVER5)
++        if (xcover5_seq != 0 && xcover5_seq <= 64) {
++            printf("XCOVER5 M38B CSOPS seq=%u target=%d name=%s status=%08x rc=%d pb_after=%d\n",
++                xcover5_seq, proc_pid(pt), pt->p_comm, retflags, error, csproc_get_platform_binary(pt));
++        }
++#endif
+ 		break;
+ 	}
+ 	case CS_OPS_MARKINVALID:
 --- a/bsd/kern/kern_cs.c
 +++ b/bsd/kern/kern_cs.c
-@@ -27,6 +27,9 @@
+@@ -27,6 +27,10 @@
   */
  
  #include <sys/types.h>
 +#if defined(__arm64__)
 +#include <pexpert/arm64/board_config.h>
 +#endif
++#include <os/atomic_private.h>
  #include <sys/param.h>
  #include <sys/systm.h>
  #include <sys/kernel.h>
-@@ -911,6 +914,11 @@
+@@ -911,6 +915,12 @@
  	    &platform_flags);
  
  	task_set_platform_binary(proc_task(p), FALSE);
 +#if defined(XCOVER5)
-+    if (strcmp(p->p_comm, "notifyd") == 0) {
-+        printf("XCOVER5 M38B CLEAR_PLATFORM caller=%d target=%d\n", proc_selfpid(), proc_pid(p));
++    static unsigned int xcover5_clear_count;
++    if (proc_pid(p) <= 64 && os_atomic_inc_orig(&xcover5_clear_count, relaxed) < 64) {
++        printf("XCOVER5 M38B CLEAR_PLATFORM caller=%d target=%d name=%s\n", proc_selfpid(), proc_pid(p), p->p_comm);
 +    }
 +#endif
  }
