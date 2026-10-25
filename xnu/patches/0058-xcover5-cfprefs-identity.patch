@@ -1,6 +1,6 @@
 --- a/bsd/kern/ubc_subr.c
 +++ b/bsd/kern/ubc_subr.c
-@@ -1,3 +1,7 @@
+@@ -4757,3 +4757,7 @@
          printf("XCOVER5 M38D: pinned notifyd signed state\n");
      }
 +    if (xcover5_cfprefs_platform(tmp_blob.csb_cdhash, cs_flags, platform)) {

@@ -61,6 +61,8 @@ on:
       - "tools/sweet-bootstrap-exec.S"
       - "tools/mkbootstrapprobe.py"
       - "tools/stage_launchd.py"
+      - "tools/preferences-probe.c"
+      - "tools/test_m39_policy.c"
       - "tools/mkprocessipcprobe.py"
       - "tools/mkipcprobe.py"
       - "tools/check_pthread_abi.c"
