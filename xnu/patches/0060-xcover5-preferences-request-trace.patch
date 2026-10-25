@@ -1,0 +1,181 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -1660,6 +1660,10 @@
+ }
+ #endif
+ 
++#if defined(XCOVER5)
++#include "xcover5_prefs_trace.h"
++#endif
++
+ int
+ __mac_syscall(proc_t p, struct __mac_syscall_args *uap, int *retv __unused)
+ {
+@@ -1671,6 +1675,9 @@
+ 
+ 	error = copyinstr(uap->policy, target, sizeof(target), &ulen);
+ 	if (error) {
++#if defined(XCOVER5)
++		xcover5_prefs_trace_record(p,0,"<copy-policy>",uap->call,error);
++#endif
+ 		return error;
+ 	}
+ 	AUDIT_ARG(value32, uap->call);
+@@ -1678,7 +1685,7 @@
+ 
+ 	error = mac_proc_check_mac_syscall(p, target, uap->call);
+ 	if (error) {
+-		return error;
++		goto done;
+ 	}
+ 
+ 	error = ENOPOLICY;
+@@ -1721,6 +1728,9 @@
+ #endif
+ 
+ done:
++#if defined(XCOVER5)
++	xcover5_prefs_trace_record(p,0,target,uap->call,error);
++#endif
+ 	return error;
+ }
+ 
+--- a/bsd/dev/arm/systemcalls.c
++++ b/bsd/dev/arm/systemcalls.c
+@@ -195,6 +195,10 @@
+ #endif
+ 	AUDIT_SYSCALL_ENTER(code, proc, uthread);
+ 	error = (*(callp->sy_call))(proc, &uthread->uu_arg[0], &(uthread->uu_rval[0]));
++#if defined(XCOVER5) && CONFIG_MACF
++	extern void xcover5_prefs_trace_record(proc_t, int, const char *, int, int);
++	xcover5_prefs_trace_record(proc,1,NULL,code,error);
++#endif
+ 	AUDIT_SYSCALL_EXIT(code, proc, uthread, error);
+ #if defined(ARM64_BOARD_CONFIG_SWEET)
+ 	if (sweet_trace != 0) {
+--- a/bsd/kern/kern_exit.c
++++ b/bsd/kern/kern_exit.c
+@@ -72,6 +72,9 @@
+  * Version 2.0.
+  */
+ 
++#if defined(__arm64__)
++#include <pexpert/arm64/board_config.h>
++#endif
+ #include <machine/reg.h>
+ #include <machine/psl.h>
+ #include <stdatomic.h>
+@@ -1852,6 +1855,10 @@
+ 	int create_corpse = FALSE;
+ #if defined(ARM64_BOARD_CONFIG_SWEET)
+ 	/* Log committed exit metadata; do not change signal or exec policy. */
++#if defined(XCOVER5) && CONFIG_MACF
++	extern void xcover5_prefs_trace_dump(proc_t);
++	xcover5_prefs_trace_dump(p);
++#endif
+ 	if (proc_getpid(p) <= 64) {
+ 		printf("XCOVER5 M37B EXIT_KIND pid=%d shadow=%d live_init=%d\n",
+ 		    proc_getpid(p), proc_is_shadow(p), p == initproc);
+--- /dev/null
++++ b/security/xcover5_prefs_trace.h
+@@ -0,0 +1,100 @@
++/* Diagnostic request evidence only. No policy result or syscall return changes.
++ * Entries are immutable after release publication. Retain first128 events;
++ * counters and summary explicitly expose overflow/in-flight records.
++ */
++#ifndef XCOVER5_PREFS_TRACE_H
++#define XCOVER5_PREFS_TRACE_H
++#ifndef XC_PREFS_TRACE_HOST
++#include <os/atomic_private.h>
++#endif
++#define XC_PREFS_TRACE_CAP 128U
++struct xc_prefs_event {
++    unsigned int ready;
++    int pid, version, kind, code, error;
++    char actor[17], policy[32];
++};
++static struct xc_prefs_event xc_prefs_events[XC_PREFS_TRACE_CAP];
++static unsigned int xc_prefs_total;
++void xcover5_prefs_trace_record(proc_t, int, const char *, int, int);
++void xcover5_prefs_trace_dump(proc_t);
++
++static int
++xc_prefs_actor(proc_t p)
++{
++    return proc_getuid(p) == 0 &&
++        (strcmp(p->p_comm,"cfprefsd") == 0 || strcmp(p->p_comm,"m39-probe") == 0);
++}
++
++void
++xcover5_prefs_trace_record(proc_t p, int kind, const char *policy, int code, int error)
++{
++    if (!xc_prefs_actor(p) || (kind == 1 && error <= 0)) {
++        return;
++    }
++    unsigned int seq = os_atomic_inc_orig(&xc_prefs_total, relaxed);
++    if (seq >= XC_PREFS_TRACE_CAP) {
++        return;
++    }
++    struct xc_prefs_event *e = &xc_prefs_events[seq];
++    e->pid = proc_getpid(p);
++    e->version = proc_pidversion(p);
++    e->kind = kind;
++    e->code = code;
++    e->error = error;
++    strlcpy(e->actor,p->p_comm,sizeof(e->actor));
++    strlcpy(e->policy,policy ? policy : "-",sizeof(e->policy));
++    os_atomic_store(&e->ready,1,release);
++    if (seq < 16) {
++        printf("XCOVER5 M39I REQUEST kind=%s pid=%d name=%s policy=%s call=%d rc=%d\n",
++            kind == 0 ? "MAC" : "BSD",e->pid,e->actor,e->policy,code,error);
++    }
++}
++
++static int
++xc_prefs_same(const struct xc_prefs_event *a,const struct xc_prefs_event *b)
++{
++    return a->pid == b->pid && a->version == b->version && a->kind == b->kind &&
++        a->code == b->code && a->error == b->error && strcmp(a->policy,b->policy) == 0 &&
++        strcmp(a->actor,b->actor) == 0;
++}
++
++void
++xcover5_prefs_trace_dump(proc_t p)
++{
++    if (proc_getuid(p) != 0 || strcmp(p->p_comm,"m39-probe") != 0) {
++        return;
++    }
++    unsigned int total = os_atomic_load(&xc_prefs_total,acquire);
++    unsigned int n = total < XC_PREFS_TRACE_CAP ? total : XC_PREFS_TRACE_CAP;
++    unsigned int published = 0, groups = 0, shown = 0;
++    unsigned char used[XC_PREFS_TRACE_CAP] = {0};
++    for (unsigned int i = 0; i < n; i++) {
++        unsigned int ready = os_atomic_load(&xc_prefs_events[i].ready,acquire) != 0;
++        published += ready;
++        used[i] = ready ? 0 : 1; /* exclude records still in flight at this snapshot */
++    }
++    printf("XCOVER5 M39I SUMMARY total=%u stored=%u overflow=%u inflight=%u\n",
++        total,published,total-n,n-published);
++    for (unsigned int i = 0; i < n; i++) {
++        const struct xc_prefs_event *e = &xc_prefs_events[i];
++        if (used[i] || !os_atomic_load(&e->ready,acquire)) {
++            continue;
++        }
++        unsigned int count = 1;
++        used[i] = 1;
++        for (unsigned int j = i+1; j < n; j++) {
++            if (!used[j] && os_atomic_load(&xc_prefs_events[j].ready,acquire) &&
++                xc_prefs_same(e,&xc_prefs_events[j])) {
++                used[j] = 1;
++                count++;
++            }
++        }
++        groups++;
++        if (shown++ < 32) {
++            printf("XCOVER5 M39I RESULT %s pid=%d v=%d name=%s policy=%s call=%d rc=%d count=%u\n",
++                e->kind == 0 ? "MAC" : "BSD",e->pid,e->version,e->actor,e->policy,e->code,e->error,count);
++        }
++    }
++    printf("XCOVER5 M39I END groups=%u omitted=%u\n",groups,groups > 32 ? groups-32 : 0);
++}
++#endif

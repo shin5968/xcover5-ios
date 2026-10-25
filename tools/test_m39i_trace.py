@@ -1,0 +1,87 @@
+"""Compile the actual patch payload and test MAC dispatch with tracing enabled.
+
+Optional argument: patched XNU tree from CI. Tests the applied function, not a
+second handwritten dispatch implementation. Never executes target Apple code.
+"""
+from pathlib import Path
+import subprocess,sys,tempfile
+repo=Path(__file__).resolve().parents[1]
+patch=(repo/'xnu/patches/0060-xcover5-preferences-request-trace.patch').read_text()
+head=patch.split('+++ b/security/xcover5_prefs_trace.h\n',1)[1]
+header=''.join(line[1:] for line in head.splitlines(True) if line.startswith('+'))
+assert header.startswith('/* Diagnostic') and header.endswith('#endif\n')
+prefix='''
+#define XC_PREFS_TRACE_HOST 1
+#include <pthread.h>
+#define os_atomic_inc_orig(p,o) __atomic_fetch_add((p),1,__ATOMIC_RELAXED)
+#define os_atomic_store(p,v,o) __atomic_store_n((p),(v),__ATOMIC_RELEASE)
+#define os_atomic_load(p,o) __atomic_load_n((p),__ATOMIC_ACQUIRE)
+static unsigned proc_getuid(proc_t p){return (unsigned)p->uid;}
+static int proc_getpid(proc_t p){return proc_pid(p);}
+#include "prefs-trace.h"
+static void *trace_worker(void *p){
+ for(unsigned i=0;i<100;i++)xcover5_prefs_trace_record(p,1,NULL,381,103);
+ return NULL;
+}
+'''
+fixture=(repo/'tools/test_m39_policy.c').read_text()
+start=fixture.index('int\n__mac_syscall(');end=fixture.index('\n}\n',start)+3
+func=fixture[start:end]
+func=func.replace('\tif (error) {\n\t\treturn error;\n\t}\n\tAUDIT_ARG',
+ '\tif (error) {\n\t\txcover5_prefs_trace_record(p,0,"<copy-policy>",uap->call,error);\n\t\treturn error;\n\t}\n\tAUDIT_ARG',1)
+func=func.replace('error = mac_proc_check_mac_syscall(p, target, uap->call);\n\tif (error) {\n\t\treturn error;',
+ 'error = mac_proc_check_mac_syscall(p, target, uap->call);\n\tif (error) {\n\t\tgoto done;',1)
+func=func.replace('done:\n\treturn error;','done:\n\txcover5_prefs_trace_record(p,0,target,uap->call,error);\n\treturn error;')
+if len(sys.argv)>1:
+ tree=Path(sys.argv[1]);source=(tree/'security/mac_base.c').read_text()
+ pos=source.index('int\n__mac_syscall(');stop=source.index('\n}\n',pos)+3
+ applied=source[pos:stop]
+ # Remove only compile-time diagnostic guards for comparison with the host fixture.
+ normalized=applied.replace('#if defined(XCOVER5)\n','').replace('#endif\n','')
+ expected=func.replace('#if defined(XCOVER5)\n','').replace('#endif\n','')
+ assert normalized==expected,'applied MAC dispatcher differs from host-tested implementation'
+ assert (tree/'security/xcover5_prefs_trace.h').read_text()==header
+ func=applied
+ for name,marker in [('bsd/dev/arm/systemcalls.c','xcover5_prefs_trace_record(proc,1,NULL,code,error);'),
+                     ('bsd/kern/kern_exit.c','xcover5_prefs_trace_dump(p);')]:
+  text=(tree/name).read_text();assert text.count(marker)==1,(name,marker)
+fixture=fixture[:start]+prefix+func+fixture[end:]
+# Add scopes, publication and truncation assertions after the existing dispatch tests.
+at=fixture.rfind('}')
+fixture=fixture[:at]+'''
+ caller.p_comm="cfprefsd";
+ policy_result=EPERM;DISPATCH(EPERM);
+ policy_result=EINVAL;DISPATCH(EINVAL);
+ mac_policy_list.entries[1].mpc=NULL;args.call=3;DISPATCH(ENOPOLICY);
+ precheck=EPERM;DISPATCH(EPERM);precheck=0;
+ args.policy=0;DISPATCH(EFAULT);args.policy=(uintptr_t)"Sandbox";
+ assert(xc_prefs_total==5);caller.p_comm="launchd";
+ memset(xc_prefs_events,0,sizeof(xc_prefs_events));xc_prefs_total=0;
+ child.p_comm="m39-probe";child.uid=501;
+ xcover5_prefs_trace_record(&child,0,"Sandbox",2,103);assert(xc_prefs_total==0);
+ child.uid=0;child.p_comm="other";
+ xcover5_prefs_trace_record(&child,0,"Sandbox",2,103);assert(xc_prefs_total==0);
+ child.p_comm="m39-probe";
+ xcover5_prefs_trace_record(&child,1,NULL,5,0);
+ xcover5_prefs_trace_record(&child,1,NULL,5,-1);assert(xc_prefs_total==0);
+ xcover5_prefs_trace_record(&child,0,"Sandbox",2,0);
+ assert(xc_prefs_total==1 && xc_prefs_events[0].ready && xc_prefs_events[0].error==0);
+ for(unsigned i=1;i<133;i++)xcover5_prefs_trace_record(&child,1,NULL,381,103);
+ assert(xc_prefs_total==133);
+ for(unsigned i=0;i<128;i++)assert(xc_prefs_events[i].ready && xc_prefs_events[i].pid==7);
+ xcover5_prefs_trace_dump(&child);
+ memset(xc_prefs_events,0,sizeof(xc_prefs_events));xc_prefs_total=0;
+ pthread_t workers[4];
+ for(unsigned i=0;i<4;i++)assert(!pthread_create(&workers[i],NULL,trace_worker,&child));
+ for(unsigned i=0;i<4;i++)assert(!pthread_join(workers[i],NULL));
+ assert(xc_prefs_total==400);
+ for(unsigned i=0;i<128;i++)assert(xc_prefs_events[i].ready && xc_prefs_events[i].code==381 && xc_prefs_events[i].error==103);
+ puts("M39I scope, real return preservation, publication, capacity and overflow PASS (host only)");
+'''+fixture[at:]
+with tempfile.TemporaryDirectory() as d:
+ d=Path(d);(d/'prefs-trace.h').write_text(header);(d/'test.c').write_text(fixture)
+ subprocess.run(['cc','-pthread','-Wno-format','-Wno-unused-parameter',str(d/'test.c'),'-o',str(d/'test')],check=True)
+ p=subprocess.run([str(d/'test')],capture_output=True,text=True,check=True)
+ assert 'total=133 stored=128 overflow=5 inflight=0' in p.stdout
+ assert 'call=381 rc=103 count=127' in p.stdout
+ print(p.stdout)

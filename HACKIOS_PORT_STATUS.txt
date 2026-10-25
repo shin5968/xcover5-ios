@@ -52,3 +52,16 @@ Next implementation gates
 
 Existing packages remain preserved. Build/host checks are separate from device
 results. All new artifacts stay in this project. User performs Odin flashing.
+
+M39H hardware result / next diagnostic M39I
+  Video20261025_210955: filesystem tests pass, observer installation succeeds,
+  preferences job exits142. The actual SOURCE_SYNC values were not recovered.
+  The upstream API recipe alone did not fix synchronization.
+  M39I adds bounded passive kernel recording for root-owned cfprefsd/m39-probe:
+  all MAC policy call returns and positive BSD syscall errors. It retains the
+  first128 records, reports overflow/in-flight counts, groups repeated events
+  and prints a summary when the preferences test exits. It does not register
+  a permissive policy or change any request result. Existing static/dynamic
+  policy dispatch and copy-fault behavior are tested against the applied code.
+  Its boot package must reuse the exact M39H root image, shim and DTB; only the
+  kernel/payload packaging changes. Device result remains pending.
