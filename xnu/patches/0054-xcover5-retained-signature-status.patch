@@ -95,16 +95,6 @@
  		result->cs_end_offset = blob->csb_end_offset;
  	}
  	if (addr != 0) {
---- a/bsd/conf/files
-+++ b/bsd/conf/files
-@@ -384,6 +384,7 @@
- bsd/kern/sweet_amfi.c			standard
- bsd/kern/kern_csr.c			optional config_csr
- bsd/kern/kern_debug.c			standard
-+bsd/kern/xcover5_m38c.c			standard
- bsd/kern/sweet_exec_diag.c		standard
- bsd/kern/kern_symfile.c			standard
- bsd/kern/kern_descrip.c			standard
 --- a/osfmk/arm/model_dep.c
 +++ b/osfmk/arm/model_dep.c
 @@ -734,6 +734,10 @@
@@ -118,17 +108,12 @@
  	panic_bt_depth--;
  }
  
---- /dev/null
-+++ b/bsd/kern/xcover5_m38c.h
-@@ -0,0 +1,5 @@
-+/* Bounded diagnostic records only; no signing decisions. */
-+#if defined(ARM64_BOARD_CONFIG_SWEET)
-+void xcover5_m38c_record(unsigned int kind, int pid, unsigned int a,
-+    unsigned int b, unsigned int c, const char *name, const unsigned char *hash);
-+#endif
---- /dev/null
-+++ b/bsd/kern/xcover5_m38c.c
-@@ -0,0 +1,42 @@
+--- a/bsd/kern/sweet_exec_diag.c
++++ b/bsd/kern/sweet_exec_diag.c
+@@ -45,3 +45,45 @@
+  }
+ }
+ #endif
 +/* Append-only, bounded bring-up evidence. No allocation or panic-time locks. */
 +#include <sys/types.h>
 +#include <sys/systm.h>
@@ -170,4 +155,12 @@
 +        }
 +    }
 +}
++#endif
+--- /dev/null
++++ b/bsd/kern/xcover5_m38c.h
+@@ -0,0 +1,5 @@
++/* Bounded diagnostic records only; no signing decisions. */
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++void xcover5_m38c_record(unsigned int kind, int pid, unsigned int a,
++    unsigned int b, unsigned int c, const char *name, const unsigned char *hash);
 +#endif
