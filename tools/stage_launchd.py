@@ -71,3 +71,10 @@ if __name__=='__main__':
         'EnvironmentVariables':{'HOME':'/var/root','USER':'root','LOGNAME':'root'},
         'RunAtLoad':True,'KeepAlive':False,'StandardOutPath':'/dev/console','StandardErrorPath':'/dev/console'}
  (root/'System/Library/LaunchDaemons/org.xcover5.m39.preferences.plist').write_bytes(plistlib.dumps(job39,fmt=plistlib.FMT_BINARY))
+ # HackiOS mkjobs recipe: selected services print unified logs to their console.
+ # Keep M39B routing/activation unchanged to isolate the application API comparison.
+ from hackios_services import console_job
+ for label in ['com.apple.cfprefsd.xpc.daemon','com.apple.cfprefsd.xpc.daemon.system','org.xcover5.m39.preferences']:
+  path=root/'System/Library/LaunchDaemons'/f'{label}.plist'
+  job=plistlib.loads(path.read_bytes())
+  path.write_bytes(plistlib.dumps(console_job(job,oslog=True),fmt=plistlib.FMT_BINARY))

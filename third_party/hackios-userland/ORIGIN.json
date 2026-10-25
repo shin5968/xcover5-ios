@@ -1,0 +1,17 @@
+{
+  "repository": "https://github.com/oosexgang/hackios-xnu-userland",
+  "commit": "a79ff0772a3454fd1ef127e181e5b3bce6c9ce18",
+  "license": "MIT",
+  "files": {
+    "svc_test.c": "userland/src/svc_test.c",
+    "mkjobs.py": "userland/mkjobs.py",
+    "LICENSE": "LICENSE"
+  },
+  "adaptations": {
+    "tools/hackios_preferences.h": "Application-domain preference API sequence; caller adds file and fresh-process verification",
+    "tools/hackios_services.py": "Selected-job console and OS_ACTIVITY_DT_MODE routing"
+  },
+  "kernel_reference_commit": "d82c64a3a31cd27a0a0afbf6e213e467e44b1b4c",
+  "kernel_imported": false,
+  "hardware_status": "pending"
+}

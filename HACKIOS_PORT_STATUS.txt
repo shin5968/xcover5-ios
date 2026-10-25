@@ -1,0 +1,54 @@
+HackiOS adoption for Samsung XCover5 -- 2026-10-25
+
+Pinned references
+  kernel:   oosexgang/hackios-xnu-kernel d82c64a3a31cd27a0a0afbf6e213e467e44b1b4c
+  userland: oosexgang/hackios-xnu-userland a79ff0772a3454fd1ef127e181e5b3bce6c9ce18
+  vendored userland source and MIT license: third_party/hackios-userland/
+
+Implemented first slice (M39H)
+  - Adopt svc_test.c's SetAppValue / AppSynchronize / CopyAppValue sequence.
+  - Retain our on-disk check, independent exec reader and cleanup requirements.
+  - Preserve explicit-user/host test via m39-probe --legacy; --read remains its
+    reader. New application-domain mode uses --read-app in its reader.
+  - Adopt mkjobs.py's selected-job OS_ACTIVITY_DT_MODE=YES and console routing
+    for the preference probe and both preference daemon definitions only.
+  - Correct the failed M39C observer: its error-handler symbol has no entry in
+    the exact cache's CFPrefsPlistSource method list; callers use direct BL.
+    Observe registered synchronize instead; capture pre-call lastWriteFailed,
+    volatile, readonly and directMode flags. Preserve the original return.
+    If class/method/ABI/ivars are unavailable, print the precise reason and
+    continue the real preferences test. No diagnostic stage160 abort.
+
+What this slice does not establish
+  Neither AppSynchronize nor a same-process read alone proves a daemon saved
+  data. M39H only passes after the actual file and separate process also pass.
+  Console os_log delivery and runtime observation still need device evidence.
+  Original M39 stage142 root cause remains unconfirmed; M39H is an adaptation
+  and diagnostic build, not a claimed fix for that failure or a GUI port.
+
+Hardware boundary retained
+  XCover5 uses the verified Samsung boot shim, GICv2, Exynos timer/framebuffer,
+  eMMC reader and 255MiB test window. HackiOS redwood's UEFI/GICv3/Qualcomm
+  MMIO must not replace these. Existing kernel SHA256 remains
+  d63f18a5061052f7a677033153922ddaa6f6750f7a3f0cda1b7bc734c80ea701.
+  Its source baseline is xnu-8796.141.3; upstream is xnu-8796.121.2.
+  No upstream kernel patch has been imported in this first slice.
+
+Next implementation gates
+  1. Read the actual preferences error and source-state output. Compare the
+     upstream common MAC/XPC compatibility with that specific failing request.
+     Port the matching implementation with target-version adaptation, retaining
+     the established hardware layer. A failed request must not be faked as a pass.
+  2. Bring in upstream service/job inventory incrementally, first logd and its
+     real dependencies. Match binary, framework and job versions. Pass a real
+     service request/reply, rather than only a successful process spawn.
+  3. Expand usable memory only against the device's collected RAM/reservations;
+     adapt upstream system-image layout to the available storage and RAM budget.
+  4. Port hardware-independent IOSurface / framebuffer user-client contracts
+     from upstream. Keep Samsung display/interrupt code; validate mapped buffers.
+  5. Integrate upstream backboardd/SpringBoard support libraries and job sets,
+     then require a visible frame and input response on hardware. Touch and GPU
+     need Exynos-specific implementations; redwood driver addresses do not apply.
+
+Existing packages remain preserved. Build/host checks are separate from device
+results. All new artifacts stay in this project. User performs Odin flashing.
