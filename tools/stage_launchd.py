@@ -2,6 +2,7 @@
 import hashlib, plistlib, sys
 from pathlib import Path
 FILES = {
+ 'usr/sbin/notifyd': (128704, '819c8ec6b3bee5cd2f1dcbe0b2b698418c411b4c126f2f97cbdae932c1972907'),
  'sbin/launchd.ios': (525088, '4c61512d19b9a55a6ddad27e23b88fc5008fbf77d0c0b5e6bdd7c7d90cef3e06'),
  'usr/libexec/xpcproxy': (96352, '2d1f607a248961d6a8612aca68a42c57069fa9cf3f5afbee448cf3e70eeb315f'),
 }
@@ -45,3 +46,14 @@ if __name__=='__main__':
  (root/'System/Library/LaunchDaemons/org.xcover5.m37.echo.plist').write_bytes(plistlib.dumps(job37,fmt=plistlib.FMT_BINARY))
  assert not (root/'System/Library/xpc/launchd.plist').exists()
  print('M35 staged: M35 proof and M36 named-service jobs; local Apple substitution required')
+
+ # M38: stock notifyd binary is substituted only locally after CI.
+ notify={'Label':'com.apple.notifyd','ProgramArguments':['/usr/sbin/notifyd'],
+         'MachServices':{'com.apple.system.notification_center':True},
+         'EnableTransactions':True,'EnablePressuredExit':False,
+         'EnvironmentVariables':{'ASL_DISABLE':'1'},'POSIXSpawnType':'Interactive',
+         'LimitLoadToSessionType':'System','StandardOutPath':'/dev/console','StandardErrorPath':'/dev/console'}
+ (root/'System/Library/LaunchDaemons/com.apple.notifyd.plist').write_bytes(plistlib.dumps(notify,fmt=plistlib.FMT_BINARY))
+ probe={'Label':'org.xcover5.m38.notify','ProgramArguments':['/sbin/m38-probe'],
+        'RunAtLoad':True,'KeepAlive':False,'StandardOutPath':'/dev/console','StandardErrorPath':'/dev/console'}
+ (root/'System/Library/LaunchDaemons/org.xcover5.m38.notify.plist').write_bytes(plistlib.dumps(probe,fmt=plistlib.FMT_BINARY))

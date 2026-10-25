@@ -26,6 +26,7 @@ LAUNCHDPROOF=${22:?LAUNCHDPROOF required}
 BOOTSTRAP=${23:?BOOTSTRAP required}
 EXECSERVER=${24:?EXECSERVER required}
 EXECCLIENT=${25:?EXECCLIENT required}
+NOTIFYPROBE=${26:?NOTIFYPROBE required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
@@ -33,6 +34,8 @@ hdiutil create -size 16m -layout NONE -fs 'Case-sensitive HFS+' -volname XCOVER5
 hdiutil attach -owners on -nobrowse -mountpoint "$WORK/mnt" "$WORK/root.dmg" >/dev/null
 sudo mkdir -p "$WORK/mnt/sbin" "$WORK/mnt/dev" "$WORK/mnt/private/var" "$WORK/mnt/emmc"
 sudo cp "$INIT" "$WORK/mnt/sbin/launchd"
+sudo cp "$NOTIFYPROBE" "$WORK/mnt/sbin/m38-probe"
+sudo chmod 755 "$WORK/mnt/sbin/m38-probe"
 sudo chmod 755 "$WORK/mnt/sbin/launchd"
 sudo cp "$PROBE" "$WORK/mnt/sbin/m21-probe"
 sudo chmod 755 "$WORK/mnt/sbin/m21-probe"
