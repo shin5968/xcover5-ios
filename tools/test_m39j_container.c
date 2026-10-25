@@ -17,8 +17,13 @@
 #define KMA_ZERO 2
 #define VM_KERN_MEMORY_BSD 1
 #define KERN_SUCCESS 0
-typedef uintptr_t user_addr_t,vm_offset_t,vm_map_address_t;
-typedef size_t user_size_t,vm_size_t;
+/* Darwin's standard headers already provide the user ABI types. */
+#ifndef __APPLE__
+typedef uintptr_t user_addr_t;
+typedef size_t user_size_t;
+#endif
+typedef uintptr_t vm_offset_t,vm_map_address_t;
+typedef size_t vm_size_t;
 struct process {int pid,version,uid,bits;const char *p_comm;user_addr_t user_stack;size_t p_argslen;};
 typedef struct process *proc_t,*task_t;
 typedef void *vm_map_t,*vm_map_copy_t;
