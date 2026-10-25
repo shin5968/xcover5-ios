@@ -1,0 +1,48 @@
+--- a/bsd/kern/ubc_subr.c
++++ b/bsd/kern/ubc_subr.c
+@@ -36,6 +36,12 @@
+  *
+  */
+ 
++#if defined(__arm64__)
++#include <pexpert/arm64/board_config.h>
++#endif
++#if defined(XCOVER5)
++#include "xcover5_notify_platform.h"
++#endif
+ #include <sys/types.h>
+ #include <sys/param.h>
+ #include <sys/systm.h>
+@@ -4717,6 +4723,13 @@
+ 		OS_PTRAUTH_DISCRIMINATOR("cs_blob.csb_entitlements")));
+ #endif
+ 
++#if defined(XCOVER5)
++    /* Classification only after successful MACF signature checks. */
++    if (xcover5_notify_platform(tmp_blob.csb_cdhash, cs_flags, platform)) {
++        cs_flags |= CS_PLATFORM_BINARY;
++        printf("XCOVER5 M38A: pinned notifyd platform classification\n");
++    }
++#endif
+ 	tmp_blob.csb_flags = cs_flags;
+ 	tmp_blob.csb_signer_type = signer_type;
+ 
+--- /dev/null
++++ b/bsd/kern/xcover5_notify_platform.h
+@@ -0,0 +1,16 @@
++/* Bring-up identity pin for the locally verified iOS16.5 notifyd only.
++ * Not a trust-cache implementation; signature parsing/page checks remain active. */
++static inline int
++xcover5_notify_platform(const unsigned char *cdhash, unsigned int cs_flags,
++    unsigned int platform)
++{
++    static const unsigned char expected[20] = {
++        0xd2,0x93,0xd8,0x5f,0xdc,0xc8,0x5b,0x78,0x21,0x4c,
++        0x0e,0x0b,0xc0,0x13,0x94,0x5f,0x1a,0xe2,0xca,0x05
++    };
++    if (cdhash == 0 || platform != 2 || !(cs_flags & 2)) { return 0; }
++    for (unsigned int i = 0; i < sizeof(expected); i++) {
++        if (cdhash[i] != expected[i]) { return 0; }
++    }
++    return 1;
++}
