@@ -1,0 +1,43 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -41,18 +41,38 @@
+     if (error) { return error; }
+     boolean_t exec_client = strcmp(service, "org.xcover5.m37.echo") == 0;
+     boolean_t notify_client = strcmp(service, "com.apple.system.notification_center") == 0;
+-    if (!notify_client && !exec_client && strcmp(service, "org.xcover5.m36.echo") != 0) { return ENOPOLICY; }
++    boolean_t prefs_service = strcmp(service, "com.apple.cfprefsd.daemon") == 0 ||
++        strcmp(service, "com.apple.cfprefsd.daemon.system") == 0;
++
++    if (!prefs_service && !notify_client && !exec_client && strcmp(service, "org.xcover5.m36.echo") != 0) { return ENOPOLICY; }
+     client = proc_find((pid_t)a.pid);
+     if (client == PROC_NULL) { printf("XCOVER5 M36B: missing client pid=%llu\n", (unsigned long long)a.pid); return ESRCH; }
++    boolean_t prefs_client = (prefs_service || notify_client) &&
++        (strcmp(client->p_comm, "m39-probe") == 0 || strcmp(client->p_comm, "cfprefsd") == 0);
+     cred = kauth_cred_proc_ref(client);
+     allowed = kauth_cred_issuser(cred) &&
+         (uint32_t)proc_pidversion(client) == a.pidversion &&
+-        strcmp(client->p_comm, notify_client ? "m38-probe" : (exec_client ? "m37-client" : "m36-probe")) == 0;
++        (prefs_client || (!prefs_service && strcmp(client->p_comm, notify_client ? "m38-probe" : (exec_client ? "m37-client" : "m36-probe")) == 0));
+     kauth_cred_unref(&cred);
+     parent = proc_find(proc_ppid(client));
+     allowed = allowed && parent != PROC_NULL && (notify_client ?
+         (proc_pid(parent) == 1 && parent == initproc) :
+         (proc_ppid(parent) == 1 && strcmp(parent->p_comm, exec_client ? "m37-server" : "m36-probe") == 0));
++    if (prefs_client && parent != PROC_NULL) {
++        cred = kauth_cred_proc_ref(client);
++        allowed = kauth_cred_issuser(cred) && (uint32_t)proc_pidversion(client) == a.pidversion;
++        kauth_cred_unref(&cred);
++        boolean_t ancestry = parent == initproc && proc_pid(parent) == 1;
++        if (!ancestry && strcmp(client->p_comm, "m39-probe") == 0 &&
++            strcmp(parent->p_comm, "m39-probe") == 0 && proc_ppid(parent) == 1) {
++            proc_t grandparent = proc_find(proc_ppid(parent));
++            cred = kauth_cred_proc_ref(parent);
++            ancestry = grandparent == initproc && kauth_cred_issuser(cred);
++            kauth_cred_unref(&cred);
++            if (grandparent != PROC_NULL) { proc_rele(grandparent); }
++        }
++        allowed = allowed && ancestry;
++    }
+     if (parent != PROC_NULL) { proc_rele(parent); }
+     proc_rele(client);
+     if (!allowed) {

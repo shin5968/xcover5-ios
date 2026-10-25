@@ -2,6 +2,7 @@
 import hashlib, plistlib, sys
 from pathlib import Path
 FILES = {
+ 'usr/sbin/cfprefsd': (53232, '05e6c217284c2e4f669243fe24296f3ba9abb53a750c9d3860348b0b43c978e2'),
  'usr/sbin/notifyd': (128704, '819c8ec6b3bee5cd2f1dcbe0b2b698418c411b4c126f2f97cbdae932c1972907'),
  'sbin/launchd.ios': (525088, '4c61512d19b9a55a6ddad27e23b88fc5008fbf77d0c0b5e6bdd7c7d90cef3e06'),
  'usr/libexec/xpcproxy': (96352, '2d1f607a248961d6a8612aca68a42c57069fa9cf3f5afbee448cf3e70eeb315f'),
@@ -58,3 +59,15 @@ if __name__=='__main__':
  probe={'Label':'org.xcover5.m38.notify','ProgramArguments':['/sbin/m38-probe'],
         'RunAtLoad':True,'KeepAlive':False,'StandardOutPath':'/dev/console','StandardErrorPath':'/dev/console'}
  (root/'System/Library/LaunchDaemons/org.xcover5.m38.notify.plist').write_bytes(plistlib.dumps(probe,fmt=plistlib.FMT_BINARY))
+
+ (root/'System/Library/LaunchDaemons/com.apple.cfprefsd.xpc.daemon.plist').write_bytes(plistlib.dumps({'HardResourceLimits': {'NumberOfFiles': 512}, 'POSIXSpawnType': 'Adaptive', 'MachServices': {'com.apple.cfprefsd.daemon': True}, 'EnableTransactions': True, 'ProgramArguments': ['/usr/sbin/cfprefsd', 'daemon'], 'SoftResourceLimits': {'NumberOfFiles': 512}, 'Label': 'com.apple.cfprefsd.xpc.daemon', 'StandardOutPath': '/dev/console', 'StandardErrorPath': '/dev/console'},fmt=plistlib.FMT_BINARY))
+
+ (root/'System/Library/LaunchDaemons/com.apple.cfprefsd.xpc.daemon.system.plist').write_bytes(plistlib.dumps({'HardResourceLimits': {'NumberOfFiles': 512}, 'POSIXSpawnType': 'Adaptive', 'Disabled': {'#Then': True, '#IfFeatureFlagDisabled': 'CoreFoundation/CFPreferencesSystemSession'}, 'LimitLoadToSessionType': 'System', 'MachServices': {'com.apple.cfprefsd.daemon.system': True}, 'EnableTransactions': True, 'ProgramArguments': ['/usr/sbin/cfprefsd', 'daemon'], 'SoftResourceLimits': {'NumberOfFiles': 512}, 'Label': 'com.apple.cfprefsd.xpc.daemon.system', 'StandardOutPath': '/dev/console', 'StandardErrorPath': '/dev/console'},fmt=plistlib.FMT_BINARY))
+
+ for directory in ['private/var/root/Library/Preferences','Library/Preferences']:
+  (root/directory).mkdir(parents=True,exist_ok=True)
+ (root/'private/var/root').chmod(0o700)
+ job39={'Label':'org.xcover5.m39.preferences','ProgramArguments':['/sbin/m39-probe'],
+        'EnvironmentVariables':{'HOME':'/var/root','USER':'root','LOGNAME':'root'},
+        'RunAtLoad':True,'KeepAlive':False,'StandardOutPath':'/dev/console','StandardErrorPath':'/dev/console'}
+ (root/'System/Library/LaunchDaemons/org.xcover5.m39.preferences.plist').write_bytes(plistlib.dumps(job39,fmt=plistlib.FMT_BINARY))

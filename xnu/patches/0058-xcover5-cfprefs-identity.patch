@@ -1,0 +1,32 @@
+--- a/bsd/kern/ubc_subr.c
++++ b/bsd/kern/ubc_subr.c
+@@ -1,3 +1,7 @@
+         printf("XCOVER5 M38D: pinned notifyd signed state\n");
+     }
++    if (xcover5_cfprefs_platform(tmp_blob.csb_cdhash, cs_flags, platform)) {
++        cs_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
++        printf("XCOVER5 M39: pinned cfprefsd signed platform identity\n");
++    }
+ #endif
+--- a/bsd/kern/xcover5_notify_platform.h
++++ b/bsd/kern/xcover5_notify_platform.h
+@@ -14,3 +14,19 @@
+     }
+     return 1;
+ }
++
++/* Bring-up identity pin for the locally verified iOS16.5 cfprefsd only.
++ * Not a trust-cache implementation; signature parsing/page checks remain active. */
++static inline int
++xcover5_cfprefs_platform(const unsigned char *cdhash, unsigned int cs_flags,
++    unsigned int platform)
++{
++    static const unsigned char expected[20] = {
++        0x86,0x34,0x4b,0x4e,0x77,0x48,0xd6,0x94,0x69,0x98,0xe8,0xb1,0x17,0x7c,0x1f,0xc4,0xef,0x15,0xc6,0xf0
++    };
++    if (cdhash == 0 || platform != 2 || !(cs_flags & 2)) { return 0; }
++    for (unsigned int i = 0; i < sizeof(expected); i++) {
++        if (cdhash[i] != expected[i]) { return 0; }
++    }
++    return 1;
++}
