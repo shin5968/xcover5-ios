@@ -1,0 +1,18 @@
+{
+  "repository": "https://github.com/oosexgang/hackios-xnu-kernel",
+  "commit": "d82c64a3a31cd27a0a0afbf6e213e467e44b1b4c",
+  "license": "APSL-2.0",
+  "source": "xnu/files/bsd/kern/kern_minimac.c",
+  "function": "minisandbox_container_path",
+  "adaptation": "xnu/patches/0061-xcover5-hackios-container-query.patch",
+  "changes": [
+    "Scope fallback to root-owned m39-probe/cfprefsd and64-bit callers",
+    "Preserve existing registered policy dispatch priority",
+    "Validate signed PID range, argument-byte bound and stack arithmetic",
+    "Stop at an unterminated trailing string without advancing beyond the allocation",
+    "Retain PIDversion checks, task/map references, VM copy ownership and copyout errors",
+    "Preserve no-container untouched-buffer behavior from upstream"
+  ],
+  "reason": "M39I hardware records Sandbox call4 ENOPOLICY for both root preference actors",
+  "stage142_causality": "not yet established; device comparison required"
+}

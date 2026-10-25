@@ -65,3 +65,18 @@ M39H hardware result / next diagnostic M39I
   policy dispatch and copy-fault behavior are tested against the applied code.
   Its boot package must reuse the exact M39H root image, shim and DTB; only the
   kernel/payload packaging changes. Device result remains pending.
+
+M39I hardware / M39J upstream contract import
+  Video20261025_214828: preferences still exits142. Recorder is active and
+  reports total231/stored128/overflow103/inflight0,30 groups/omitted0.
+  Both root m39-probe and cfprefsd encounter Sandbox call4 ENOPOLICY103.
+  Root client also encounters Sandbox call2 ENOPOLICY; those semantics are
+  unchanged by M39J. No claim that all231 calls were captured or that call4
+  is the only cause of142.
+  M39J imports the actual HackiOS minisandbox_container_path contract, scoped
+  to those two root-owned64-bit actors only when no registered policy handles
+  Sandbox call4. It preserves PIDversion checking, task/map lifetime and VM
+  copy/copyout errors; adds PID/argument/stack bounds and safe string traversal.
+  Existing registered policy handlers keep priority. Other policy requests,
+  launchd jobs, filesystem layout and the exact M39H root remain unchanged.
+  Provenance/license: third_party/hackios-kernel/. Hardware result pending.

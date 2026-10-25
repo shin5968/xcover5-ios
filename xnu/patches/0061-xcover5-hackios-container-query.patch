@@ -1,0 +1,103 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -1662,6 +1662,7 @@
+ 
+ #if defined(XCOVER5)
+ #include "xcover5_prefs_trace.h"
++#include "xcover5_prefs_container.h"
+ #endif
+ 
+ int
+@@ -1724,6 +1725,8 @@
+ #if defined(XCOVER5)
+     if (uap->call == 2 && strcmp(target, "Sandbox") == 0) {
+         error = xcover5_bootstrap_check(p, uap->arg);
++    } else if (uap->call == 4 && strcmp(target, "Sandbox") == 0) {
++        error = xcover5_prefs_container_path(p, uap->arg);
+     }
+ #endif
+ 
+--- /dev/null
++++ b/security/xcover5_prefs_container.h
+@@ -0,0 +1,81 @@
++/* Adapted from HackiOS kern_minimac.c minisandbox_container_path, APSL-2.0.
++ * Upstream d82c64a3a31cd27a0a0afbf6e213e467e44b1b4c.
++ * See third_party/hackios-kernel/ORIGIN.json and LICENSE.
++ * Scope: root-owned preference test/daemon, when no registered policy handled
++ * Sandbox call4. No other Sandbox/AMFI operation is changed.
++ */
++#ifndef XCOVER5_PREFS_CONTAINER_H
++#define XCOVER5_PREFS_CONTAINER_H
++#ifndef XC_PREFS_CONTAINER_HOST
++#include <vm/vm_map.h>
++#include <vm/vm_kern.h>
++#include <mach/vm_param.h>
++#endif
++static int
++xcover5_prefs_container_path(proc_t caller,user_addr_t address)
++{
++    struct {
++        int64_t pid;
++        uint64_t pidversion;
++        user_addr_t buffer;
++        user_size_t size;
++        uint64_t check_pidversion;
++    } args;
++    _Static_assert(sizeof(args)==40,"iOS16.5 Sandbox container query ABI");
++    const char prefix[]="CFFIXED_USER_HOME=";
++    const size_t prefix_len=sizeof(prefix)-1;
++    proc_t target;
++    task_t task;
++    vm_map_t map;
++    vm_map_copy_t copy=NULL;
++    vm_offset_t strings=0;
++    vm_size_t strings_size;
++    user_addr_t stack;
++    size_t argslen,len;
++    const char *s,*end;
++    int error;
++
++    if (!xc_prefs_actor(caller) || !proc_is64bit_data(caller)) { return ENOPOLICY; }
++    error=copyin(address,&args,sizeof(args));
++    if (error) { return error; }
++    if (args.pid<=0 || args.pid>INT_MAX) { return ESRCH; }
++    target=proc_find((int)args.pid);
++    if (target==PROC_NULL) { return ESRCH; }
++    if (args.check_pidversion && (uint64_t)proc_pidversion(target)!=args.pidversion) {
++        proc_rele(target);return ESRCH;
++    }
++    stack=target->user_stack;argslen=target->p_argslen;task=proc_task(target);
++    if (!stack || !argslen || task==TASK_NULL) { proc_rele(target);return 0; }
++    if (argslen>ARG_MAX || stack<argslen) { proc_rele(target);return EINVAL; }
++    task_reference(task);proc_rele(target);
++    map=get_task_map_reference(task);task_deallocate(task);
++    if (map==VM_MAP_NULL) { return 0; }
++    strings_size=vm_map_round_page(argslen,vm_map_page_mask(map));
++    if (stack<strings_size) { vm_map_deallocate(map);return EINVAL; }
++    if (kmem_alloc(kernel_map,&strings,strings_size,KMA_DATA|KMA_ZERO,VM_KERN_MEMORY_BSD)!=KERN_SUCCESS) {
++        vm_map_deallocate(map);return ENOMEM;
++    }
++    if (vm_map_copyin(map,(vm_map_address_t)(stack-strings_size),strings_size,FALSE,&copy)!=KERN_SUCCESS) {
++        copy=NULL;
++    }
++    vm_map_deallocate(map);
++    if (copy==NULL || vm_map_copy_overwrite(kernel_map,strings,copy,strings_size,FALSE)!=KERN_SUCCESS) {
++        if (copy!=NULL) { vm_map_copy_discard(copy); }
++        kmem_free(kernel_map,strings,strings_size);return 0;
++    }
++    end=(const char *)(strings+strings_size);
++    for (s=end-argslen;s<end;s+=len+1) {
++        len=strnlen(s,(size_t)(end-s));
++        if (len==(size_t)(end-s)) { break; }
++        if (len>prefix_len && s+len<end && !strncmp(s,prefix,prefix_len)) {
++            s+=prefix_len;len-=prefix_len;
++            error=len<args.size ? copyout(s,args.buffer,len+1) : ENAMETOOLONG;
++            break;
++        }
++    }
++    kmem_free(kernel_map,strings,strings_size);
++    printf("XCOVER5 M39J CONTAINER caller=%d target=%lld version=%llu rc=%d\n",
++        proc_getpid(caller),(long long)args.pid,(unsigned long long)args.pidversion,error);
++    return error;
++}
++#endif

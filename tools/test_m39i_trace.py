@@ -32,6 +32,13 @@ func=func.replace('\tif (error) {\n\t\treturn error;\n\t}\n\tAUDIT_ARG',
 func=func.replace('error = mac_proc_check_mac_syscall(p, target, uap->call);\n\tif (error) {\n\t\treturn error;',
  'error = mac_proc_check_mac_syscall(p, target, uap->call);\n\tif (error) {\n\t\tgoto done;',1)
 func=func.replace('done:\n\treturn error;','done:\n\txcover5_prefs_trace_record(p,0,target,uap->call,error);\n\treturn error;')
+has_container=(repo/'xnu/patches/0061-xcover5-hackios-container-query.patch').exists()
+if has_container:
+ func=func.replace('        error = xcover5_bootstrap_check(p, uap->arg);\n    }',
+ '        error = xcover5_bootstrap_check(p, uap->arg);\n    } else if (uap->call == 4 && strcmp(target, "Sandbox") == 0) {\n        error = xcover5_prefs_container_path(p, uap->arg);\n    }')
+ # The new handler has its own actual-header VM/ABI tests. Keep existing
+ # dispatch/lock tests independent with a sentinel callback result.
+ prefix+='static int container_calls; static int xcover5_prefs_container_path(proc_t p,user_addr_t a){(void)p;(void)a;container_calls++;return EINVAL;}\n'
 if len(sys.argv)>1:
  tree=Path(sys.argv[1]);source=(tree/'security/mac_base.c').read_text()
  pos=source.index('int\n__mac_syscall(');stop=source.index('\n}\n',pos)+3
@@ -78,6 +85,11 @@ fixture=fixture[:at]+'''
  for(unsigned i=0;i<128;i++)assert(xc_prefs_events[i].ready && xc_prefs_events[i].code==381 && xc_prefs_events[i].error==103);
  puts("M39I scope, real return preservation, publication, capacity and overflow PASS (host only)");
 '''+fixture[at:]
+if has_container:
+ anchor=' assert(xc_prefs_total==5);caller.p_comm="launchd";'
+ extra=' args.call=4;DISPATCH(EINVAL);assert(container_calls==1);args.call=3;\n'
+ assert anchor in fixture
+ fixture=fixture.replace(anchor,extra+' assert(xc_prefs_total==6);caller.p_comm="launchd";')
 with tempfile.TemporaryDirectory() as d:
  d=Path(d);(d/'prefs-trace.h').write_text(header);(d/'test.c').write_text(fixture)
  subprocess.run(['cc','-pthread','-Wno-format','-Wno-unused-parameter',str(d/'test.c'),'-o',str(d/'test')],check=True)
