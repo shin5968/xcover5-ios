@@ -1,0 +1,82 @@
+--- a/bsd/uxkern/ux_exception.c
++++ b/bsd/uxkern/ux_exception.c
+@@ -44,6 +44,55 @@
+ #include <sys/vmparam.h>        /* MAXSSIZ */
+ 
+ #include <sys/ux_exception.h>
++
++#include <pexpert/arm64/board_config.h>
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++#include <mach/arm/thread_status.h>
++#include <arm64/proc_reg.h>
++#include <os/atomic_private.h>
++extern struct arm_saved_state *get_user_regs(thread_t);
++void xcover5_m38f_replay(void);
++/* First writer owns the slot; release publication prevents partial replay. */
++static unsigned int m38f_claimed, m38f_ready, m38f_replays;
++static struct {
++    int pid, exception, signal;
++    unsigned long long code, subcode, pc, lr, sp;
++    unsigned int cpsr;
++} m38f_first;
++void
++xcover5_m38f_replay(void)
++{
++    if (!os_atomic_load(&m38f_ready, acquire)) return;
++    if (os_atomic_inc_orig(&m38f_replays, relaxed) >= 8) return;
++    printf("XCOVER5 M38F FIRST pid=%d exc=%d sig=%d code=%llx sub=%llx\n",
++        m38f_first.pid, m38f_first.exception, m38f_first.signal,
++        m38f_first.code, m38f_first.subcode);
++    printf("M38F PC=%016llx LR=%016llx\n", m38f_first.pc, m38f_first.lr);
++    printf("M38F SP=%016llx CPSR=%08x\n", m38f_first.sp, m38f_first.cpsr);
++}
++static void
++xcover5_m38f_capture(proc_t p, thread_t thread, int exception,
++    mach_exception_code_t code, mach_exception_subcode_t subcode, int sig)
++{
++    char name[32];
++    proc_name(proc_pid(p), name, sizeof(name));
++    if (__builtin_strcmp(name, "notifyd") != 0) return;
++    struct arm_saved_state *ss = get_user_regs(thread);
++    if (ss == NULL || !is_saved_state64(ss)) return;
++    if (os_atomic_inc_orig(&m38f_claimed, relaxed) != 0) return;
++    m38f_first.pid = proc_pid(p);
++    m38f_first.exception = exception;
++    m38f_first.signal = sig;
++    m38f_first.code = (unsigned long long)code;
++    m38f_first.subcode = (unsigned long long)subcode;
++    m38f_first.pc = (unsigned long long)get_saved_state_pc(ss);
++    m38f_first.lr = (unsigned long long)get_saved_state_lr(ss);
++    m38f_first.sp = (unsigned long long)get_saved_state_sp(ss);
++    m38f_first.cpsr = get_saved_state_cpsr(ss);
++    os_atomic_store(&m38f_ready, 1, release);
++    xcover5_m38f_replay();
++}
++#endif
+ 
+ /*
+  * Translate Mach exceptions to UNIX signals.
+@@ -172,6 +221,10 @@
+ 		}
+ 	}
+ 
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++    if (ux_signal != 0) xcover5_m38f_capture(p, thread, exception, code, subcode, ux_signal);
++#endif
++
+ 	/* Send signal to thread */
+ 	if (ux_signal != 0) {
+ 		ut->uu_exception = exception;
+--- a/bsd/kern/kern_proc.c
++++ b/bsd/kern/kern_proc.c
+@@ -3240,6 +3240,10 @@
+         if (xcover5_seq != 0 && xcover5_seq <= 64) {
+             printf("XCOVER5 M38B CSOPS seq=%u target=%d name=%s status=%08x rc=%d pb_after=%d\n",
+                 xcover5_seq, proc_pid(pt), pt->p_comm, retflags, error, csproc_get_platform_binary(pt));
++            if (__builtin_strcmp(pt->p_comm, "notifyd") == 0) {
++                extern void xcover5_m38f_replay(void);
++                xcover5_m38f_replay();
++            }
+         }
+ #endif
+ 		break;
