@@ -118,7 +118,7 @@
 +#include <sys/types.h>
 +#include <sys/systm.h>
 +#include <kern/debug.h>
-+#include <kern/misc_protos.h>
++extern int paniclog_append_noflush(const char *format, ...) __printflike(1, 2);
 +#include <os/atomic_private.h>
 +#include "xcover5_m38c.h"
 +#if defined(ARM64_BOARD_CONFIG_SWEET)
