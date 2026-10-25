@@ -1,0 +1,130 @@
+--- a/bsd/kern/ubc_subr.c
++++ b/bsd/kern/ubc_subr.c
+@@ -4586,6 +4586,30 @@
+ 	return 0;
+ }
+ 
++
++#if defined(XCOVER5)
++/* No classification changes. Called outside vnode/proc spin locks. */
++static void
++xcover5_notify_signature_trace(struct vnode *vp, const struct cs_blob *blob,
++    const char *stage, uint32_t platform, unsigned int flags, int error)
++{
++    const char *name = vnode_getname_printable(vp);
++    if (name != NULL && strcmp(name, "notifyd") == 0 && blob != NULL) {
++        const unsigned char *h = blob->csb_cdhash;
++        printf("XCOVER5 M38B %s caller=%d platform=%u flags=%08x blobflags=%08x pb=%u err=%d\n",
++            stage, proc_selfpid(), platform, flags, blob->csb_flags,
++            (unsigned int)blob->csb_platform_binary, error);
++        printf("XCOVER5 M38B CDHASH %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n",
++            (unsigned int)h[0],(unsigned int)h[1],(unsigned int)h[2],(unsigned int)h[3],
++            (unsigned int)h[4],(unsigned int)h[5],(unsigned int)h[6],(unsigned int)h[7],
++            (unsigned int)h[8],(unsigned int)h[9],(unsigned int)h[10],(unsigned int)h[11],
++            (unsigned int)h[12],(unsigned int)h[13],(unsigned int)h[14],(unsigned int)h[15],
++            (unsigned int)h[16],(unsigned int)h[17],(unsigned int)h[18],(unsigned int)h[19]);
++    }
++    if (name != NULL) { vnode_putname_printable(name); }
++}
++#endif
++
+ int
+ ubc_cs_blob_add(
+ 	struct vnode    *vp,
+@@ -4636,6 +4660,9 @@
+ 		return error;
+ 	}
+ 
++#if defined(XCOVER5)
++    xcover5_notify_signature_trace(vp, &tmp_blob, "ADD_INIT", platform, tmp_blob.csb_flags, 0);
++#endif
+ 	tmp_blob.csb_cpu_type = cputype;
+ 	tmp_blob.csb_cpu_subtype = cpusubtype & ~CPU_SUBTYPE_MASK;
+ 	tmp_blob.csb_base_offset = base_offset;
+@@ -4724,6 +4751,7 @@
+ #endif
+ 
+ #if defined(XCOVER5)
++    xcover5_notify_signature_trace(vp, &tmp_blob, "ADD_POLICY", platform, cs_flags, 0);
+     /* Classification only after successful MACF signature checks. */
+     if (xcover5_notify_platform(tmp_blob.csb_cdhash, cs_flags, platform)) {
+         cs_flags |= CS_PLATFORM_BINARY;
+@@ -4742,6 +4770,9 @@
+ 		tmp_blob.csb_platform_path = 0;
+ 	}
+ 
++#if defined(XCOVER5)
++    xcover5_notify_signature_trace(vp, &tmp_blob, "ADD_CLASSIFIED", platform, tmp_blob.csb_flags, 0);
++#endif
+ 	if ((flags & MAC_VNODE_CHECK_DYLD_SIM) && !tmp_blob.csb_platform_binary) {
+ 		printf("dyld simulator runtime is not apple signed: proc: %d\n",
+ 		    proc_getpid(current_proc()));
+@@ -5545,6 +5576,9 @@
+ 		return EAGAIN;
+ 	}
+ 
++#if defined(XCOVER5)
++    xcover5_notify_signature_trace(vp, blob, "REVALIDATE_IN", platform, cs_flags, 0);
++#endif
+ 	/* callout to mac_vnode_check_signature */
+ #if CONFIG_MACF
+ 	error = mac_vnode_check_signature(vp, blob, imgp, &cs_flags, &signer_type, flags, platform);
+@@ -5556,6 +5590,9 @@
+ 	(void)signer_type;
+ #endif
+ 
++#if defined(XCOVER5)
++    xcover5_notify_signature_trace(vp, blob, "REVALIDATE_OUT", platform, cs_flags, error);
++#endif
+ 	/* update generation number if success */
+ 	vnode_lock_spin(vp);
+ 	struct cs_signer_info signer_info = {
+--- a/bsd/kern/kern_proc.c
++++ b/bsd/kern/kern_proc.c
+@@ -76,6 +76,9 @@
+  */
+ 
+ 
++#if defined(__arm64__)
++#include <pexpert/arm64/board_config.h>
++#endif
+ #include <sys/param.h>
+ #include <sys/systm.h>
+ #include <sys/kernel.h>
+@@ -3221,6 +3224,12 @@
+ 			retflags &= (~CS_REQUIRE_LV);
+ 		}
+ 		proc_unlock(pt);
++#if defined(XCOVER5)
++        if (strcmp(pt->p_comm, "notifyd") == 0) {
++            printf("XCOVER5 M38B CSOPS caller=%d target=%d status=%08x pb=%d\n",
++                proc_selfpid(), proc_pid(pt), retflags, csproc_get_platform_binary(pt));
++        }
++#endif
+ 
+ 		if (uaddr != USER_ADDR_NULL) {
+ 			error = copyout(&retflags, uaddr, sizeof(uint32_t));
+--- a/bsd/kern/kern_cs.c
++++ b/bsd/kern/kern_cs.c
+@@ -27,6 +27,9 @@
+  */
+ 
+ #include <sys/types.h>
++#if defined(__arm64__)
++#include <pexpert/arm64/board_config.h>
++#endif
+ #include <sys/param.h>
+ #include <sys/systm.h>
+ #include <sys/kernel.h>
+@@ -911,6 +914,11 @@
+ 	    &platform_flags);
+ 
+ 	task_set_platform_binary(proc_task(p), FALSE);
++#if defined(XCOVER5)
++    if (strcmp(p->p_comm, "notifyd") == 0) {
++        printf("XCOVER5 M38B CLEAR_PLATFORM caller=%d target=%d\n", proc_selfpid(), proc_pid(p));
++    }
++#endif
+ }
+ #endif
+ 
