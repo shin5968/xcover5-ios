@@ -102,9 +102,9 @@
  bsd/kern/kern_csr.c			optional config_csr
  bsd/kern/kern_debug.c			standard
 +bsd/kern/xcover5_m38c.c			standard
+ bsd/kern/sweet_exec_diag.c			standard
  bsd/kern/kern_symfile.c			standard
  bsd/kern/kern_descrip.c			standard
- bsd/kern/kern_guarded.c			standard
 --- a/osfmk/arm/model_dep.c
 +++ b/osfmk/arm/model_dep.c
 @@ -734,6 +734,10 @@
