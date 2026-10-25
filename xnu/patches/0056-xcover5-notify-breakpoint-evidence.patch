@@ -1,0 +1,60 @@
+--- a/osfmk/arm64/sleh.c
++++ b/osfmk/arm64/sleh.c
+@@ -64,6 +64,7 @@
+ #include <sys/errno.h>
+ #if defined(SWEET)
+ extern int proc_selfpid(void);
++extern void proc_name(int pid, char *buf, int size);
+ #endif
+ #include <sys/kdebug.h>
+ #include <kperf/kperf.h>
+@@ -1070,6 +1071,32 @@
+ 	exception_type_t           exception = EXC_BREAKPOINT;
+ 	mach_exception_data_type_t codes[2]  = {EXC_ARM_BREAKPOINT};
+ 	mach_msg_type_number_t     numcodes  = 2;
++
++
++#if defined(SWEET)
++    /* EL0 breakpoint evidence only: no user-memory reads or state changes. */
++    char trace_name[32];
++    proc_name(proc_selfpid(), trace_name, sizeof(trace_name));
++    static unsigned int trace_count;
++    if (__builtin_strcmp(trace_name, "notifyd") == 0 &&
++        os_atomic_inc_orig(&trace_count, relaxed) < 4) {
++        printf("XCOVER5 M38E BRK pid=%d esr=%08x ec=%x imm=%x\n",
++            proc_selfpid(), esr, ESR_EC(esr), ISS_BRK_COMMENT(esr));
++        printf("M38E PC=%016llx LR=%016llx\n",
++            (unsigned long long)get_saved_state_pc(state), (unsigned long long)get_saved_state_lr(state));
++        printf("M38E SP=%016llx CPSR=%08x\n",
++            (unsigned long long)get_saved_state_sp(state), get_saved_state_cpsr(state));
++        if (is_saved_state64(state)) {
++            printf("M38E FP=%016llx\n", (unsigned long long)saved_state64(state)->fp);
++            for (unsigned int i=0;i<28;i+=2) {
++                printf("M38E X%u=%016llx X%u=%016llx\n",i,
++                    (unsigned long long)saved_state64(state)->x[i],i+1,
++                    (unsigned long long)saved_state64(state)->x[i+1]);
++            }
++            printf("M38E X28=%016llx\n",(unsigned long long)saved_state64(state)->x[28]);
++        }
++    }
++#endif
+ 
+ #if __has_feature(ptrauth_calls)
+ 	if (ESR_EC(esr) == ESR_EC_BRK_AARCH64 &&
+--- a/bsd/kern/kern_exec.c
++++ b/bsd/kern/kern_exec.c
+@@ -1325,6 +1325,14 @@
+ #endif
+ #if defined(SWEET)
+ 	if (mach_header->flags & MH_DYLDLINK) {
++        if (lret == LOAD_SUCCESS && imgp->ip_vp->v_name != NULL && __builtin_strcmp(imgp->ip_vp->v_name, "notifyd") == 0) {
++            printf("XCOVER5 M38E IMAGE pid=%d MAIN=%016llx DYLD=%016llx\n",
++                proc_getpid(p), (unsigned long long)load_result.mach_header,
++                (unsigned long long)load_result.dynlinker_mach_header);
++            printf("M38E MIN=%016llx MAX=%016llx INFO=%016llx\n",
++                (unsigned long long)load_result.min_vm_addr, (unsigned long long)load_result.max_vm_addr,
++                (unsigned long long)load_result.all_image_info_addr);
++        }
+ 		printf("XCOVER5 M22D: exec load ret=%d pid=%d\n", lret, proc_getpid(p));
+ 	}
+ #endif
