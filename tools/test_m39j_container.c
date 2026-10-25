@@ -9,7 +9,9 @@
 #include <assert.h>
 #define XC_PREFS_CONTAINER_HOST 1
 #define ENOPOLICY 103
+#ifndef ARG_MAX
 #define ARG_MAX 262144
+#endif
 #define FALSE 0
 #define KMA_DATA 1
 #define KMA_ZERO 2
