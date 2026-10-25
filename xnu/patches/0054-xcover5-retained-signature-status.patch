@@ -110,7 +110,7 @@
  
 --- a/bsd/kern/sweet_exec_diag.c
 +++ b/bsd/kern/sweet_exec_diag.c
-@@ -45,3 +45,45 @@
+@@ -45,3 +45,46 @@
   }
  }
  #endif
@@ -118,6 +118,7 @@
 +#include <sys/types.h>
 +#include <sys/systm.h>
 +#include <kern/debug.h>
++#include <kern/misc_protos.h>
 +#include <os/atomic_private.h>
 +#include "xcover5_m38c.h"
 +#if defined(ARM64_BOARD_CONFIG_SWEET)
