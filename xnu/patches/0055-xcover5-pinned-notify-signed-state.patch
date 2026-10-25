@@ -1,0 +1,12 @@
+--- a/bsd/kern/ubc_subr.c
++++ b/bsd/kern/ubc_subr.c
+@@ -4753,6 +4753,8 @@
+     /* Classification only after successful MACF signature checks. */
+     if (xcover5_notify_platform(tmp_blob.csb_cdhash, cs_flags, platform)) {
+-        cs_flags |= CS_PLATFORM_BINARY;
++        /* csproc_get_blob requires CS_SIGNED to expose the validated blob. */
++        cs_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
+         printf("XCOVER5 M38A: pinned notifyd platform classification\n");
++        printf("XCOVER5 M38D: pinned notifyd signed state\n");
+     }
+ #endif
