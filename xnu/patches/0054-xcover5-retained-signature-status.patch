@@ -1,0 +1,173 @@
+--- a/bsd/kern/kern_proc.c
++++ b/bsd/kern/kern_proc.c
+@@ -80,6 +80,7 @@
+ #include <pexpert/arm64/board_config.h>
+ #endif
+ #include <os/atomic_private.h>
++#include "xcover5_m38c.h"
+ #include <sys/param.h>
+ #include <sys/systm.h>
+ #include <sys/kernel.h>
+@@ -3124,7 +3125,7 @@
+ }
+ 
+ static int
+-csops_internal(pid_t pid, int ops, user_addr_t uaddr, user_size_t usersize, user_addr_t uaudittoken)
++csops_internal_impl(pid_t pid, int ops, user_addr_t uaddr, user_size_t usersize, user_addr_t uaudittoken)
+ {
+ 	size_t usize = (size_t)CAST_DOWN(size_t, usersize);
+ 	proc_t pt;
+@@ -3225,6 +3226,11 @@
+ 			retflags &= (~CS_REQUIRE_LV);
+ 		}
+ 		proc_unlock(pt);
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++        if (proc_selfpid() == 1 && pid <= 64) {
++            xcover5_m38c_record(2, pid, retflags, 0, 0, pt->p_comm, NULL);
++        }
++#endif
+ #if defined(XCOVER5)
+         static unsigned int xcover5_status_reads;
+         unsigned int xcover5_seq = 0;
+@@ -3596,6 +3602,21 @@
+ 	return error;
+ }
+ 
++
++static int
++csops_internal(pid_t pid, int ops, user_addr_t uaddr, user_size_t usersize, user_addr_t uaudittoken)
++{
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++    int trace = (proc_selfpid() == 1 && ops == CS_OPS_STATUS && pid >= 0 && pid <= 64);
++    if (trace) xcover5_m38c_record(1, pid, ops, (unsigned int)usersize, 0, "CSOPS_ENTER", NULL);
++#endif
++    int rc = csops_internal_impl(pid, ops, uaddr, usersize, uaudittoken);
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++    if (trace) xcover5_m38c_record(3, pid, (unsigned int)rc, 0, 0, "CSOPS_RETURN", NULL);
++#endif
++    return rc;
++}
++
+ void
+ proc_iterate(
+ 	unsigned int flags,
+--- a/bsd/kern/ubc_subr.c
++++ b/bsd/kern/ubc_subr.c
+@@ -43,6 +43,7 @@
+ #include "xcover5_notify_platform.h"
+ #endif
+ #include <sys/types.h>
++#include "xcover5_m38c.h"
+ #include <sys/param.h>
+ #include <sys/systm.h>
+ #include <sys/lock.h>
+@@ -4596,6 +4597,8 @@
+     const char *name = vnode_getname_printable(vp);
+     if (name != NULL && strcmp(name, "notifyd") == 0 && blob != NULL) {
+         const unsigned char *h = blob->csb_cdhash;
++        xcover5_m38c_record(4, proc_selfpid(), platform, flags,
++            blob->csb_platform_binary, stage, h);
+         printf("XCOVER5 M38B %s caller=%d platform=%u flags=%08x blobflags=%08x pb=%u err=%d\n",
+             stage, proc_selfpid(), platform, flags, blob->csb_flags,
+             (unsigned int)blob->csb_platform_binary, error);
+--- a/bsd/kern/mach_loader.c
++++ b/bsd/kern/mach_loader.c
+@@ -37,6 +37,7 @@
+  *	Started.
+  */
+ 
++#include "xcover5_m38c.h"
+ #include <sys/param.h>
+ #include <sys/vnode_internal.h>
+ #include <sys/uio.h>
+@@ -3538,6 +3539,14 @@
+ 
+ 		result->csflags |= blob->csb_flags;
+ 		result->platform_binary = blob->csb_platform_binary;
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++        const char *trace_name = vnode_getname_printable(vp);
++        if (trace_name != NULL && strcmp(trace_name, "notifyd") == 0) {
++            xcover5_m38c_record(5, proc_selfpid(), result->ip_platform,
++                blob->csb_flags, blob->csb_platform_binary, "LOAD_SIG_OUT", blob->csb_cdhash);
++        }
++        if (trace_name != NULL) vnode_putname_printable(trace_name);
++#endif
+ 		result->cs_end_offset = blob->csb_end_offset;
+ 	}
+ 	if (addr != 0) {
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -384,6 +384,7 @@
+ bsd/kern/sweet_amfi.c			standard
+ bsd/kern/kern_csr.c			optional config_csr
+ bsd/kern/kern_debug.c			standard
++bsd/kern/xcover5_m38c.c			standard
+ bsd/kern/kern_symfile.c			standard
+ bsd/kern/kern_descrip.c			standard
+ bsd/kern/kern_guarded.c			standard
+--- a/osfmk/arm/model_dep.c
++++ b/osfmk/arm/model_dep.c
+@@ -734,6 +734,10 @@
+ 		panic_print_vnodes();
+ 	}
+ 
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++    extern void xcover5_m38c_dump(void);
++    xcover5_m38c_dump();
++#endif
+ 	panic_bt_depth--;
+ }
+ 
+--- /dev/null
++++ b/bsd/kern/xcover5_m38c.h
+@@ -0,0 +1,5 @@
++/* Bounded diagnostic records only; no signing decisions. */
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++void xcover5_m38c_record(unsigned int kind, int pid, unsigned int a,
++    unsigned int b, unsigned int c, const char *name, const unsigned char *hash);
++#endif
+--- /dev/null
++++ b/bsd/kern/xcover5_m38c.c
+@@ -0,0 +1,42 @@
++/* Append-only, bounded bring-up evidence. No allocation or panic-time locks. */
++#include <sys/types.h>
++#include <sys/systm.h>
++#include <kern/debug.h>
++#include <os/atomic_private.h>
++#include "xcover5_m38c.h"
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++#define TRACE_CAP 256
++struct trace_event { unsigned int ready, kind; int pid; unsigned int a,b,c; char name[24]; unsigned char hash[20]; };
++static struct trace_event events[TRACE_CAP];
++static unsigned int reserved;
++void xcover5_m38c_dump(void);
++void
++xcover5_m38c_record(unsigned int kind, int pid, unsigned int a, unsigned int b,
++    unsigned int c, const char *name, const unsigned char *hash)
++{
++    unsigned int i = os_atomic_inc_orig(&reserved, relaxed);
++    if (i >= TRACE_CAP) return;
++    struct trace_event *e = &events[i];
++    e->kind=kind; e->pid=pid; e->a=a; e->b=b; e->c=c;
++    if (name) strlcpy(e->name,name,sizeof(e->name));
++    if (hash) memcpy(e->hash,hash,20);
++    os_atomic_store(&e->ready,1,release);
++}
++void
++xcover5_m38c_dump(void)
++{
++    unsigned int total=os_atomic_load(&reserved,acquire);
++    unsigned int n=total < TRACE_CAP ? total : TRACE_CAP;
++    paniclog_append_noflush("\nXCOVER5 M38C RETAINED count=%u overflow=%u [1=enter 2=status 3=return 4=signature 5=load]\n",n,total>TRACE_CAP);
++    unsigned int start=n>16?n-16:0;
++    for (unsigned int i=start;i<n;i++) {
++        struct trace_event *e=&events[i];
++        if (!os_atomic_load(&e->ready,acquire)) continue;
++        paniclog_append_noflush("M38C %u k%u pid%d %s a=%x b=%x c=%x\n",i,e->kind,e->pid,e->name,e->a,e->b,e->c);
++        if (e->kind==4 || e->kind==5) {
++            paniclog_append_noflush("HASH %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n",
++                e->hash[0],e->hash[1],e->hash[2],e->hash[3],e->hash[4],e->hash[5],e->hash[6],e->hash[7],e->hash[8],e->hash[9],e->hash[10],e->hash[11],e->hash[12],e->hash[13],e->hash[14],e->hash[15],e->hash[16],e->hash[17],e->hash[18],e->hash[19]);
++        }
++    }
++}
++#endif
