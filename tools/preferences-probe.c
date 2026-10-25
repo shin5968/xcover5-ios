@@ -12,6 +12,7 @@ extern kern_return_t bootstrap_look_up(mach_port_t, const char *, mach_port_t *)
 #include <pwd.h>
 #include <objc/runtime.h>
 #include <dlfcn.h>
+#include <stdatomic.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,10 +25,10 @@ static void fail(int stage) { fprintf(stderr,"XCOVER5 M39 FAIL stage=%d errno=%d
 typedef void (*prefs_error_imp)(id,SEL,void *,void *,void *,void *,long,int,void *);
 static prefs_error_imp original_error;
 static char *(*describe_xpc)(void *);
-static unsigned reply_logs;
+static _Atomic unsigned reply_logs;
 static void observe_preferences_error(id self,SEL selector,void *reply,void *message,
     void *keys,void *values,long count,int retry,void *continuation) {
-    if (reply_logs++ < 8) {
+    if (atomic_fetch_add_explicit(&reply_logs,1,memory_order_relaxed) < 8) {
         char *description=reply && describe_xpc ? describe_xpc(reply) : NULL;
         fprintf(stderr,"M39C ERROR_REPLY count=%ld retry=%d reply=%.1800s\n",count,retry,description?description:"(unavailable)");
         free(description);
