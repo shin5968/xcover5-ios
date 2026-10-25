@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #define ENOPOLICY 103
 #define PROC_NULL NULL
-typedef uintptr_t user_addr_t;
+#define user_addr_t uintptr_t
 typedef bool boolean_t;
 typedef int pid_t;
 struct process {int pid,ppid,version,uid,bits;const char *p_comm;};
@@ -225,3 +225,4 @@ int main(void){
  puts("M38 exact notify service/root client/live PID1 parent checks PASS");
  assert(policy_calls==6);puts("actual dispatch: static/dynamic existing policy results and lock accounting PASS");
 }
+
