@@ -50,6 +50,7 @@ if __name__=='__main__':
  # M38: stock notifyd binary is substituted only locally after CI.
  notify={'Label':'com.apple.notifyd','ProgramArguments':['/usr/sbin/notifyd'],
          'MachServices':{'com.apple.system.notification_center':True},
+         'PublishesEvents':'com.apple.notifyd.matching',
          'EnableTransactions':True,'EnablePressuredExit':False,
          'EnvironmentVariables':{'ASL_DISABLE':'1'},'POSIXSpawnType':'Interactive',
          'LimitLoadToSessionType':'System','StandardOutPath':'/dev/console','StandardErrorPath':'/dev/console'}
