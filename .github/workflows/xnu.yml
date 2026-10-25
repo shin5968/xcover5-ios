@@ -118,7 +118,7 @@ jobs:
 
       - name: Restore matching kernel
         id: kernel-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: dxb/fakeroot/System/Library/Kernels
           key: xnu-kernel-v1-${{ runner.os }}-${{ runner.arch }}-${{ env.MACOS_VERSION }}-${{ env.KERNEL_CONFIG }}-${{ env.MACHINE_CONFIG }}-${{ env.DXB_SHA }}-${{ env.DEVELOPER_DIR }}-${{ hashFiles('xnu/patches/**', '.github/workflows/xnu.yml') }}

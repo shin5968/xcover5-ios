@@ -2,7 +2,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <mach/mach.h>
 /* bootstrap.h is private in the iPhone SDK; these are the libSystem MIG ABI
- * declarations used by the existing M38 bootstrap lookup test. */
+ * declarations used by the existing M36/M37 bootstrap lookup tests. */
 extern mach_port_t bootstrap_port;
 extern kern_return_t bootstrap_look_up(mach_port_t, const char *, mach_port_t *);
 #include <sys/wait.h>
