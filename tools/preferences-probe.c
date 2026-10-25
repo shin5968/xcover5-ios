@@ -1,7 +1,10 @@
 /* M39: real CoreFoundation APIs, separate exec reader, and RAM-root file check. */
 #include <CoreFoundation/CoreFoundation.h>
-#include <servers/bootstrap.h>
 #include <mach/mach.h>
+/* bootstrap.h is private in the iPhone SDK; these are the libSystem MIG ABI
+ * declarations used by the existing M38 bootstrap lookup test. */
+extern mach_port_t bootstrap_port;
+extern kern_return_t bootstrap_look_up(mach_port_t, const char *, mach_port_t *);
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <unistd.h>
