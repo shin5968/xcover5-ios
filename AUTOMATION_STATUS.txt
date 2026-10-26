@@ -1,3 +1,19 @@
+2026-10-26 AUTO3 hardware evidence update
+
+video192827 transition-025 (~30.82s): post-reset PHYCFG40102400;
+ep0 cmd1 timeout DEPCMD00000401 PHY40102400 saved00000000 DSTS00520000.
+Sleep-bit explanation is falsified for this run. Do not retry that fix.
+CMDACT remains set; status0 must not be mistaken for completed success.
+Halted DSTS is expected before our RUN_STOP and alone proves no cause.
+Stock DT PHY135d0000/version301 and isolationPMU704 identify separate
+analog/UTMI/Q-channel/reset state: HSI+CMU checks do not establish this.
+Pinned Samsung gadget.c allocates transfer resources before SETEPCONFIG;
+current code allocates after. This is a source difference, not proven cause.
+Next diagnostic: read-only isolation/PHY LINK_CTRL/CLKRST/PWR/UTMI/HSP state
+under existing HSI+clock+controller guards before choosing a functional fix.
+No new firmware was guessed or flashed from this evidence.
+Evidence ../artifacts/auto3-ep0-wake/video-192827/review.json.
+
 2026-10-26 AUTO3 update
 
 AUTO2 video190848 transition-023 (~30.75s): power1 and CMU gates pass,
