@@ -63,6 +63,7 @@ on:
       - "tools/stage_launchd.py"
       - "tools/preferences-probe.c"
       - "tools/test_m39_policy.c"
+      - "tools/test_m39*.py"
       - "tools/mkprocessipcprobe.py"
       - "tools/mkipcprobe.py"
       - "tools/check_pthread_abi.c"
