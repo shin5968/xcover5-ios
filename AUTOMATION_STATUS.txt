@@ -1,3 +1,29 @@
+2026-10-26 M39O video review / M39P final diagnostic page prepared
+
+Video220935: M39O diagnostic output is present, but native frames overlap
+old/new rows and cleanup overwrites it immediately. M39 still exits142.
+Do NOT transcribe uncertain FD/path/errno text or infer a new functional cause.
+Full video/hash/rotated-cropped native frames and review remain under
+../artifacts/m39o-bsd-detail/video-220935/.
+
+0067 adds a one-shot kernel thread call to reprint retained static snapshots
+about2seconds after M39 exit. No blocking sleep, proc reference in callback,
+USB/reset action, CF result or syscall result change. Allocation failure
+keeps normal dump with explicit NO_LATE_HANDLE. Overflow/inflight retained.
+Commit338a68a11822eb9b57d9505e909e25116171ff1e; full CI40330270274 SUCCESS.
+Actual-header/source checks, queue-once/static ownership/after-proc-state
+invalidation/allocation-failure tests PASS (host only). Kernel build PASS.
+Package and independent root/ADT memory mapping checks PASS.
+Exact M39H root/shim/DTB/cmdline, USB still deferred, no collector.
+AP ../artifacts/m39p-final-page/AP_M39P_FINAL_PAGE.tar.md5
+SHA256b4c9f3280242cca59f447d2b6cdc851c811b62f69b46c1feb6c601b0d2f05f2d.
+Agent did NOT attempt installation this turn; prepared AP for next device run.
+This is diagnostic readability only, not a claim that sync142 is fixed.
+Next: after cleanup, capture M39P FINAL_DIAGNOSTICS through FINAL_END page.
+Use exact M39O IOV/PATH data to choose next functional work.
+
+Previous records follow:
+
 2026-10-26 M39N runtime review / M39O diagnostic prepared
 
 Video213332: Sandbox2 rc0 count8, Sandbox12 rc0 count1; M39 still exit142.
