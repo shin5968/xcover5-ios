@@ -45,7 +45,7 @@ int main(void){
  xcover5_prefs_bsd_detail(&actor,120,EIO,a);xcover5_prefs_bsd_detail(&actor,121,0,a);assert(count==xc_prefs_bsd_detail_total);
  a[1]=1;xcover5_prefs_bsd_detail(&actor,470,ENOENT,a);assert(strstr(logtext,"copy=14 bytes=0"));
  a[2]=6;xcover5_prefs_bsd_detail(&actor,121,EIO,a);assert(strstr(logtext,"count=6 shown=4")&&strstr(logtext,"descriptor_copy=14"));
- char big[201];memset(big,'x',200);big[200]=0;a[1]=(uintptr_t)big;xcover5_prefs_bsd_detail(&actor,470,ENOENT,a);assert(strstr(logtext,"copy=36 bytes=160"));
+ char big[201];memset(big,'x',200);big[200]=0;a[1]=(uintptr_t)big;xcover5_prefs_bsd_detail(&actor,470,ENOENT,a);char expected[64];snprintf(expected,sizeof(expected),"copy=%d bytes=160",ENAMETOOLONG);assert(strstr(logtext,expected));
  actor.p_comm="cfprefsd";
  for(unsigned i=0;i<20;i++)xcover5_prefs_bsd_detail(&actor,470,ENOENT,a);
  char *marker=strstr(logtext,"truncated cap=16");assert(marker&&!strstr(marker+1,"truncated cap=16"));
