@@ -96,6 +96,7 @@ jobs:
           python3 tools/test_m39j_container.py
           python3 tools/test_m39l_query.py
           python3 tools/test_m39m_passthrough.py
+          python3 tools/test_m39o_bsd_detail.py
 
       - name: Fetch build script
         run: |
@@ -170,6 +171,7 @@ jobs:
         run: |
           python3 tools/test_m39l_query.py dxb/xnu
           python3 tools/test_m39m_passthrough.py dxb/xnu
+          python3 tools/test_m39o_bsd_detail.py dxb/xnu
           python3 -c 'from pathlib import Path; ks=[p for p in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if p.is_file()]; assert ks and all(b"XCOVER5 M39L PREF_READ" in k.read_bytes() for k in ks)'
 
       - name: Verify automatic log snapshot protocol

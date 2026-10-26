@@ -1,0 +1,68 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -1666,6 +1666,7 @@
+ #include "xcover5_prefs_access.h"
+ #include "xcover5_prefs_passthrough.h"
++#include "xcover5_prefs_bsd_detail.h"
+ #endif
+ 
+ int
+ __mac_syscall(proc_t p, struct __mac_syscall_args *uap, int *retv __unused)
+--- a/bsd/dev/arm/systemcalls.c
++++ b/bsd/dev/arm/systemcalls.c
+@@ -198,6 +198,8 @@
+ #if defined(XCOVER5) && CONFIG_MACF
+ 	extern void xcover5_prefs_trace_record(proc_t, int, const char *, int, int);
+ 	xcover5_prefs_trace_record(proc,1,NULL,code,error);
++	extern void xcover5_prefs_bsd_detail(proc_t,int,int,const void *);
++	xcover5_prefs_bsd_detail(proc,code,error,&uthread->uu_arg[0]);
+ #endif
+ 	AUDIT_SYSCALL_EXIT(code, proc, uthread, error);
+ #if defined(ARM64_BOARD_CONFIG_SWEET)
+--- /dev/null
++++ b/security/xcover5_prefs_bsd_detail.h
+@@ -0,0 +1,44 @@
++/* M39O: bounded evidence for failed output/path syscalls. No return changes. */
++#ifndef XCOVER5_PREFS_BSD_DETAIL_H
++#define XCOVER5_PREFS_BSD_DETAIL_H
++#define XC_PREFS_BSD_DETAIL_CAP 16U
++static unsigned xc_prefs_bsd_detail_total;
++void xcover5_prefs_bsd_detail(proc_t,int,int,const void *);
++void
++xcover5_prefs_bsd_detail(proc_t p,int code,int error,const void *arguments)
++{
++    uint64_t args[4];unsigned slot;
++    if(error<=0 || (code!=121 && code!=470) || proc_getuid(p)!=0 ||
++       !proc_is64bit_data(p) || (strcmp(p->p_comm,"m39-probe") && strcmp(p->p_comm,"cfprefsd")))return;
++    slot=os_atomic_inc_orig(&xc_prefs_bsd_detail_total,relaxed);
++    if(slot>=XC_PREFS_BSD_DETAIL_CAP){
++        if(slot==XC_PREFS_BSD_DETAIL_CAP)printf("XCOVER5 M39O BSD_DETAIL truncated cap=%u\n",XC_PREFS_BSD_DETAIL_CAP);
++        return;
++    }
++    memcpy(args,arguments,sizeof(args));
++    printf("XCOVER5 M39O BSD_DETAIL seq=%u pid=%d name=%s call=%d rc=%d fd=%d\n",
++        slot,proc_pid(p),p->p_comm,code,error,(int32_t)args[0]);
++    if(code==470){
++        char path[160]={0};size_t copied=0;
++        int ce=copyinstr((user_addr_t)args[1],path,sizeof(path),&copied);
++        path[sizeof(path)-1]=0;
++        for(unsigned i=0;path[i];i++)if((unsigned char)path[i]<32 || (unsigned char)path[i]>126)path[i]='?';
++        printf("XCOVER5 M39O PATH seq=%u flags=%x copy=%d bytes=%lu path=%s\n",slot,(unsigned)args[3],ce,(unsigned long)copied,path);
++    }else{
++        unsigned count=(unsigned)args[2],shown=count<4?count:4;
++        printf("XCOVER5 M39O WRITEV seq=%u count=%u shown=%u\n",slot,count,shown);
++        for(unsigned i=0;i<shown;i++){
++            struct {uint64_t base,length;} v;char text[161]={0};int ce;
++            user_addr_t at=(user_addr_t)args[1]+i*sizeof(v);
++            if(at<(user_addr_t)args[1])break;
++            ce=copyin(at,&v,sizeof(v));
++            if(ce){printf("XCOVER5 M39O IOV seq=%u i=%u descriptor_copy=%d\n",slot,i,ce);continue;}
++            size_t n=v.length<160?(size_t)v.length:160;
++            ce=n?copyin((user_addr_t)v.base,text,n):0;
++            if(ce)text[0]=0;
++            else for(size_t j=0;j<n;j++)if((unsigned char)text[j]<32 || (unsigned char)text[j]>126)text[j]='?';
++            printf("XCOVER5 M39O IOV seq=%u i=%u len=%llu copied=%lu copy=%d text=%s\n",slot,i,v.length,(unsigned long)(ce?0:n),ce,text);
++        }
++    }
++}
++#endif
