@@ -13,12 +13,16 @@
       "drivers/samsung/debug/sec_debug_internal.h": "dac339f807f288c82c6231eca07c480eb76379bea4a334e5162ee17a972d16f6",
       "drivers/soc/samsung/exynos-reboot.c": "19804149e781a1f301075e0348ce0b564bbd42b28263e0d897e8f2f7beacb9ae",
       "drivers/soc/samsung/cal-if/exynos3830/cmucal-sfr.c": "18b2b48a518172f14fbeb4e5b1393e74dba324213a60795d93619e87a3bde9be",
-      "drivers/soc/samsung/cal-if/exynos3830/flexpmu_cal_local_exynos3830.h": "4ce64dba0edd2faebe968d6ae6b63f8638d9b079157a378ca383e3dbf263c5ec"
+      "drivers/soc/samsung/cal-if/exynos3830/flexpmu_cal_local_exynos3830.h": "4ce64dba0edd2faebe968d6ae6b63f8638d9b079157a378ca383e3dbf263c5ec",
+      "drivers/usb/dwc3/gadget.c": "7ad0d75835f1968a1a2bf0bd5880eeda2e7ba98df58966b72a4af3fb2333096e",
+      "drivers/usb/dwc3/core.h": "4ba402a6315771f60c4a7821f388e942cff2ea38e3018c84b98c9156e51a3ac3",
+      "drivers/usb/dwc3/core.c": "465379455ce854c097b9f68df224d19e6d1f0529a136f01765974c44e972b63b"
     },
     "stock_device_tree": "xcover5/stock/unpacked/main.dts",
     "reset_registers": "PMU11860000; MAGIC0808, PANIC080c; SYSIP_DAT00810; SWRESET3a00 bit1",
     "usb": "DWC313600000; CMU_HSI13400000; USB gates203c/2040/200c/2010 bit21",
-    "hsi_power_status": "PMU+0x1c84 mask BIT(0), per flexpmu hsi_status and hsi_on; video183651 reads1"
+    "hsi_power_status": "PMU+0x1c84 mask BIT(0), per flexpmu hsi_status and hsi_on; video183651 reads1",
+    "usb2_endpoint_commands": "gadget.c dwc3_send_gadget_ep_cmd: save/clear GUSB2PHYCFG SUSPHY BIT6 and ENBLSLPM BIT8 for USB2 commands; restore on exit. core.h confirms masks. AUTO2 times out on command1 after soft reset; post-reset sleep state not yet observed."
   },
   "limitations": [
     "Source-derived implementation; XCover5 USB enumeration and reset not hardware verified yet.",

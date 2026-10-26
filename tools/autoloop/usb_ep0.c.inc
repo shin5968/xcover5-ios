@@ -1,4 +1,6 @@
 #define GCTL            0xc110
+#define GUSB2PHYCFG     0xc200
+#define USB2_CMD_SLEEP  ((1u << 6) | (1u << 8)) /* SUSPHY | ENBLSLPM */
 #define GEVNTADRLO      0xc400
 #define GEVNTADRHI      0xc404
 #define GEVNTSIZ        0xc408
@@ -87,6 +89,15 @@ ud_sleep_ms(unsigned ms)
 static int
 ud_epcmd(unsigned ep, uint32_t cmd, uint32_t p0, uint32_t p1, uint32_t p2)
 {
+	/* USB2-only gadget: Samsung dwc3_send_gadget_ep_cmd saves/clears both
+	 * PHY sleep bits before every command, including after core soft reset.
+	 * Clearing SUSPHY once before reset does not enforce that contract. */
+	uint32_t phy = dwc_rd(GUSB2PHYCFG);
+	uint32_t saved = phy & USB2_CMD_SLEEP;
+	int result = -1;
+	if (saved) {
+		dwc_wr(GUSB2PHYCFG, phy & ~USB2_CMD_SLEEP);
+	}
 	dwc_wr(DEPCMDPAR0(ep), p0);
 	dwc_wr(DEPCMDPAR1(ep), p1);
 	dwc_wr(DEPCMDPAR2(ep), p2);
@@ -97,14 +108,20 @@ ud_epcmd(unsigned ep, uint32_t cmd, uint32_t p0, uint32_t p1, uint32_t p2)
 			uint32_t status = (v >> 12) & 0xf;
 			if (status) {
 				printf("XCOVER5 AUTO USB: ep%u cmd 0x%x status %u\n", ep, cmd & 0xf, status);
-				return -1;
+				goto done;
 			}
-			return 0;
+			result = 0;
+			goto done;
 		}
 		delay(1);
 	}
-	printf("XCOVER5 AUTO USB: ep%u cmd 0x%x timeout\n", ep, cmd & 0xf);
-	return -1;
+	printf("XCOVER5 AUTO USB: ep%u cmd 0x%x timeout reg=%08x PHY=%08x saved=%08x DSTS=%08x\n",
+	    ep, cmd & 0xf, dwc_rd(DEPCMD(ep)), dwc_rd(GUSB2PHYCFG), saved, dwc_rd(DSTS));
+done:
+	if (saved) {
+		dwc_wr(GUSB2PHYCFG, dwc_rd(GUSB2PHYCFG) | saved);
+	}
+	return result;
 }
 
 /* One TRB on physical endpoint ep (0 = ep0 OUT, 1 = ep0 IN). */
@@ -336,6 +353,7 @@ xcover5_usb_gadget_start(vm_offset_t dwc)
 	if (dwc_rd(DCTL) & DCTL_CSFTRST) {
 		return;
 	}
+	printf("XCOVER5 AUTO USB: post-reset PHYCFG=%08x\n", dwc_rd(GUSB2PHYCFG));
 
 	dwc_wr(GEVNTADRLO, (uint32_t)(ud.dma_pa + UD_EVT));
 	dwc_wr(GEVNTADRHI, (uint32_t)((ud.dma_pa + UD_EVT) >> 32));
