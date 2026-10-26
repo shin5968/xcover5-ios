@@ -1,6 +1,6 @@
 --- a/security/xcover5_prefs_bsd_detail.h
 +++ b/security/xcover5_prefs_bsd_detail.h
-@@ -1,99 +1,120 @@
+@@ -1,99 +1,122 @@
 -/* M39O: bounded evidence for failed output/path syscalls. No return changes. */
 -#ifndef XCOVER5_PREFS_BSD_DETAIL_H
 -#define XCOVER5_PREFS_BSD_DETAIL_H
@@ -197,10 +197,12 @@
 +    for(unsigned i=0;i<stored;i++){
 +        if(!os_atomic_load(&xc_prefs_bsd_details[i].ready,acquire))continue;
 +        const char *line=xc_prefs_bsd_details[i].text;
-+        while((line=strstr(line,"XCOVER5 M39Q TAIL "))!=NULL){
++        while(*line){
 +            const char *end=strchr(line,'\n');
 +            if(!end)break;
-+            printf("%.*s\n",(int)(end-line),line);line=end+1;
++            if(strncmp(line,"XCOVER5 M39Q TAIL ",sizeof("XCOVER5 M39Q TAIL ")-1)==0)
++                printf("%.*s\n",(int)(end-line),line);
++            line=end+1;
 +        }
 +    }
 +    printf("XCOVER5 M39Q FINAL_END capture-this-page\n");
