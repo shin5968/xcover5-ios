@@ -12,11 +12,13 @@
       "drivers/samsung/sec_reboot.c": "806e8a0536ce20fa3514c0e78f52ce86613bd37d5a90bddb3acf37f28ed9fb5d",
       "drivers/samsung/debug/sec_debug_internal.h": "dac339f807f288c82c6231eca07c480eb76379bea4a334e5162ee17a972d16f6",
       "drivers/soc/samsung/exynos-reboot.c": "19804149e781a1f301075e0348ce0b564bbd42b28263e0d897e8f2f7beacb9ae",
-      "drivers/soc/samsung/cal-if/exynos3830/cmucal-sfr.c": "18b2b48a518172f14fbeb4e5b1393e74dba324213a60795d93619e87a3bde9be"
+      "drivers/soc/samsung/cal-if/exynos3830/cmucal-sfr.c": "18b2b48a518172f14fbeb4e5b1393e74dba324213a60795d93619e87a3bde9be",
+      "drivers/soc/samsung/cal-if/exynos3830/flexpmu_cal_local_exynos3830.h": "4ce64dba0edd2faebe968d6ae6b63f8638d9b079157a378ca383e3dbf263c5ec"
     },
     "stock_device_tree": "xcover5/stock/unpacked/main.dts",
     "reset_registers": "PMU11860000; MAGIC0808, PANIC080c; SYSIP_DAT00810; SWRESET3a00 bit1",
-    "usb": "DWC313600000; CMU_HSI13400000; USB gates203c/2040/200c/2010 bit21"
+    "usb": "DWC313600000; CMU_HSI13400000; USB gates203c/2040/200c/2010 bit21",
+    "hsi_power_status": "PMU+0x1c84 mask BIT(0), per flexpmu hsi_status and hsi_on; video183651 reads1"
   },
   "limitations": [
     "Source-derived implementation; XCover5 USB enumeration and reset not hardware verified yet.",

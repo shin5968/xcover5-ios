@@ -77,7 +77,8 @@ void xcover5_autolog_init(void) {
     if(!pmu)return;
     uint32_t power=usb_rd(pmu,0x1c84);
     printf("XCOVER5 AUTO USB: HSI power status=%08x\n",power);
-    if((power&0xf)!=0xf){printf("XCOVER5 AUTO USB: STOP HSI power off\n");return;}
+    /* Exynos3830 flexpmu hsi_status/hsi_on use mask BIT(0), not 0xf. */
+    if(!(power&1U)){printf("XCOVER5 AUTO USB: STOP HSI power off\n");return;}
     vm_offset_t cmu=ml_io_map(0x13400000,0x4000);
     if(!cmu)return;
     uint32_t phy=usb_rd(cmu,0x203c),bus=usb_rd(cmu,0x2040);

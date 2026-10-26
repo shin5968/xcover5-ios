@@ -24,4 +24,5 @@ with tempfile.TemporaryDirectory() as d:
     subprocess.run(['cc','-std=c11','-Wall','-Wextra','-Werror','-pthread',str(here/'test_capture.c'),'-o',str(exe)],check=True)
     subprocess.run([str(exe)],check=True)
 subprocess.run([sys.executable,str(here/'test_collect.py')],check=True)
+subprocess.run([sys.executable,str(here/'test_board_init.py')],check=True)
 print('AUTO exact patch/header integration and PC ACK gate tests PASS (host only)')
