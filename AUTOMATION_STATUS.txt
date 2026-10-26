@@ -1,3 +1,17 @@
+2026-10-26 M39L compatibility update (USB remains deferred)
+
+M39K video201109 close020 identifies self user-preference-read rc103;
+close021 confirms exit142 and summary34groups omitted2. See preserved review.
+Scoped observed read contract in0063, commit3974148e482a560a37121706a680c86551e9d8cd.
+Only root64-bit preference actors, self PID/version, filter28/flags40000011.
+Registered policies and unrelated requests retained; no generic Sandbox allow.
+Summary display64groups covers34 observed groups.
+Full CI40314567543 SUCCESS, package/independent checks PASS.
+M39L boot-only AP installed Computer Use, Odin PASS00:04 succeed1 failed0.
+../artifacts/m39l-self-read/ contains results; hardware M39 outcome pending.
+No USB auto flags or collector. Need PREF_READ rc and actual M39 sync/fresh
+reader result before concluding142 fixed or changing additional operations.
+
 2026-10-26 user redirects work: USB automation deferred; resume M39
 
 M39K commit2cbcb6adf78f7727fdc4f992adc7abfc61a3aed5, full CI40311440339 SUCCESS.
