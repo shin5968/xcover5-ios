@@ -1,3 +1,17 @@
+2026-10-26 user redirects work: USB automation deferred; resume M39
+
+M39K commit2cbcb6adf78f7727fdc4f992adc7abfc61a3aed5, full CI40311440339 SUCCESS.
+512 error records;16 call2 argument snapshots; original results preserved.
+Applied source identity, ABI/scope/fault/no-write/concurrency/overflow tests PASS.
+Local WSL later hit Service/E_UNEXPECTED; complete tests ran successfully in CI.
+Boot-only AP packaged/independently verified and installed Odin PASS00:04.
+../artifacts/m39k-request-detail/ contains manifests and READ_FIRST.txt.
+No xcautousb/xcautoreset flags; no collector started. USB work is on hold.
+Hardware M39 result pending video. Need QUERY/QUERIES and SUMMARY/RESULT/END
+plus actual sync/exit before adapting further policy contracts.
+
+Previous USB records (historical, deferred) follow:
+
 2026-10-26 AUTO3 hardware evidence update
 
 video192827 transition-025 (~30.82s): post-reset PHYCFG40102400;
