@@ -1,0 +1,56 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -1664,6 +1664,7 @@
+ #include "xcover5_prefs_trace.h"
+ #include "xcover5_prefs_container.h"
+ #include "xcover5_prefs_access.h"
++#include "xcover5_prefs_passthrough.h"
+ #endif
+ 
+ int
+@@ -1730,6 +1731,8 @@
+         if (error == ENOPOLICY) error = xcover5_preferences_access(p,uap->arg);
+     } else if (uap->call == 4 && strcmp(target, "Sandbox") == 0) {
+         error = xcover5_prefs_container_path(p, uap->arg);
++    } else if (uap->call == 12 && strcmp(target, "Sandbox") == 0) {
++        error = xcover5_prefs_passthrough(p,uap->arg);
+     }
+ #endif
+ 
+--- /dev/null
++++ b/security/xcover5_prefs_passthrough.h
+@@ -0,0 +1,34 @@
++/* M39M: bounded HackiOS call12 passthrough fallback, not a general Sandbox.
++ * Exact iOS16.5 wrapper packs sign-extended fd and flags in two uint64_t slots.
++ * CoreFoundation CFPDSource cacheFileInfoForWriting calls it with flags0x102.
++ * Retain Unix open/vnode checks and all registered policy responses.
++ */
++#ifndef XCOVER5_PREFS_PASSTHROUGH_H
++#define XCOVER5_PREFS_PASSTHROUGH_H
++static int
++xcover5_prefs_passthrough(proc_t p,user_addr_t address)
++{
++    struct { uint64_t fd,flags; } a;
++    struct fileproc *fp;
++    vnode_t vp;
++    char path[MAXPATHLEN];int length=sizeof(path),error;
++    if(proc_getuid(p)!=0 || !proc_is64bit_data(p) ||
++        (strcmp(p->p_comm,"m39-probe") && strcmp(p->p_comm,"cfprefsd")))return ENOPOLICY;
++    error=copyin(address,&a,sizeof(a));if(error)return error;
++    if(a.fd>0x7fffffffULL || a.flags!=0x102)return ENOPOLICY;
++    error=fp_getfvp(p,(int)a.fd,&fp,&vp);if(error)return error;
++    error=vnode_getwithref(vp);
++    (void)fp_drop(p,(int)a.fd,fp,0);
++    if(error)return error;
++    error=vn_getpath(vp,path,&length);
++    vnode_put(vp);
++    if(error)return error;
++    if(strcmp(path,"/var/root/Library/Preferences") &&
++       strcmp(path,"/private/var/root/Library/Preferences") &&
++       strcmp(path,"/var/root/Library/Preferences/org.xcover5.m39.plist") &&
++       strcmp(path,"/private/var/root/Library/Preferences/org.xcover5.m39.plist"))error=ENOPOLICY;
++    printf("XCOVER5 M39M PASSTHROUGH pid=%d fd=%d flags=%llx path=%s rc=%d\n",
++        proc_pid(p),(int)a.fd,a.flags,path,error);
++    return error;
++}
++#endif

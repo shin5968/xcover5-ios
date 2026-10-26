@@ -43,6 +43,9 @@ if (repo/'xnu/patches/0063-xcover5-preferences-self-read.patch').exists():
  header=header.replace('shown++ < 32','shown++ < 64').replace('groups > 32 ? groups-32','groups > 64 ? groups-64')
  func=func.replace('        error = xcover5_bootstrap_check(p, uap->arg);','        error = xcover5_bootstrap_check(p, uap->arg);\n        if (error == ENOPOLICY) error = xcover5_preferences_access(p,uap->arg);')
  prefix+='static int xcover5_preferences_access(proc_t p,user_addr_t a){(void)p;(void)a;return ENOPOLICY;}\n'
+if (repo/'xnu/patches/0064-xcover5-preferences-passthrough.patch').exists():
+ func=func.replace('        error = xcover5_prefs_container_path(p, uap->arg);\n    }','        error = xcover5_prefs_container_path(p, uap->arg);\n    } else if (uap->call == 12 && strcmp(target, "Sandbox") == 0) {\n        error = xcover5_prefs_passthrough(p,uap->arg);\n    }')
+ prefix+='static int passthrough_calls; static int xcover5_prefs_passthrough(proc_t p,user_addr_t a){(void)p;(void)a;passthrough_calls++;return EINVAL;}\n'
 if len(sys.argv)>1:
  tree=Path(sys.argv[1]);source=(tree/'security/mac_base.c').read_text()
  pos=source.index('int\n__mac_syscall(');stop=source.index('\n}\n',pos)+3
@@ -111,14 +114,18 @@ fixture=fixture[:at]+'''
  for(unsigned i=0;i<20;i++)xcover5_prefs_trace_query(&child,0,103);
  assert(xc_prefs_query_total==24);
  for(unsigned i=0;i<XC_PREFS_QUERY_CAP;i++)assert(xc_prefs_queries[i].ready);
+ args.call=12;mac_policy_list.entries[0].mpc=&policy;
+ int old_passthrough=passthrough_calls;
+ policy_result=EPERM;DISPATCH(EPERM);policy_result=ENOPOLICY;DISPATCH(ENOPOLICY);policy_result=0;DISPATCH(0);
+ assert(passthrough_calls==old_passthrough);mac_policy_list.entries[0].mpc=NULL;
  puts("M39K query ABI, scope, fault, no-write and bounded publication PASS (host only)");
  puts("M39I scope, real return preservation, publication, capacity and overflow PASS (host only)");
 '''+fixture[at:]
 if has_container:
  anchor=' assert(xc_prefs_total==5);caller.p_comm="launchd";'
- extra=' args.call=4;DISPATCH(EINVAL);assert(container_calls==1);args.call=3;\n'
+ extra=' args.call=4;DISPATCH(EINVAL);assert(container_calls==1);args.call=12;DISPATCH(EINVAL);assert(passthrough_calls==1);args.call=3;\n'
  assert anchor in fixture
- fixture=fixture.replace(anchor,extra+' assert(xc_prefs_total==6);caller.p_comm="launchd";')
+ fixture=fixture.replace(anchor,extra+' assert(xc_prefs_total==7);caller.p_comm="launchd";')
 with tempfile.TemporaryDirectory() as d:
  d=Path(d);(d/'prefs-trace.h').write_text(header);(d/'test.c').write_text(fixture)
  subprocess.run(['cc','-pthread','-Wno-format','-Wno-unused-parameter',str(d/'test.c'),'-o',str(d/'test')],check=True)
