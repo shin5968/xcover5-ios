@@ -1,3 +1,22 @@
+2026-10-26 AUTO3 update
+
+AUTO2 video190848 transition-023 (~30.75s): power1 and CMU gates pass,
+DWC3 soft reset completes7ms; ep0 command1 times out and endpoint0 setup fails.
+Pinned Samsung gadget.c clears/restores SUSPHY/ENBLSLPM per USB2 EP command;
+AUTO2 only cleared SUSPHY before reset. Missing command wake contract fixed
+in db8c172cf8b39281a0105f29e6c4281af7146b11. Added post-reset PHY and timeout
+registers. Sleep bits after AUTO2 reset were not logged: causal hypothesis,
+not a proven hardware fix. Actual-body host MMIO tests PASS all combinations
+and success/status/timeout restoration. Full CI40306130341 SUCCESS.
+AUTO3 package/independent payload checks PASS; Odin boot-only PASS00:04.
+../artifacts/auto3-ep0-wake/ contains provenance/results. No USB log interface
+during300second bounded collection; collector timed out and exited.
+No complete snapshot, ACK or reset requested.
+Next: actual AUTO3 post-reset PHYCFG and timeout reg/PHY/saved/DSTS evidence;
+do not repeat AUTO3 or guess cold PHY/clock writes.
+
+Previous records follow:
+
 2026-10-26 AUTO2 update
 
 AUTO1 failure identified from video183651 early-038 (~28.23s):
