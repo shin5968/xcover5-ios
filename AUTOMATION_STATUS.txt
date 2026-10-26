@@ -1,3 +1,19 @@
+2026-10-26 AUTO2 update
+
+AUTO1 failure identified from video183651 early-038 (~28.23s):
+HSI status=1 followed by STOP HSI power off. Samsung Exynos3830 flexpmu
+HSI_STATUS uses BIT(0); corrected incorrect low-nibble0xf test.
+Commit7f6852d716ec9b158f64424d6724eb9eb007bc54; full CI40302450955 SUCCESS.
+Actual board-init MMIO mock cases, capture tests and PC7 tests PASS.
+AUTO2 boot-only AP installed by Computer Use, Odin PASS00:04.
+../artifacts/auto2-hsi-power/verification.json and hardware-review.json.
+No log USB interface observed during300 second bounded collector run.
+Collector timed out and exited; no complete snapshot, ACK or reset sent.
+Next: early AUTO2 power/gates/DWC3/STOP evidence; do not repeat same image
+or assume clock/PHY state without hardware evidence.
+
+Previous AUTO1 record follows:
+
 2026-10-26 AUTO1 implementation handoff
 
 User authorized automatic collection, download reset and Computer Use boot-only
