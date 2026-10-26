@@ -3,4 +3,10 @@ On any failure, inspect full supplied evidence and compare the actual known-good
 Separate observed facts, hypotheses and unverified claims. Never treat last screen line as causal proof.
 Check source/build/payload differences and existing tests. Make one evidence-backed change at a time; state what observation distinguishes competing causes.
 Do not label diagnostic images as fixes or host/mock passes as hardware passes. Preserve the last working artifact and results.
-Store all artifacts/reviews under the project, not Downloads. User performs Odin flashing; do not flash automatically.
+Store all artifacts/reviews under the project, not Downloads.
+2026-10-26 user explicitly requested implementing automatic log collection,
+download reset, and agent Computer Use firmware installation. This supersedes
+the earlier manual-only Odin workflow for this task's verified boot.img-only
+AP packages. Inspect the actual selected package and Odin state for each run.
+It does not authorize unrelated firmware, repartitioning, or userdata erasure.
+Log retrieval must finish with a durable PC receipt before automatic reset.
