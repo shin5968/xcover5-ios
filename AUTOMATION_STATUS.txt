@@ -1,0 +1,37 @@
+2026-10-26 AUTO1 implementation handoff
+
+User authorized automatic collection, download reset and Computer Use boot-only
+firmware installation. See FAILURE_WORKFLOW.txt updated manual-only exception.
+
+Kernel implementation651b8121689df3d127bf455a28f8e540c72629b9:
+  tools/autoloop/capture.h, platform.c.inc, usb_ep0.c.inc, descriptors.h
+  xnu/patches/0062-xcover5-usb-autolog.patch
+PC improvements be9b705; documentation799ff57; checker fix0a1243c8eb7c630d221a904cda6165f89aae32a2.
+Host actual-header concurrency/CRC/ACK/reset-gate tests PASS; PC7 tests PASS.
+CI40297045053 kernel/source/host tests PASS, final marker check failed by
+opening .link directory. Installed kernel markers locally rechecked PASS.
+Follow-up full CI40298412726 SUCCESS (checker restricts paths to files).
+
+Installed AP:
+../artifacts/auto1-usb-log/AP_AUTO1_USB_LOG.tar.md5
+SHA25628f20f080e0bd4dafe94ddf924101946550a59038161f122b62b54ac8536589e
+Kernel SHA256bb343806fc1dd1db59a115a8fae7c612f58438048102ae6ac0d2fb8081d707d2
+Odin Computer Use: boot.img only, auto reboot on, re-partition/NAND erase off,
+PASS00:04, succeed1/failed0. Exact old M39H root/shim/DTB retained; cmdline
+adds xcautousb=1 xcautoreset=1. Package/independent ADT mapping checks PASS.
+Actual BL/B callers to xcover5_autolog_init/log_byte/test_finish verified.
+
+Hardware blocker:
+Windows did not enumerate the new log WinUSB interface. Collector timed out
+without a snapshot and sent no ACK/reset. User says related text not visible
+and phone does not return to download. No claim of automatic capture/reset
+PASS. No subsequent speculative flash. Need phone screen/full boot evidence
+for power/clock/PHY/GSNPSID/STOP/panic state. Early AUTO lines may be overwritten.
+Do not mistake the absence of readable retained AUTO lines for proof that
+initialization was never called; actual linked callers exist.
+
+All source and data remain in project. No storage-write driver, partition
+change or userdata deletion added. No background collector remains running
+after its timeout; no scheduled automatic task was created before USB proof.
+Detailed evidence: ../artifacts/auto1-usb-log/hardware-review.json,
+verification.json, READ_FIRST.txt, collector.stderr.txt and CI logs.
