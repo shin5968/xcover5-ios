@@ -1,0 +1,26 @@
+--- a/pexpert/arm/pe_serial.c
++++ b/pexpert/arm/pe_serial.c
+@@ -714,6 +714,10 @@
+ extern unsigned char iso_font[256 * 16];
+ 
++#if defined(XCOVER5)
++#define FBCON_SCALE     1
++#else
+ #define FBCON_SCALE     2
++#endif
+ #define FBCON_FG        0xffffffffu
+ #define FBCON_BG        0xff000000u
+ 
+--- a/osfmk/arm64/sweet_early.c
++++ b/osfmk/arm64/sweet_early.c
+@@ -16,6 +16,10 @@
+ #define EARLY_HEIGHT 1480u
+ #define EARLY_STRIDE (2880u / 4)
++#if defined(XCOVER5)
++#define EARLY_SCALE 1u
++#else
+ #define EARLY_SCALE 2u
++#endif
+ #define EARLY_CELL_W (8u * EARLY_SCALE)
+ #define EARLY_CELL_H (16u * EARLY_SCALE)
+ #define EARLY_ROWS ((EARLY_HEIGHT - 32u) / EARLY_CELL_H)

@@ -150,6 +150,22 @@ jobs:
         run: |
           python3 -c 'from pathlib import Path; p=Path("dxb/fakeroot/System/Library/Kernels"); ks=[k for k in p.glob("kernel.*") if k.is_file()]; assert ks, "No kernels"; assert all(b"XCOVER5 M39: pinned cfprefsd signed platform identity" in k.read_bytes() and b"com.apple.cfprefsd.daemon.system" in k.read_bytes() for k in ks), "M39 identity/policy missing"; assert all(b"XCOVER5 M38F FIRST" in k.read_bytes() and b"M38F PC=" in k.read_bytes() for k in ks), "M38F retained exception evidence missing"; assert all(b"XCOVER5 M38E BRK" in k.read_bytes() and b"XCOVER5 M38E IMAGE" in k.read_bytes() for k in ks), "M38E breakpoint evidence missing"; assert all(b"XCOVER5 M38D: pinned notifyd signed state" in k.read_bytes() for k in ks), "M38D signed-state correction missing"; assert all(b"XCOVER5 M38C RETAINED" in k.read_bytes() and b"CSOPS_RETURN" in k.read_bytes() and b"LOAD_SIG_OUT" in k.read_bytes() for k in ks), "M38C retained diagnostics missing from kernel"; assert all(b"XCOVER5 M18: /dev/xcmmc read-only registered" in k.read_bytes() for k in ks), "M18 patch missing from kernel"; assert all(b"XCOVER5 M20: /dev/xchfs read-only HFS view" in k.read_bytes() for k in ks), "M20 patch missing from kernel"; assert all(b"XCOVER5 M22D: main parse ret=" in k.read_bytes() and b"XCOVER5 M22D: signature failure errno=" in k.read_bytes() for k in ks), "M22D diagnostics missing from kernel"; assert all(b"XCOVER5 M28: /dev/xcuserdata read-only HFS view" in k.read_bytes() for k in ks), "M28 driver missing from kernel"'
 
+      - name: Verify small XCover5 console font
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          for name,macro in [('pexpert/arm/pe_serial.c','FBCON_SCALE'),('osfmk/arm64/sweet_early.c','EARLY_SCALE')]:
+              source=(Path('dxb/xnu')/name).read_text()
+              start=source.index('#if defined(XCOVER5)\n#define '+macro)
+              end=source.index('#endif',start)+len('#endif')
+              snippet=source[start:end]+'\n'+macro+'\n'
+              for flags,want in [(['-DXCOVER5'],1),([],2)]:
+                  output=subprocess.check_output(['cc','-E','-P','-x','c','-']+flags,input=snippet,text=True).strip()
+                  assert int(output.rstrip('u'))==want,(name,flags,output)
+          print('Applied early/normal XCover5 font8x16 PASS; fallback16x32 retained;720x1480 grid90x92')
+          PY
+
       - name: Verify preferences request trace
         run: |
           if test -d dxb/xnu; then
