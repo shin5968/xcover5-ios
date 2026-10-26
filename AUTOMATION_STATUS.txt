@@ -1,3 +1,29 @@
+2026-10-26 M39N runtime review / M39O diagnostic prepared
+
+Video213332: Sandbox2 rc0 count8, Sandbox12 rc0 count1; M39 still exit142.
+Summary35groups omitted0; writev121 EIO5 count3; fstatat64 470 ENOENT2 count1.
+Do not interpret missing-file checks or writev failures as the root cause yet.
+N installation was NOT performed by agent: previous turn CU stopped by Escape.
+Incoming video matches corrected call12 behavior; direct N marker not recovered.
+../artifacts/m39n-post-close/video-213332/review.json preserves evidence/hash.
+
+M39O0066 records only failed121/470 for root64-bit preference actors.
+Copies actual FD/path/attempted writev text (first4iov,160bytes),16events.
+Release-published records retained until M39 exit; overflow/inflight explicit.
+No syscall result changes, no user buffer writes, no further Sandbox allowance.
+This is diagnostic: remaining CF sync cause is still unknown.
+Commitfee5290a9142c30f1fc1fa4e6f24d440072f3116; full CI40325981242 SUCCESS.
+Actual-header, applied-source/hooks, fault/scope/bounds/publication checks PASS.
+AP ../artifacts/m39o-bsd-detail/AP_M39O_BSD_DETAIL.tar.md5
+SHA2560fd837b58de4b96d30081cb7593f60c7ef663f957b0b40fe851349613c7f1843.
+Package/independent ADT/root mapping PASS; rootphysa21a0000.
+Exact M39H root/shim/DTB/cmdline; USB remains deferred, no collector.
+Installation PENDING current Odin state check. See hardware-review.json.
+Next: M39O DETAILS/PATH/IOV/DETAIL_END, actual attempted SOURCE_SYNC text,
+fd and path; only then choose another functional change.
+
+Previous records follow (superseded hardware-pending labels are historical):
+
 2026-10-26 M39M passthrough update (USB still deferred)
 
 M39L video203559: exit142 persists, Sandbox2 rc0 count8, Sandbox12 rc103
