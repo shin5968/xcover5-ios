@@ -1,0 +1,28 @@
+{
+  "usb_ep0_donor": {
+    "repository": "local ios-sweet",
+    "commit": "067c9b3d463ecfbe37520683637ea2e6af31f3a4",
+    "source_patch": "xnu/patches/0073-sweet-usb-device-ep0.patch",
+    "scope": "Generic DWC3 EP0 state machine only; no Qualcomm addresses, power or PHY code copied"
+  },
+  "board_register_evidence": {
+    "repo": "LineageOS/android_kernel_samsung_exynos850",
+    "commit": "b8c71b7aecece9c67f0e840a6b074573e8041d20",
+    "files": {
+      "drivers/samsung/sec_reboot.c": "806e8a0536ce20fa3514c0e78f52ce86613bd37d5a90bddb3acf37f28ed9fb5d",
+      "drivers/samsung/debug/sec_debug_internal.h": "dac339f807f288c82c6231eca07c480eb76379bea4a334e5162ee17a972d16f6",
+      "drivers/soc/samsung/exynos-reboot.c": "19804149e781a1f301075e0348ce0b564bbd42b28263e0d897e8f2f7beacb9ae",
+      "drivers/soc/samsung/cal-if/exynos3830/cmucal-sfr.c": "18b2b48a518172f14fbeb4e5b1393e74dba324213a60795d93619e87a3bde9be"
+    },
+    "stock_device_tree": "xcover5/stock/unpacked/main.dts",
+    "reset_registers": "PMU11860000; MAGIC0808, PANIC080c; SYSIP_DAT00810; SWRESET3a00 bit1",
+    "usb": "DWC313600000; CMU_HSI13400000; USB gates203c/2040/200c/2010 bit21"
+  },
+  "limitations": [
+    "Source-derived implementation; XCover5 USB enumeration and reset not hardware verified yet.",
+    "Bootloader PHY/clock state must remain usable; cold PHY initialization is not implemented.",
+    "First1MiB of post-serial framebuffer console retained; overflow blocks ACK/reset.",
+    "No snapshot on early panic, hard hang, power loss, or a test that never exits.",
+    "No eMMC writes, no firmware flashing command in USB protocol."
+  ]
+}

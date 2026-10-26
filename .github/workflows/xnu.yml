@@ -159,6 +159,15 @@ jobs:
           fi
           python3 -c 'from pathlib import Path; ks=[p for p in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if p.is_file()]; assert ks and all(b"XCOVER5 M39J CONTAINER" in k.read_bytes() for k in ks)'
 
+      - name: Verify automatic log snapshot protocol
+        run: |
+          if test -d dxb/xnu; then
+            python3 tools/autoloop/test_build.py dxb/xnu
+          else
+            python3 tools/autoloop/test_build.py
+          fi
+          python3 -c 'from pathlib import Path; ks=list(Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*")); assert ks and all(b"XCOVER5 AUTO SNAPSHOT" in k.read_bytes() and b"XCOVER5 AUTO USB:" in k.read_bytes() for k in ks)'
+
       - name: Verify terminal user-abort diagnostics
         run: |
           python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks; assert all(b"XCOVER5 M29D ABORT" in k.read_bytes() and b"XCOVER5 M29D PC=" in k.read_bytes() for k in ks)'
