@@ -6,6 +6,8 @@ p=(r/'xnu/patches/0066-xcover5-preferences-bsd-detail.patch').read_text()
 h=''.join(x[1:] for x in p.split('+++ b/security/xcover5_prefs_bsd_detail.h\n',1)[1].splitlines(True) if x.startswith('+'))
 p=(r/'xnu/patches/0067-xcover5-preferences-final-page.patch').read_text()
 h=''.join(x[1:] for x in p.splitlines(True) if x.startswith('+') and not x.startswith('+++'))
+p=(r/'xnu/patches/0068-xcover5-preferences-rejection-tail.patch').read_text()
+h=''.join(x[1:] for x in p.splitlines(True) if x.startswith('+') and not x.startswith('+++'))
 if len(sys.argv)>1:
  t=Path(sys.argv[1]);assert (t/'security/xcover5_prefs_bsd_detail.h').read_text()==h
  source=(t/'bsd/dev/arm/systemcalls.c').read_text()
@@ -42,16 +44,18 @@ static int proc_pid(proc_t p){(void)p;return 6;}
 static char logtext[32768];static size_t loglength;
 static int detail_printf(const char *fmt,...){va_list a;va_start(a,fmt);int n=vsnprintf(logtext+loglength,sizeof(logtext)-loglength,fmt,a);va_end(a);assert(n>=0&&(size_t)n<sizeof(logtext)-loglength);loglength+=n;return n;}
 #define printf detail_printf
-static int copyin(user_addr_t a,void *b,size_t n){if(a<4096)return EFAULT;memcpy(b,(void*)a,n);return 0;}
+static int copyin(user_addr_t a,void *b,size_t n){if(a<4096 || a>UINTPTR_MAX-4096)return EFAULT;memcpy(b,(void*)a,n);return 0;}
 static int copyinstr(user_addr_t a,char *b,size_t n,size_t *copied){if(a<4096)return EFAULT;size_t z=strlen((void*)a)+1;*copied=z<n?z:n;memcpy(b,(void*)a,*copied);return z>n?ENAMETOOLONG:0;}
 """
 test=r"""
 int main(void){
- struct proc actor={0,1,"m39-probe"};char msg[]="M39D SOURCE_SYNC writeFailed=1 volatile=0 readonly=0 directMode=0 result=0\n";
- struct {uint64_t base,length;} iov[2]={{(uintptr_t)msg,sizeof(msg)-1},{1,3}};
- uint64_t a[4]={2,(uintptr_t)iov,2,0},saved[4];memcpy(saved,a,sizeof(a));
+ struct proc actor={0,1,"m39-probe"};char longmsg[301];memset(longmsg,'p',300);longmsg[300]=0;memcpy(longmsg+250,"because exact rejection reason",30);
+ char msg[]="M39D SOURCE_SYNC writeFailed=1 volatile=0 readonly=0 directMode=0 result=0\n";
+ struct {uint64_t base,length;} iov[3]={{(uintptr_t)msg,sizeof(msg)-1},{1,3},{(uintptr_t)longmsg,300}};
+ uint64_t a[4]={2,(uintptr_t)iov,3,0},saved[4];memcpy(saved,a,sizeof(a));
  xcover5_prefs_bsd_detail(&actor,121,EIO,a);assert(loglength==0);xcover5_prefs_bsd_detail_dump(&actor);
  assert(strstr(logtext,"call=121 rc=5 fd=2")&&strstr(logtext,"M39D SOURCE_SYNC writeFailed=1")&&strstr(logtext,"copy=14"));
+ assert(strstr(logtext,"M39Q TAIL seq=0 i=2 offset=140 copied=160 copy=0")&&strstr(logtext,"because exact rejection reason"));
  assert(!memcmp(saved,a,sizeof(a))&&msg[sizeof(msg)-2]=='\n');
  a[0]=(uint64_t)-2;a[1]=(uintptr_t)"/var/root/Library/Preferences/org.xcover5.m39.plist";a[3]=0x20;
  xcover5_prefs_bsd_detail(&actor,470,ENOENT,a);xcover5_prefs_bsd_detail_dump(&actor);assert(strstr(logtext,"call=470 rc=2 fd=-2")&&strstr(logtext,"flags=20 copy=0")&&strstr(logtext,"org.xcover5.m39.plist"));
@@ -69,12 +73,20 @@ int main(void){
  assert(!strstr(logtext,"seq=16 pid="));
  xc_prefs_bsd_details[0].ready=0;xcover5_prefs_bsd_detail_dump(&actor);assert(strstr(logtext,"overflow=9 inflight=1"));
  assert(allocations==1&&schedules==1&&callbacks==0);
+ xc_prefs_bsd_details[0].ready=1;loglength=0;logtext[0]=0;
  actor.p_comm=NULL;actor.uid=501;memset(msg,'z',sizeof(msg)-1);
  callbacks++;mock_call.callback(mock_call.arg,NULL);
+ assert(strstr(logtext,"M39Q FINAL_TAILS")&&strstr(logtext,"M39Q FINAL_END")&&strstr(logtext,"because exact rejection reason"));
  assert(strstr(logtext,"M39P FINAL_DIAGNOSTICS")&&strstr(logtext,"M39D SOURCE_SYNC writeFailed=1")&&strstr(logtext,"M39P FINAL_END"));
  xc_prefs_bsd_detail_total=0;xc_prefs_detail_late_call=NULL;xc_prefs_detail_late_queued=0;memset(xc_prefs_bsd_details,0,sizeof(xc_prefs_bsd_details));
  fail_allocate=1;actor.uid=0;actor.p_comm="m39-probe";xcover5_prefs_bsd_detail(&actor,470,ENOENT,a);xcover5_prefs_bsd_detail_dump(&actor);
  assert(strstr(logtext,"NO_LATE_HANDLE")&&allocations==2&&schedules==1);
+ xc_prefs_bsd_detail_total=0;memset(xc_prefs_bsd_details,0,sizeof(xc_prefs_bsd_details));
+ iov[2].base=UINT64_MAX-10;iov[2].length=200;a[0]=2;a[1]=(uintptr_t)iov;a[2]=3;
+ xcover5_prefs_bsd_detail(&actor,121,EIO,a);xcover5_prefs_bsd_detail_dump(&actor);
+ assert(strstr(logtext,"TAIL seq=0 i=2 offset=40 copied=0 copy=14"));
+
+ puts("M39Q actual header: long-message suffix captured and compact final tails retained PASS (host only)");
  puts("M39P delayed callback: queue once, static snapshot after proc expiry, no blocking sleep, allocation failure fallback PASS (host only)");
  puts("M39O actual header: lost-writev text, fd/path ABI, scope, copy faults, bounded truncation and unchanged inputs PASS (host only)");
 }
