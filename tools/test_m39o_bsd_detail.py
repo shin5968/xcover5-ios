@@ -4,6 +4,8 @@ import subprocess,sys,tempfile
 r=Path(__file__).resolve().parents[1]
 p=(r/'xnu/patches/0066-xcover5-preferences-bsd-detail.patch').read_text()
 h=''.join(x[1:] for x in p.split('+++ b/security/xcover5_prefs_bsd_detail.h\n',1)[1].splitlines(True) if x.startswith('+'))
+p=(r/'xnu/patches/0067-xcover5-preferences-final-page.patch').read_text()
+h=''.join(x[1:] for x in p.splitlines(True) if x.startswith('+') and not x.startswith('+++'))
 if len(sys.argv)>1:
  t=Path(sys.argv[1]);assert (t/'security/xcover5_prefs_bsd_detail.h').read_text()==h
  source=(t/'bsd/dev/arm/systemcalls.c').read_text()
@@ -18,10 +20,22 @@ prefix=r"""
 #include <errno.h>
 #include <stdarg.h>
 #define user_addr_t uintptr_t
+#define XC_PREFS_BSD_HOST 1
+#define NSEC_PER_SEC 1000000000U
+#define THREAD_CALL_PRIORITY_KERNEL 1
+#define os_atomic_cmpxchg(p,o,n,m) __sync_bool_compare_and_swap(p,o,n)
 #define os_atomic_inc_orig(p,o) __atomic_fetch_add((p),1,__ATOMIC_RELAXED)
 #define os_atomic_store(p,v,o) __atomic_store_n((p),(v),__ATOMIC_RELEASE)
 #define os_atomic_load(p,o) __atomic_load_n((p),__ATOMIC_ACQUIRE)
 struct proc {int uid,bits;const char *p_comm;};typedef struct proc *proc_t;
+typedef void *thread_call_param_t;
+typedef void (*thread_call_func_t)(void*,void*);
+struct mock_call {thread_call_func_t callback;void *arg;};typedef struct mock_call *thread_call_t;
+static struct mock_call mock_call;static unsigned allocations,schedules,callbacks;static int fail_allocate;
+static thread_call_t thread_call_allocate_with_priority(thread_call_func_t f,void *a,int priority){assert(priority==THREAD_CALL_PRIORITY_KERNEL);allocations++;if(fail_allocate)return NULL;mock_call.callback=f;mock_call.arg=a;return &mock_call;}
+static void clock_interval_to_deadline(unsigned n,unsigned scale,uint64_t *d){assert(n==2&&scale==NSEC_PER_SEC);*d=2000000000ULL;}
+static int thread_call_enter_delayed(thread_call_t c,uint64_t d){assert(c==&mock_call&&d==2000000000ULL);schedules++;return 0;}
+
 static unsigned proc_getuid(proc_t p){return p->uid;}
 static int proc_is64bit_data(proc_t p){return p->bits;}
 static int proc_pid(proc_t p){(void)p;return 6;}
@@ -54,6 +68,14 @@ int main(void){
  actor.p_comm="m39-probe";xcover5_prefs_bsd_detail_dump(&actor);assert(strstr(logtext,"overflow=9 inflight=0"));
  assert(!strstr(logtext,"seq=16 pid="));
  xc_prefs_bsd_details[0].ready=0;xcover5_prefs_bsd_detail_dump(&actor);assert(strstr(logtext,"overflow=9 inflight=1"));
+ assert(allocations==1&&schedules==1&&callbacks==0);
+ actor.p_comm=NULL;actor.uid=501;memset(msg,'z',sizeof(msg)-1);
+ callbacks++;mock_call.callback(mock_call.arg,NULL);
+ assert(strstr(logtext,"M39P FINAL_DIAGNOSTICS")&&strstr(logtext,"M39D SOURCE_SYNC writeFailed=1")&&strstr(logtext,"M39P FINAL_END"));
+ xc_prefs_bsd_detail_total=0;xc_prefs_detail_late_call=NULL;xc_prefs_detail_late_queued=0;memset(xc_prefs_bsd_details,0,sizeof(xc_prefs_bsd_details));
+ fail_allocate=1;actor.uid=0;actor.p_comm="m39-probe";xcover5_prefs_bsd_detail(&actor,470,ENOENT,a);xcover5_prefs_bsd_detail_dump(&actor);
+ assert(strstr(logtext,"NO_LATE_HANDLE")&&allocations==2&&schedules==1);
+ puts("M39P delayed callback: queue once, static snapshot after proc expiry, no blocking sleep, allocation failure fallback PASS (host only)");
  puts("M39O actual header: lost-writev text, fd/path ABI, scope, copy faults, bounded truncation and unchanged inputs PASS (host only)");
 }
 """
