@@ -1,0 +1,64 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -1663,6 +1663,7 @@
+ #if defined(XCOVER5)
+ #include "xcover5_prefs_trace.h"
+ #include "xcover5_prefs_container.h"
++#include "xcover5_prefs_access.h"
+ #endif
+ 
+ int
+@@ -1725,6 +1726,7 @@
+ #if defined(XCOVER5)
+     if (uap->call == 2 && strcmp(target, "Sandbox") == 0) {
+         error = xcover5_bootstrap_check(p, uap->arg);
++        if (error == ENOPOLICY) error = xcover5_preferences_access(p,uap->arg);
+     } else if (uap->call == 4 && strcmp(target, "Sandbox") == 0) {
+         error = xcover5_prefs_container_path(p, uap->arg);
+     }
+--- /dev/null
++++ b/security/xcover5_prefs_access.h
+@@ -0,0 +1,27 @@
++/* Scoped bring-up contract for the self preference-read query observed in M39K.
++ * Pinned HackiOS minisandbox allows call2; restrict this fallback to the exact
++ * root actors, operation, ABI flags/filter, live self PID and PID version.
++ * This does not implement a general Sandbox or change a registered policy.
++ */
++#ifndef XCOVER5_PREFS_ACCESS_H
++#define XCOVER5_PREFS_ACCESS_H
++static int
++xcover5_preferences_access(proc_t p,user_addr_t address)
++{
++    struct { uint64_t result,pid,operation,filter_type,filter,flags,pidversion; } a;
++    char operation[64];size_t length;
++    uint64_t decision=0;
++    int error;
++    if(proc_getuid(p)!=0 || !proc_is64bit_data(p) ||
++        (strcmp(p->p_comm,"m39-probe") && strcmp(p->p_comm,"cfprefsd")))return ENOPOLICY;
++    error=copyin(address,&a,sizeof(a));if(error)return error;
++    if(a.pid!=(uint64_t)proc_pid(p) || a.pidversion!=(uint64_t)proc_pidversion(p) ||
++        a.flags!=0x40000011ULL || a.filter_type!=28)return ENOPOLICY;
++    error=copyinstr(a.operation,operation,sizeof(operation),&length);if(error)return error;
++    if(strcmp(operation,"user-preference-read"))return ENOPOLICY;
++    /* Filter28's payload is not dereferenced: its type was not established. */
++    error=copyout(&decision,a.result,sizeof(decision));
++    printf("XCOVER5 M39L PREF_READ pid=%d v=%d rc=%d\n",proc_pid(p),proc_pidversion(p),error);
++    return error;
++}
++#endif
+--- a/security/xcover5_prefs_trace.h
++++ b/security/xcover5_prefs_trace.h
+@@ -142,11 +142,11 @@
+             }
+         }
+         groups++;
+-        if (shown++ < 32) {
++        if (shown++ < 64) {
+             printf("XCOVER5 M39I RESULT %s pid=%d v=%d name=%s policy=%s call=%d rc=%d count=%u\n",
+                 e->kind == 0 ? "MAC" : "BSD",e->pid,e->version,e->actor,e->policy,e->code,e->error,count);
+         }
+     }
+-    printf("XCOVER5 M39I END groups=%u omitted=%u\n",groups,groups > 32 ? groups-32 : 0);
++    printf("XCOVER5 M39I END groups=%u omitted=%u\n",groups,groups > 64 ? groups-64 : 0);
+ }
+ #endif

@@ -94,6 +94,7 @@ jobs:
         run: |
           python3 tools/test_m39i_trace.py
           python3 tools/test_m39j_container.py
+          python3 tools/test_m39l_query.py
 
       - name: Fetch build script
         run: |
@@ -163,6 +164,11 @@ jobs:
             python3 tools/test_m39j_container.py
           fi
           python3 -c 'from pathlib import Path; ks=[p for p in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if p.is_file()]; assert ks and all(b"XCOVER5 M39J CONTAINER" in k.read_bytes() for k in ks)'
+
+      - name: Verify scoped preference-read contract
+        run: |
+          python3 tools/test_m39l_query.py dxb/xnu
+          python3 -c 'from pathlib import Path; ks=[p for p in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if p.is_file()]; assert ks and all(b"XCOVER5 M39L PREF_READ" in k.read_bytes() for k in ks)'
 
       - name: Verify automatic log snapshot protocol
         run: |

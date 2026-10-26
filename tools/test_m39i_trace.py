@@ -39,6 +39,10 @@ if has_container:
  # The new handler has its own actual-header VM/ABI tests. Keep existing
  # dispatch/lock tests independent with a sentinel callback result.
  prefix+='static int container_calls; static int xcover5_prefs_container_path(proc_t p,user_addr_t a){(void)p;(void)a;container_calls++;return EINVAL;}\n'
+if (repo/'xnu/patches/0063-xcover5-preferences-self-read.patch').exists():
+ header=header.replace('shown++ < 32','shown++ < 64').replace('groups > 32 ? groups-32','groups > 64 ? groups-64')
+ func=func.replace('        error = xcover5_bootstrap_check(p, uap->arg);','        error = xcover5_bootstrap_check(p, uap->arg);\n        if (error == ENOPOLICY) error = xcover5_preferences_access(p,uap->arg);')
+ prefix+='static int xcover5_preferences_access(proc_t p,user_addr_t a){(void)p;(void)a;return ENOPOLICY;}\n'
 if len(sys.argv)>1:
  tree=Path(sys.argv[1]);source=(tree/'security/mac_base.c').read_text()
  pos=source.index('int\n__mac_syscall(');stop=source.index('\n}\n',pos)+3
