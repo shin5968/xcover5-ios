@@ -1,3 +1,28 @@
+2026-10-26 M39M passthrough update (USB still deferred)
+
+M39L video203559: exit142 persists, Sandbox2 rc0 count8, Sandbox12 rc103
+count1, groups32 omitted0. Evidence ../artifacts/m39l-self-read/video-203559/review.json.
+Exact cached iOS16.5 sandbox_passthrough_access packs2uint64 slots(fd,flags).
+CoreFoundation cacheFileInfoForWriting calls fd/0x102; nonzero follows error7.
+Raw wrapper/branch-island/caller proof ../research/m39l-call12/ANALYSIS.txt.
+Actual wrapper emulation6cases PASS; no device execution claimed.
+
+0064 implements only root64-bit preference actors, flags0x102, valid vnode
+and exact root Preferences directory/test domain paths. Logs actual fd/path/rc.
+No registered policy override and no output writes. No general Sandbox success.
+Commit2445a787a4c5a287d65845d874300e8ca2b4d8c4; full CI40319415990 SUCCESS.
+Host preflight + applied-header/dispatcher identity tests + kernel build PASS.
+Package and independent AP->boot->payload->ADT/root mapping checks PASS.
+Exact M39H root/shim/DTB/cmdline retained; no USB auto flags or collector.
+AP ../artifacts/m39m-passthrough/AP_M39M_PASSTHROUGH.tar.md5
+SHA2563214141b1ea7209cba71beff4c345953d8fbaad2c3bebbd3c1370d96e8ad7599.
+Odin Computer Use boot-only PASS00:04, succeed1 failed0. AutoReboot ON;
+RePartition/NandErase OFF. Hardware M39 sync/fresh-reader result PENDING.
+Next: review M39M PASSTHROUGH actual path/rc plus final child status. If142
+persists, inspect next concrete failure; do not claim this was the only cause.
+
+Previous records follow:
+
 2026-10-26 M39L compatibility update (USB remains deferred)
 
 M39K video201109 close020 identifies self user-preference-read rc103;
