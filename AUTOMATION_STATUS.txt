@@ -1,3 +1,28 @@
+2026-10-26 M39R small font / rejection suffix diagnostic prepared
+
+M39P video223743 confirms explicit rejection of the preference write.
+The stderr writev EIO reports a diagnostic-output failure; later plist ENOENT
+is not sufficient to identify the storage root cause. The decisive because
+clause is beyond the captured first160bytes. SOURCE_SYNC not recovered.
+
+0068 retains first160 and last160bytes of long iovecs with overflow/copy checks,
+then prints compact M39Q FINAL_TAILS through M39Q FINAL_END after the full dump.
+0069 uses8x16 early/normal XCover5 font: normal720x1480 grid90x92.
+Other-board font remains16x32. No CF/syscall result or policy allowance change.
+Initial compile failed on unsupported strstr; supported prefix scan replaces it.
+Commit96417367239e9f931890bf4da5d128723020f9e8; CI40337054513 SUCCESS.
+Applied-source font checks, actual-header suffix/bounds/scope/callback tests,
+kernel build, package and independent root/ADT mapping PASS.
+Exact M39H RAM root/shim/DTB/cmdline retained; USB still deferred.
+AP ../artifacts/m39r-small-font/AP_M39R_SMALL_FONT.tar.md5
+SHA256 ed72e077fff48bb46daa60c5ce21b70fe7e2d1288d8b59bd3e918125bc9faa94.
+Agent did not install; hardware PENDING. This is diagnostic, not M39 sync fix.
+Next: capture compact FINAL_TAILS page and actual because reason. If unclear,
+observe CFPreferencesErrorDescription reply and storage failure branch directly.
+Completion requires real plist creation and independent fresh-process reread.
+
+Previous records follow:
+
 2026-10-26 M39O video review / M39P final diagnostic page prepared
 
 Video220935: M39O diagnostic output is present, but native frames overlap
