@@ -31,7 +31,7 @@ func=func.replace('\tif (error) {\n\t\treturn error;\n\t}\n\tAUDIT_ARG',
  '\tif (error) {\n\t\txcover5_prefs_trace_record(p,0,"<copy-policy>",uap->call,error);\n\t\treturn error;\n\t}\n\tAUDIT_ARG',1)
 func=func.replace('error = mac_proc_check_mac_syscall(p, target, uap->call);\n\tif (error) {\n\t\treturn error;',
  'error = mac_proc_check_mac_syscall(p, target, uap->call);\n\tif (error) {\n\t\tgoto done;',1)
-func=func.replace('done:\n\treturn error;','done:\n\txcover5_prefs_trace_record(p,0,target,uap->call,error);\n\treturn error;')
+func=func.replace('done:\n\treturn error;','done:\n\txcover5_prefs_trace_record(p,0,target,uap->call,error);\n\tif (uap->call == 2 && strcmp(target,"Sandbox") == 0) xcover5_prefs_trace_query(p,uap->arg,error);\n\treturn error;')
 has_container=(repo/'xnu/patches/0061-xcover5-hackios-container-query.patch').exists()
 if has_container:
  func=func.replace('        error = xcover5_bootstrap_check(p, uap->arg);\n    }',
@@ -83,6 +83,31 @@ fixture=fixture[:at]+'''
  for(unsigned i=0;i<4;i++)assert(!pthread_join(workers[i],NULL));
  assert(xc_prefs_total==400);
  for(unsigned i=0;i<128;i++)assert(xc_prefs_events[i].ready && xc_prefs_events[i].code==381 && xc_prefs_events[i].error==103);
+ memset(xc_prefs_events,0,sizeof(xc_prefs_events));xc_prefs_total=0;
+ for(unsigned i=0;i<XC_PREFS_TRACE_CAP+5;i++)xcover5_prefs_trace_record(&child,1,NULL,381,103);
+ assert(xc_prefs_total==XC_PREFS_TRACE_CAP+5);
+ for(unsigned i=0;i<XC_PREFS_TRACE_CAP;i++)assert(xc_prefs_events[i].ready);
+ xcover5_prefs_trace_dump(&child);
+
+ memset(xc_prefs_queries,0,sizeof(xc_prefs_queries));xc_prefs_query_total=0;
+ child.p_comm="m39-probe";child.uid=0;child.bits=1;
+ uint64_t qa[7]={99,7,(uintptr_t)"mach-lookup",6,(uintptr_t)"com.apple.cfprefsd.daemon",0x40000000,7};
+ uint64_t before[7];memcpy(before,qa,sizeof(qa));
+ xcover5_prefs_trace_query(&child,(uintptr_t)qa,103);
+ assert(xc_prefs_query_total==1&&xc_prefs_queries[0].ready&&xc_prefs_queries[0].error==103);
+ assert(!strcmp(xc_prefs_queries[0].filter,"com.apple.cfprefsd.daemon"));
+ assert(!memcmp(before,qa,sizeof(qa)));
+ qa[3]=3;qa[4]=1;xcover5_prefs_trace_query(&child,(uintptr_t)qa,EPERM);
+ assert(!strcmp(xc_prefs_queries[1].filter,"<not-string>"));
+ fault=1;xcover5_prefs_trace_query(&child,(uintptr_t)qa,103);assert(xc_prefs_queries[2].arg_error==EFAULT);
+ fault=2;xcover5_prefs_trace_query(&child,(uintptr_t)qa,103);assert(xc_prefs_queries[3].operation_error==EFAULT);fault=0;
+ child.uid=501;xcover5_prefs_trace_query(&child,0,103);assert(xc_prefs_query_total==4);child.uid=0;
+ child.bits=0;xcover5_prefs_trace_query(&child,0,103);assert(xc_prefs_query_total==4);child.bits=1;
+ child.p_comm="other";xcover5_prefs_trace_query(&child,0,103);assert(xc_prefs_query_total==4);child.p_comm="m39-probe";
+ for(unsigned i=0;i<20;i++)xcover5_prefs_trace_query(&child,0,103);
+ assert(xc_prefs_query_total==24);
+ for(unsigned i=0;i<XC_PREFS_QUERY_CAP;i++)assert(xc_prefs_queries[i].ready);
+ puts("M39K query ABI, scope, fault, no-write and bounded publication PASS (host only)");
  puts("M39I scope, real return preservation, publication, capacity and overflow PASS (host only)");
 '''+fixture[at:]
 if has_container:
@@ -94,6 +119,7 @@ with tempfile.TemporaryDirectory() as d:
  d=Path(d);(d/'prefs-trace.h').write_text(header);(d/'test.c').write_text(fixture)
  subprocess.run(['cc','-pthread','-Wno-format','-Wno-unused-parameter',str(d/'test.c'),'-o',str(d/'test')],check=True)
  p=subprocess.run([str(d/'test')],capture_output=True,text=True,check=True)
- assert 'total=133 stored=128 overflow=5 inflight=0' in p.stdout
- assert 'call=381 rc=103 count=127' in p.stdout
+ assert 'total=133 stored=133 overflow=0 inflight=0' in p.stdout
+ assert 'call=381 rc=103 count=132' in p.stdout
+ assert 'total=517 stored=512 overflow=5 inflight=0' in p.stdout
  print(p.stdout)

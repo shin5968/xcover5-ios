@@ -30,12 +30,13 @@
  	}
  
  	error = ENOPOLICY;
-@@ -1721,6 +1728,9 @@
+@@ -1721,6 +1728,10 @@
  #endif
  
  done:
 +#if defined(XCOVER5)
 +	xcover5_prefs_trace_record(p,0,target,uap->call,error);
++	if (uap->call == 2 && strcmp(target,"Sandbox") == 0) xcover5_prefs_trace_query(p,uap->arg,error);
 +#endif
  	return error;
  }
@@ -78,9 +79,9 @@
  		    proc_getpid(p), proc_is_shadow(p), p == initproc);
 --- /dev/null
 +++ b/security/xcover5_prefs_trace.h
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,152 @@
 +/* Diagnostic request evidence only. No policy result or syscall return changes.
-+ * Entries are immutable after release publication. Retain first128 events;
++ * Entries are immutable after release publication. Retain first512 events;
 + * counters and summary explicitly expose overflow/in-flight records.
 + */
 +#ifndef XCOVER5_PREFS_TRACE_H
@@ -88,7 +89,7 @@
 +#ifndef XC_PREFS_TRACE_HOST
 +#include <os/atomic_private.h>
 +#endif
-+#define XC_PREFS_TRACE_CAP 128U
++#define XC_PREFS_TRACE_CAP 512U
 +struct xc_prefs_event {
 +    unsigned int ready;
 +    int pid, version, kind, code, error;
@@ -104,6 +105,44 @@
 +{
 +    return proc_getuid(p) == 0 &&
 +        (strcmp(p->p_comm,"cfprefsd") == 0 || strcmp(p->p_comm,"m39-probe") == 0);
++}
++
++/* M39K: observe the shipped call2 ABI without changing its decision/result. */
++#define XC_PREFS_QUERY_CAP 16U
++struct xc_prefs_query {
++    unsigned int ready;
++    int pid, error, arg_error, operation_error, filter_error;
++    uint64_t target, filter_type, flags, version;
++    char actor[17], operation[64], filter[96];
++};
++static struct xc_prefs_query xc_prefs_queries[XC_PREFS_QUERY_CAP];
++static unsigned int xc_prefs_query_total;
++static void
++xcover5_prefs_trace_query(proc_t p, user_addr_t address, int result)
++{
++    struct { uint64_t result,pid,operation,filter_type,filter,flags,pidversion; } a;
++    size_t length;
++    if (!xc_prefs_actor(p) || !proc_is64bit_data(p)) return;
++    unsigned int seq=os_atomic_inc_orig(&xc_prefs_query_total,relaxed);
++    if (seq>=XC_PREFS_QUERY_CAP) return;
++    struct xc_prefs_query *q=&xc_prefs_queries[seq];
++    q->pid=proc_getpid(p);q->error=result;
++    strlcpy(q->actor,p->p_comm,sizeof(q->actor));
++    strlcpy(q->operation,"<unread>",sizeof(q->operation));
++    strlcpy(q->filter,"<not-string>",sizeof(q->filter));
++    q->arg_error=copyin(address,&a,sizeof(a));
++    if (!q->arg_error) {
++        q->target=a.pid;q->filter_type=a.filter_type;q->flags=a.flags;q->version=a.pidversion;
++        q->operation_error=copyinstr(a.operation,q->operation,sizeof(q->operation),&length);
++        if(q->operation_error)strlcpy(q->operation,"<copy-error>",sizeof(q->operation));
++        if(!q->operation_error &&
++            (!strcmp(q->operation,"mach-lookup") || !strcmp(q->operation,"mach-cross-domain-lookup")) &&
++            (a.filter_type==6 || a.filter_type==7 || a.filter_type==50)) {
++            q->filter_error=copyinstr(a.filter,q->filter,sizeof(q->filter),&length);
++            if(q->filter_error)strlcpy(q->filter,"<copy-error>",sizeof(q->filter));
++        }
++    }
++    os_atomic_store(&q->ready,1,release);
 +}
 +
 +void
@@ -145,6 +184,20 @@
 +    if (proc_getuid(p) != 0 || strcmp(p->p_comm,"m39-probe") != 0) {
 +        return;
 +    }
++    unsigned int queries=os_atomic_load(&xc_prefs_query_total,acquire);
++    unsigned int limit=queries<XC_PREFS_QUERY_CAP?queries:XC_PREFS_QUERY_CAP;
++    unsigned int shown_queries=0;
++    for(unsigned int i=0;i<limit;i++) {
++        const struct xc_prefs_query *q=&xc_prefs_queries[i];
++        if(!os_atomic_load(&q->ready,acquire))continue;
++        shown_queries++;
++        printf("XCOVER5 M39K QUERY pid=%d name=%s target=%llu v=%llu filter=%llu flags=%llx op=%s value=%s rc=%d copy=%d/%d/%d\n",
++            q->pid,q->actor,(unsigned long long)q->target,(unsigned long long)q->version,
++            (unsigned long long)q->filter_type,(unsigned long long)q->flags,q->operation,q->filter,
++            q->error,q->arg_error,q->operation_error,q->filter_error);
++    }
++    printf("XCOVER5 M39K QUERIES total=%u stored=%u overflow=%u inflight=%u\n",
++        queries,shown_queries,queries-limit,limit-shown_queries);
 +    unsigned int total = os_atomic_load(&xc_prefs_total,acquire);
 +    unsigned int n = total < XC_PREFS_TRACE_CAP ? total : XC_PREFS_TRACE_CAP;
 +    unsigned int published = 0, groups = 0, shown = 0;

@@ -90,6 +90,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Preflight M39 request diagnostics
+        run: |
+          python3 tools/test_m39i_trace.py
+          python3 tools/test_m39j_container.py
+
       - name: Fetch build script
         run: |
           git init -q dxb
