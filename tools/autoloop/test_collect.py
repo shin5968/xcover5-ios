@@ -28,7 +28,7 @@ class Tests(unittest.TestCase):
     def test_no_reset_default(self):
         link=Link();c.collect(link,self.root);self.assertIn(0x42,link.calls);self.assertNotIn(0x43,link.calls)
     def test_bad_paths_never_ack(self):
-        for problem in ['short','change','crc','overflow','pending']:
+        for problem in ['short','change','crc','pending']:
             with self.subTest(problem=problem):
                 link=Link();link.short=problem=='short';link.change=problem=='change'
                 fields=list(c.META.unpack(link.meta))
@@ -44,6 +44,12 @@ class Tests(unittest.TestCase):
         link=Link()
         with patch.object(c,'durable',side_effect=OSError('disk full')):
             with self.assertRaises(OSError):c.collect(link,self.root,True)
+        self.assertNotIn(0x42,link.calls);self.assertNotIn(0x43,link.calls)
+    def test_overflow_saved_without_ack(self):
+        link=Link();fields=list(c.META.unpack(link.meta));fields[6]=1;link.meta=c.META.pack(*fields)
+        folder=c.collect(link,self.root,True)
+        self.assertTrue((folder/'PARTIAL').exists());self.assertFalse((folder/'COMPLETE').exists())
+        self.assertEqual((folder/'console.bin').read_bytes(),link.body)
         self.assertNotIn(0x42,link.calls);self.assertNotIn(0x43,link.calls)
     def test_no_overwrite(self):
         link=Link()

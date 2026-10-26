@@ -46,8 +46,8 @@ class WinUSB:
         self.packet = SetupPacket
         self.usb.WinUsb_ControlTransfer.argtypes = [W.HANDLE,SetupPacket,C.c_void_p,W.ULONG,C.POINTER(W.ULONG),C.c_void_p]
 
-    def paths(self):
-        guid = C.create_string_buffer(uuid.UUID(GUID).bytes_le)
+    def paths(self,interface_guid=GUID):
+        guid = C.create_string_buffer(uuid.UUID(interface_guid).bytes_le)
         info = self.setup.SetupDiGetClassDevsW(guid,None,None,0x12)
         if info == C.c_void_p(-1).value:
             raise C.WinError(C.get_last_error())
@@ -123,10 +123,9 @@ def durable(path,body):
         f.write(body);f.flush();os.fsync(f.fileno())
 
 
-def collect(link,out:Path,reboot=False):
+def collect(link,out:Path,reboot=False,expected_firmware=None):
     raw=link.transfer(0x40,length=META.size);meta=parse_meta(raw)
     if not meta['ready']: return None
-    if meta['dropped']: raise ValueError('Snapshot overflow: preserve screen; reset is prohibited')
     blob=bytearray()
     while len(blob)<meta['size']:
         count=min(256,meta['size']-len(blob))
@@ -142,10 +141,14 @@ def collect(link,out:Path,reboot=False):
     durable(folder/'console.txt',bytes(blob).decode('utf-8',errors='replace').encode('utf-8'))
     meta.update(sha256=hashlib.sha256(blob).hexdigest(),usb_protocol=1,
                 artifact_kind='real-device-log',saved_local=time.strftime('%Y-%m-%dT%H:%M:%S%z'),
-                interpretation='wait_status is the real test exit, not an automatic PASS')
+                expected_firmware=expected_firmware,
+                interpretation='wait_status is the real test exit, not an automatic PASS; expected firmware is a PC record, not device attestation')
     durable(folder/'receipt.json',(json.dumps(meta,indent=2)+'\n').encode())
     # Read back the exact durable binary before ACK, including empty snapshots.
     if (folder/'console.bin').read_bytes()!=blob: raise IOError('Disk readback mismatch')
+    if meta['dropped']:
+        durable(folder/'PARTIAL',b'Capture overflow. Retained bytes saved; no ACK or reboot permitted.\n')
+        return folder
     link.transfer(0x42,data=raw)
     durable(folder/'acknowledged.json',b'{"pc_saved_and_acknowledged": true}\n')
     if reboot:
@@ -162,15 +165,31 @@ def main():
     p.add_argument('--reboot-download',action='store_true',help='Request download reset ONLY after a durable verified snapshot')
     p.add_argument('--timeout',type=float,default=300)
     p.add_argument('--inventory',action='store_true',help='Read matching WinUSB interfaces, without control transfers')
+    p.add_argument('--firmware-manifest',type=Path,help='Record the expected flashed build; not device attestation')
     args=p.parse_args();link=WinUSB()
     if args.inventory: print(json.dumps(link.paths()));return
+    expected=json.loads(args.firmware_manifest.read_text()) if args.firmware_manifest else None
     deadline=time.monotonic()+args.timeout
     try:
         while time.monotonic()<deadline:
             try:
                 if not link.interface and not link.connect():time.sleep(1);continue
-                folder=collect(link,args.output,args.reboot_download)
-                if folder: print(folder,flush=True);return
+                folder=collect(link,args.output,args.reboot_download,expected)
+                if folder:
+                    link.close()
+                    if (folder/'download-requested.json').exists():
+                        until=time.monotonic()+45
+                        while time.monotonic()<until:
+                            devices=[x for x in link.paths('{A5DCBF10-6530-11D2-901F-00C04FB951ED}')
+                                     if 'vid_04e8&pid_685d' in x.lower()]
+                            if len(devices)==1:
+                                durable(folder/'download-confirmed.json',b'{"samsung_download_interface_present":true}\n')
+                                break
+                            if len(devices)>1: raise RuntimeError('Multiple Samsung download devices; no target chosen')
+                            time.sleep(1)
+                        else:
+                            print('Log saved; download-mode enumeration not confirmed within45 seconds',flush=True)
+                    print(folder,flush=True);return
             except OSError as e:
                 link.close();print(f'USB unavailable: {e}',flush=True)
             time.sleep(1)
