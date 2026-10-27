@@ -38,7 +38,9 @@ int main(void){
  assert(m39s_get_string(&rejection,"CFPreferencesErrorDescription")==rejection.description&&errno==EAGAIN);
  assert(atomic_load(&m39s_key_calls)==1&&atomic_load(&m39s_total)==2);
  assert(m39s_get_string(&normal,"CFPreferencesErrorDescription")==NULL&&errno==EAGAIN);
- assert(m39s_events[2].null_description==1&&m39s_events[2].description[0]==0);
+ assert(atomic_load(&m39s_empty_keys)==1&&atomic_load(&m39s_total)==2);
+ for(unsigned i=0;i<20;i++)m39s_get_string(&normal,"CFPreferencesErrorDescription");
+ assert(atomic_load(&m39s_total)==2&&atomic_load(&m39s_empty_keys)==21);
  m39s_get_string(&normal,"org.xcover5.m39s.calibration");assert(atomic_load(&m39s_calibration_hits)==1);
  unsigned count=atomic_load(&m39s_total);selected_reply=&normal;
  assert(m39s_send_sync((void*)11,(void*)22)==&normal&&errno==EINTR&&atomic_load(&m39s_total)==count);

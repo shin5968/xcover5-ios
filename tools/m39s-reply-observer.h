@@ -20,7 +20,7 @@ extern const char _xpc_type_error[];
 #define M39S_CAP 8U
 struct m39s_event { _Atomic unsigned ready; char origin[16],description[513],type[97]; unsigned null_description,truncated; };
 static struct m39s_event m39s_events[M39S_CAP];
-static _Atomic unsigned m39s_active,m39s_total,m39s_sync_calls,m39s_async_calls,m39s_getter_calls,m39s_key_calls,m39s_dicts,m39s_errors,m39s_calibration_hits;
+static _Atomic unsigned m39s_active,m39s_total,m39s_sync_calls,m39s_async_calls,m39s_getter_calls,m39s_key_calls,m39s_empty_keys,m39s_dicts,m39s_errors,m39s_calibration_hits;
 static unsigned m39s_copy(char *dst,size_t cap,const char *src) {
     size_t n=src?strnlen(src,cap):0;
     if(cap){size_t z=n<cap?n:cap-1;for(size_t i=0;i<z;i++){unsigned char c=(unsigned char)src[i];dst[i]=c>=32&&c<=126?(char)c:'?';}dst[z]=0;}
@@ -57,7 +57,8 @@ static const char *m39s_get_string(m39s_xpc dictionary,const char *key) {
         if(key&&!strcmp(key,"CFPreferencesErrorDescription")){
             atomic_fetch_add_explicit(&m39s_key_calls,1,memory_order_relaxed);
             m39s_xpc value=xpc_dictionary_get_value(dictionary,"CFPreferencesErrorType");
-            char *type=value?xpc_copy_description(value):NULL;m39s_record("error-getter",result,type);free(type);
+            if(result||value){char *type=value?xpc_copy_description(value):NULL;m39s_record("error-getter",result,type);free(type);}
+            else atomic_fetch_add_explicit(&m39s_empty_keys,1,memory_order_relaxed);
         }
     }
     errno=saved_errno;return result;
@@ -91,8 +92,8 @@ static const struct {const void *replacement,*original;} m39s_interposers[]={
 static void m39s_snapshot_dump(void) {
     int saved_errno=errno;
     unsigned total=atomic_load_explicit(&m39s_total,memory_order_acquire),stored=total<M39S_CAP?total:M39S_CAP,inflight=0;
-    printf("XCOVER5 M39S FINAL_REPLIES calibration=%u sync=%u async=%u getters=%u error_keys=%u dictionaries=%u xpc_errors=%u\n",
-        atomic_load(&m39s_calibration_hits),atomic_load(&m39s_sync_calls),atomic_load(&m39s_async_calls),atomic_load(&m39s_getter_calls),atomic_load(&m39s_key_calls),atomic_load(&m39s_dicts),atomic_load(&m39s_errors));
+    printf("XCOVER5 M39S FINAL_REPLIES calibration=%u sync=%u async=%u getters=%u error_keys=%u empty_keys=%u dictionaries=%u xpc_errors=%u\n",
+        atomic_load(&m39s_calibration_hits),atomic_load(&m39s_sync_calls),atomic_load(&m39s_async_calls),atomic_load(&m39s_getter_calls),atomic_load(&m39s_key_calls),atomic_load(&m39s_empty_keys),atomic_load(&m39s_dicts),atomic_load(&m39s_errors));
     for(unsigned i=0;i<stored;i++){
         struct m39s_event *e=&m39s_events[i];if(!atomic_load_explicit(&e->ready,memory_order_acquire)){inflight++;continue;}
         printf("M39S REPLY seq=%u via=%s null=%u truncated=%u type=%s\n",i,e->origin,e->null_description,e->truncated,e->type);
