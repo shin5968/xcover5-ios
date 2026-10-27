@@ -1,3 +1,32 @@
+2026-10-27 M40 live preferences/notify wakeup package prepared
+
+Source9d270d31e81004d069fea445b67f77dd26684170 / CI40501703354 SUCCESS.
+Original preferences-probe.c unchanged, compiled main->m39_baseline_main;
+wrapper requires original return60 before M40. Original reader mode exits59.
+New same binary/name/domain, owned live-proof key; same exact M39V kernel.
+No new kernel grants, Apple binary edits or interpose dependency.
+
+Writer seedA -> fresh exec reader cachesA + registers notify Mach port ->
+READY pipe -> writer syncB then explicit custom notify_post -> same reader
+requires token + copyB without explicit CF sync -> deletion/sync/post ->
+same reader absent -> notify_cancel -> reader61 -> parent checks and exits62.
+Pipe carries only R/B/D status bytes, never preference value. Bounded waits;
+stale explicit refresh diagnostic cannot turn FAIL into PASS.
+This is explicit notify wakeup + cached preference coherence, not automatic
+CoreFoundation notification proof. RAM only; USB remains deferred.
+
+Real macOS host CF/notify integration positive PASS; omitted notification
+rejected child172/parent179. Host uses baseline stub only; iOS target includes
+real unchanged baseline and omits host injection string. iOS build/sign PASS.
+Independent HFS comparison only changed /sbin/m39-probe, same owners/modes;
+CodeDirectory page hashes, exact kernel, AP/MD5/fit/ADT payload mapping PASS.
+AP ../artifacts/m40-live-preferences/AP_M40_LIVE_PREFERENCES.tar.md5
+SHA256 acf11c8ef19af53588ab37c4ae55930d4318029efa5ab0f8e76a060045a15da3.
+Hardware PENDING; not installed by agent. Capture M39 PASS then M40 steps and
+final M40 PASS/exit62, or stage/location160-186. See artifact READ_FIRST.txt.
+
+Previous records follow:
+
 2026-10-27 M39V video205722: original M39 hardware PASS exit60
 
 Video SHA25663c2c4cee3859e1bc4b0839ff73725b7e486737745e73660dec116e68dc47196.
