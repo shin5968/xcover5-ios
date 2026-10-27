@@ -1,0 +1,18 @@
+{
+  "repository": "https://github.com/oosexgang/hackios-xnu-kernel",
+  "commit": "d82c64a3a31cd27a0a0afbf6e213e467e44b1b4c",
+  "license": "APSL-2.0 (repository LICENSE copied)",
+  "sources": {
+    "MiniIOSurface.cpp": "ab8fd8c8af05adf2dca4fe4a0439f371bc8c79cee063463d0367848d67f0e6ec",
+    "MiniIOSurface.h": "27b176042f69ef9f1a1c0024ae3cdf570c2d69f7fde74cfe184520f97c287fdd"
+  },
+  "adaptations": [
+    "XCover5-only compile and Samsung platform startup",
+    "8MiB pixels/32MiB total wired descriptors including state pages,256 IDs,64 refs/client",
+    "No retained cache/deferred clear; buffers zeroed before mapping",
+    "Root-only client, BGRA single-plane,64-bit property bounds before upstream geometry",
+    "Selector allowlist create/lookup/init/port export/import; original lock/release traps",
+    "IOLog only; no Redwood transport or Qualcomm hardware",
+    "Capture allocSize before potentially final unhold in failed methodCreate"
+  ]
+}
