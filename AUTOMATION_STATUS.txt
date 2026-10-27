@@ -1,3 +1,48 @@
+2026-10-27 M42 framebuffer contract implementation (CI/device pending)
+
+Patch0073 validates exact ADT property lengths, Samsung splash aperture, bounded
+32bpp dimensions/stride and64-bit reserved-memory fit before mapping/console
+registration. Keeps existing mapping size and font; no vinfo mutation, new pixel
+writes or GPU/touch claims. At original root m39-probe exit, reports stage,
+per-page pmap translation match, ADT layout and actual vinfo on five short lines.
+Current M41 root/userspace will be kept byte-identical for this kernel-only test.
+Host actual guard dimension/extreme-value matrix passed UBSan. Host extracted
+applied fbcon_probe rejected malformed ADT sizes, invalid geometry, missing node
+and mapping failure before registration. Full kernel compile still needed.
+No firmware flashed. USB remains deferred. No SpringBoard startup claim.
+
+2026-10-27 M42 graphics preflight completed (static only)
+
+Actual M41 HFS catalog lacks SpringBoard/backboardd and both launch jobs.
+Required graphical framework names exist in cache inventory; no runtime claim.
+Current patches do not import upstream MiniIOSurface/MiniIOMobileFramebuffer.
+Upstream display service needs validated vinfo, and software copies surfaces
+onto boot framebuffer. Current text console alone does not supply this service.
+Next selected gate: Samsung framebuffer metadata/mapping validation, bounded
+IOSurface lifecycle/fresh-client test, then visible software-presented pattern;
+only afterwards stage backboardd/SpringBoard. Touch needs Samsung-specific route.
+Detailed inventory/digests and gates: ../artifacts/m42-graphics-preflight/.
+No firmware built or flashed in this audit. M41 remains passing baseline.
+
+2026-10-27 M41 video213425 hardware PASS exit63
+
+Video SHA256 d8d0212bea428edf8e6fa19950efc379bafc8c11879341704a62a75493bc1827.
+Native detail-017 shows parent6 rv3f00, AUTO TEST_END wait_status3f00,
+and launchd exited due to exit(63). Packaged foundation-runloop.c returns63
+only after original M39/M40 and Foundation objects, real RunLoop/timer three
+callbacks on same thread with expected payload, elapsed and cancellation checks.
+Individual Foundation progress lines/device elapsed not separately recovered.
+Existing cfprefsd parent-path ENOENT and FSEvents permission warnings remain.
+Full evidence ../artifacts/m41-foundation-runloop/hardware-review.json and
+video-213425/review.json. Foundation only; no UIKit/full UI or reboot persistence.
+
+Next: freeze passing M39V/M41 baseline. Audit SpringBoard/UIKit/graphics/input
+availability and actual display/HID interfaces, then choose a bounded test with
+observable graphical output. Do not assume framework presence proves hardware
+rendering, touch support or full SpringBoard boot. USB remains deferred.
+
+Previous package preparation record follows:
+
 2026-10-27 M41 deferred Foundation/RunLoop package prepared
 
 Sourcebc369532fe193bdfde113105b8f697f53d53e8fc / CI40504043215 SUCCESS.

@@ -101,6 +101,7 @@ jobs:
           python3 tools/test_m39t_write.py
           python3 tools/test_m39u_lookup.py
           python3 tools/test_m39v_remote_read.py
+          python3 tools/test_m42_framebuffer.py
 
       - name: Fetch build script
         run: |
@@ -196,6 +197,15 @@ jobs:
           python3 tools/test_m39u_lookup.py dxb/xnu
           python3 tools/test_m39v_remote_read.py dxb/xnu
           python3 -c 'from pathlib import Path; ks=[p for p in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if p.is_file()]; assert ks and all(b"XCOVER5 M39L PREF_READ" in k.read_bytes() for k in ks)'
+
+      - name: Verify framebuffer contract and retained report
+        run: |
+          if test -d dxb/xnu; then
+            python3 tools/test_m42_framebuffer.py dxb/xnu
+          else
+            python3 tools/test_m42_framebuffer.py
+          fi
+          python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M42 FB END" in k.read_bytes() and b"M42 VINFO VA=" in k.read_bytes() for k in ks)'
 
       - name: Verify automatic log snapshot protocol
         run: |

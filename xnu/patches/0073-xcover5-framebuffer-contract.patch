@@ -1,0 +1,137 @@
+--- a/pexpert/arm/pe_serial.c
++++ b/pexpert/arm/pe_serial.c
+@@ -711,6 +711,17 @@
+  * is kept blank so the newest output is easy to find.
+  */
+ 
++#if defined(XCOVER5)
++#include <pexpert/arm/xcover5_fb_layout.h>
++#include <console/video_console.h>
++#include <vm/pmap.h>
++extern struct vc_info vinfo;
++extern ppnum_t pmap_find_phys(pmap_t, addr64_t);
++static struct xc_fb_layout xc_fb;
++static unsigned xc_fb_stage; /* 1=properties, 2=layout, 3=map, 4=ready */
++void xcover5_framebuffer_report(void);
++#endif
++
+ extern unsigned char iso_font[256 * 16];
+ 
+ #if defined(XCOVER5)
+@@ -826,6 +837,26 @@
+ 	uint32_t const *val;
+ 	unsigned int size;
+ 
++#if defined(XCOVER5)
++    xc_fb_stage = 1;
++    if (SecureDTFindEntry("name", "sweet-fbcon", &entry) != kSuccess ||
++        SecureDTGetProperty(entry, "reg", (void const **)&reg, &size) != kSuccess || size != 16) return;
++    memcpy(&xc_fb.physical, reg, 8);
++    memcpy(&xc_fb.reserved, (const uint8_t *)reg + 8, 8);
++#define XC_FB_PROP(name, field) do { \
++    if (SecureDTGetProperty(entry, name, (void const **)&val, &size) != kSuccess || size != 4) return; \
++    memcpy(&xc_fb.field, val, 4); \
++} while (0)
++    XC_FB_PROP("width", width);
++    XC_FB_PROP("height", height);
++    XC_FB_PROP("stride", stride);
++#undef XC_FB_PROP
++    xc_fb.used = (uint64_t)xc_fb.stride * xc_fb.height;
++    xc_fb_stage = 2;
++    if (!xc_fb_layout_valid(&xc_fb)) return;
++    fbcon_width = xc_fb.width; fbcon_height = xc_fb.height; fbcon_stride = xc_fb.stride;
++    xc_fb_stage = 3;
++#else
+ 	if (SecureDTFindEntry("name", "sweet-fbcon", &entry) != kSuccess ||
+ 	    SecureDTGetProperty(entry, "reg", (void const **)&reg, &size) != kSuccess || size < 16) {
+ 		return;
+@@ -842,13 +873,53 @@
+ 	if (!fbcon_width || !fbcon_height || fbcon_stride < fbcon_width * 4) {
+ 		return;
+ 	}
++#endif
+ 	sweet_early_mark(17, "fbcon config read; mapping");
+-	fbcon_base = (volatile uint32_t *)ml_io_map_wcomb(reg[0], reg[1]);
++	#if defined(XCOVER5)
++    fbcon_base = (volatile uint32_t *)ml_io_map_wcomb(xc_fb.physical, xc_fb.reserved);
++#else
++    fbcon_base = (volatile uint32_t *)ml_io_map_wcomb(reg[0], reg[1]);
++#endif
+ 	sweet_early_mark(18, "fbcon mapping returned");
+ 	if (fbcon_base != NULL) {
+-		register_serial_functions(&sweet_fbcon_serial_functions);
+-	}
+-}
++#if defined(XCOVER5)
++        xc_fb_stage = 4;
++#endif
++        register_serial_functions(&sweet_fbcon_serial_functions);
++	}
++}
++
++#if defined(XCOVER5)
++/* Late read-only report: no display takeover, no vinfo changes or pixel writes.
++ * The test-exit hook makes this survive the long framework initialization logs. */
++void
++xcover5_framebuffer_report(void)
++{
++    unsigned map_ok = xc_fb_stage == 4 && fbcon_base != NULL;
++    unsigned checked = 0;
++    if (map_ok) {
++        uint64_t va = (uint64_t)(uintptr_t)fbcon_base;
++        for (uint64_t off = 0; off < xc_fb.used; off += PAGE_SIZE) {
++            ppnum_t page = pmap_find_phys(kernel_pmap, (addr64_t)(va + off));
++            if (!page || ((uint64_t)page << PAGE_SHIFT) != xc_fb.physical + off) {
++                map_ok = 0; break;
++            }
++            checked++;
++        }
++    }
++    kprintf("XCOVER5 M42 FB stage=%u map_ok=%u pages=%u\n", xc_fb_stage, map_ok, checked);
++    kprintf("M42 PA=%llx VA=%llx reserved=%llu used=%llu\n",
++        (unsigned long long)xc_fb.physical, (unsigned long long)(uintptr_t)fbcon_base,
++        (unsigned long long)xc_fb.reserved, (unsigned long long)xc_fb.used);
++    kprintf("M42 ADT width=%u height=%u stride=%u format=32bpp-contract\n", xc_fb.width, xc_fb.height, xc_fb.stride);
++    kprintf("M42 VINFO VA=%llx PA=%llx width=%u height=%u stride=%u depth=%u\n",
++        (unsigned long long)vinfo.v_baseaddr, (unsigned long long)vinfo.v_physaddr,
++        vinfo.v_width, vinfo.v_height, vinfo.v_rowbytes, vinfo.v_depth);
++    kprintf("XCOVER5 M42 FB END ready=%u vinfo_same=%u channel_order=UNTESTED\n", map_ok,
++        map_ok && vinfo.v_baseaddr == (unsigned long)fbcon_base && vinfo.v_width == xc_fb.width &&
++        vinfo.v_height == xc_fb.height && vinfo.v_rowbytes == xc_fb.stride && vinfo.v_depth == 32);
++}
++#endif
+ 
+ #if HIBERNATION
+ /**
+--- /dev/null
++++ b/pexpert/arm/xcover5_fb_layout.h
+@@ -0,0 +1,20 @@
++/* Validated XCover5 boot framebuffer contract; no MMIO or allocation. */
++#ifndef XCOVER5_FB_LAYOUT_H
++#define XCOVER5_FB_LAYOUT_H
++struct xc_fb_layout {
++    uint64_t physical, reserved, used;
++    uint32_t width, height, stride;
++};
++/* Keep this bring-up mapping inside the already-used Samsung splash aperture.
++ * ADT is not authority to map arbitrary MMIO. Pixel channel order is untested. */
++static int xc_fb_layout_valid(const struct xc_fb_layout *f) {
++    if (f->physical != 0xfa000000ULL ||
++        f->reserved == 0 || f->reserved > 0x1400000ULL) return 0;
++    if (f->width < 8 || f->height < 16 || f->width > 4096 || f->height > 4096) return 0;
++    if ((f->stride & 3) || (uint64_t)f->stride < (uint64_t)f->width * 4) return 0;
++    if (f->stride > 4096U * 4U) return 0;
++    uint64_t used = (uint64_t)f->stride * f->height;
++    if (used > f->reserved || f->used != used) return 0;
++    return 1;
++}
++#endif
+--- a/bsd/kern/kern_exit.c
++++ b/bsd/kern/kern_exit.c
+@@ -1,4 +1,6 @@
+ #if defined(XCOVER5)
++	extern void xcover5_framebuffer_report(void);
++	if (proc_getuid(p) == 0 && proc_ppid(p) == 1 && !strcmp(p->p_comm, "m39-probe")) xcover5_framebuffer_report();
+ 	extern void xcover5_test_finish(proc_t,int);
+ 	xcover5_test_finish(p,rv);
+ #endif
