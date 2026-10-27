@@ -1,3 +1,30 @@
+2026-10-27 M39U scoped self lookup prepared and package verified
+
+M39T original RAM preferences test passed on video200904 (exit60), but parent
+and reader explicitly forced direct access. Raw __CFPrefsDirectMode block
+0x186eb611c checks sandbox_check(getpid(),mach-lookup,NO_REPORT|2,cfprefsd).
+Existing lookup fallback only accepts launchd caller PID1, so client self
+preflight was absent. Raw normal-PID wrapper/filter parser emulation confirms
+internal filter6 flags1 version0; audit-token form differs (40000001/version).
+Initial audit-flag assumption corrected before packaging; initial CI cancelled.
+Evidence third_party/preferences-write/M39U_SELF_LOOKUP.json and
+M39U_WRAPPER_EMULATION.json; local raw assembly research/m39u-self-lookup/.
+
+0071 accepts ONLY live self root64 m39-probe, exact two cfprefsd services,
+operation/flags/filter/version, actual init or checked fresh-reader ancestry.
+Registered policy errors still win; no CF override or broad service allowance.
+Source cd552949625011a4c5dc6188268dd2882c742e6e / CI40496245821 SUCCESS.
+Actual-header scope/copy/ref tests, applied dispatcher checks and kernel PASS.
+Root is byte-identical M39H with unchanged real plist/fresh reader/cleanup test.
+AP ../artifacts/m39u-self-lookup/AP_M39U_SELF_LOOKUP.tar.md5
+SHA256 aae19c4ee29b731c8b653deb12d2b74b5f500d1e245b77787382ff3c29285639
+Boot-only tar/MD5/fit, exact shim/DTB/cmdline/root, independent ADT mapping PASS.
+Hardware PENDING. Agent did not install; USB remains deferred.
+Next capture M39U SELF_LOOKUP through final original test and direct-mode /
+cfprefsd responses. Query rc0 alone does not prove real daemon IPC storage.
+
+Previous records follow:
+
 2026-10-27 M39T hardware video200904: original M39 RAM preferences PASS
 
 Video SHA256 cfe8907549b56f8225b7b2d53b53214677616fc7a45af353756be841d505bb1d.
