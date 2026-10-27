@@ -1,3 +1,33 @@
+2026-10-27 M39U video203641 -> scoped M39V remote-read package verified
+
+Video203641 SHA256 cfe470226601bc47c1a349a48bf475a7e9b4dea3f290237f74d2d7ebde058480.
+M39U SELF_LOOKUP pid14 com.apple.cfprefsd.daemon rc0 (detail008).
+Parent M39 exit148 / wait_status9400 (end012): original unchanged code reached
+sync+regular nonempty plist, but separate exec reader did not pass.
+Native final page shows cfprefsd pid10 rejecting exact org.xcover5.m39 read
+for reader pid14: requires user-preference-read or file-read-data access.
+Old0063 only accepted self PID; daemon remote audit-token case was absent.
+Full review ../artifacts/m39u-self-lookup/video-203641/review.json.
+
+0072 permits only root64 direct-PID1 cfprefsd exact domain remote read for
+live root64 M39 parent/fresh reader, matching PIDversion and verified ancestry.
+Raw CF read validator plus exact ARM64 wrapper/filter emulation establish
+CFPreferencesDomain, user-preference-read, filter28/flags40000011.
+No generic file-read-data grant or CF return override; registered denials win.
+Original M39H root/test unchanged. Other parent-path ENOENT/FSEvents warnings
+remain separate unresolved observations; no claim all daemon operations pass.
+
+Source4325d625903f1e7a3bce99cc125f5bc3c419cdca / CI40498577871 SUCCESS.
+Actual-header positive/negative/copy/ref tests and applied dispatch checks PASS.
+AP ../artifacts/m39v-remote-read/AP_M39V_REMOTE_READ.tar.md5
+SHA25672e273a471c2682ea2b5bb09c5a32fc5a9582ceb56532e31f332add78bca03da.
+Boot-only tar/MD5/fit and independent payload/ADT/root/shim/DTB/cmdline PASS.
+Hardware PENDING; agent did not install; USB/reset remains deferred.
+Next original M39 READER PASS + final PASS exit60 including cleanup required;
+M39V REMOTE_READ rc0 alone is not full functional proof. RAM only.
+
+Previous records follow:
+
 2026-10-27 M39U scoped self lookup prepared and package verified
 
 M39T original RAM preferences test passed on video200904 (exit60), but parent
