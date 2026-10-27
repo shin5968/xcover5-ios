@@ -1,3 +1,33 @@
+2026-10-27 M39T exact test-domain preference-write implementation prepared
+
+M39S native rejection identified user-preference-write/file-write-data denial.
+Exact raw CF validateSandboxForWrite chain and Sandbox audit-token wrapper
+establish CFPreferencesDomain UTF8 payload, publicfilter6 ->internal28,
+publicflags0x48000006 ->internal0x40000011. Evidence in
+third_party/preferences-write/ORIGIN.json and research/m39l-call12/*.asm.
+
+0070 adds only the absent org.xcover5.m39 user-preference-write contract.
+Root64 client m39-probe live PID/PIDversion and init/fresh-reader ancestry;
+caller self or direct-PID1 root64 cfprefsd. Exact operation/domain/flags/filter.
+Bounded copies, balanced proc/cred refs, registered policy denials preserved.
+No generic file-write-data grant, CF sync result override or errno fabrication.
+Inactive M39S interposition removed from active source/build. Packaged root is
+exact M39H bytes 0aa6bf5ecdd4150ac99004c0371a23bb0f6e8fe8e9f19cd26a0fb0c725af1d34.
+
+Source6f15f90d84f7a4ef9914761c63bf479668eeb1d0 / CI40492560602 SUCCESS.
+Actual-header positive and negative domain/actor/ABI/ancestry/copy/ref tests,
+applied-dispatch registered policy and lock checks, kernel build PASS.
+Kernel757fca5ab20d5a976b25c4d92a48114722c10596f7e4ff112c68585d3dd4a4fa.
+Package and independent payload/root/ADT mapping PASS; rootphys0xa21a8000.
+Small font retained; exact shim/DTB/cmdline/255MiB geometry; USB deferred.
+AP ../artifacts/m39t-domain-write/AP_M39T_DOMAIN_WRITE.tar.md5
+SHA256 6dff5331a11c64b733fb2a0ed29446f193ca01bdb38687ec4eade1bdb767c9fa.
+Agent did NOT install. Hardware PENDING; no runtime PASS claimed.
+Next film new M39T PREF_WRITE query marker through original final M39 test.
+Marker rc0 alone is insufficient: real plist and fresh-process reader must pass.
+
+Previous records follow:
+
 2026-10-27 M39S hardware video194010: exact write rejection recovered
 
 Native detail-010.jpg (~48s) shows rejection of keyproof/domain org.xcover5.m39
