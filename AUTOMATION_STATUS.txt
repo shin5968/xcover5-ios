@@ -1,3 +1,33 @@
+2026-10-27 M41 deferred Foundation/RunLoop package prepared
+
+Sourcebc369532fe193bdfde113105b8f697f53d53e8fc / CI40504043215 SUCCESS.
+Original M39/M40 sources unchanged, compiled main names renamed. Wrapper
+requires M40 return62 before Foundation dlopen; all child modes preserved.
+No static Foundation image dependency at entry. Direct dependency inventory
+present in existing iOS cache; REA verified extracted Foundation arm64 identity
+SHA735dba164c4f1e3d3703e178e258c3372b2b721f7ae1d85fd503baefef6fdc60.
+Metadata third_party/foundation-preflight/ORIGIN.json; local raw loads report.
+
+New real NSString/NSNumber/array/dictionary/autorelease pool checks, then
+NSRunLoop repeating NSTimer20ms with exactly3 callbacks, same thread, payload,
+invalidate and extra100ms observation. No manually invoked callback or CF
+fallback result. Failure190-198; bounded timer loop and15s alarm guard.
+Real macOS Foundation positive and unscheduled timer negative196 PASS;
+M39/M40 stubbed only for this host test. iOS includes real unchanged baselines.
+Target host fault strings absent; iOS build/signatures PASS.
+
+Same exact M39V kernel7a9069591bc8a42a2a224fd9e33531ab6b75bd244bb74cfb767d8f8b344bd478.
+No new kernel grants or Apple image edits. Independent HFS inventory changes
+only /sbin/m39-probe; all other file data/owners/modes preserved. CodeDirectory
+page hashes, exact kernel, boot/MD5/fit and independent payload/ADT mapping PASS.
+AP ../artifacts/m41-foundation-runloop/AP_M41_FOUNDATION_RUNLOOP.tar.md5
+SHA2562af650568b9cdd880c82c26c0d688e2e40105ca65390dab504d37d640803f8a3.
+Hardware PENDING; no agent installation. Capture M41 BEGIN/OBJECTS/TIMER1-3/
+RUNLOOP/final PASS exit63 or FAIL. Foundation only, not completed iOS UI.
+RAM only; USB collection/reset remains deferred.
+
+Previous records follow:
+
 2026-10-27 M40 video211517 hardware PASS exit62
 
 Video SHA25653a05304836d68b09aa5407ee736a7fb32da351730ef203fc3daff90ebdd68f8.

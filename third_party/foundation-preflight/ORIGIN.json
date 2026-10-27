@@ -1,0 +1,125 @@
+{
+  "Foundation_sha256": "735dba164c4f1e3d3703e178e258c3372b2b721f7ae1d85fd503baefef6fdc60",
+  "format": "Mach-O arm64 iOS cache image; REA open_binary identity verified",
+  "dependencies": [
+    {
+      "kind": "REEXPORT_DYLIB",
+      "path": "/usr/lib/libobjc.A.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "REEXPORT_DYLIB",
+      "path": "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_WEAK_DYLIB",
+      "path": "/System/Library/PrivateFrameworks/CoreAutoLayout.framework/CoreAutoLayout",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/libcompression.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/System/Library/Frameworks/CFNetwork.framework/CFNetwork",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/libarchive.2.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/libicucore.A.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/libxml2.2.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/liblangid.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/libSystem.B.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/System/Library/Frameworks/Combine.framework/Combine",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/System/Library/PrivateFrameworks/SoftLinking.framework/SoftLinking",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/swift/libswiftCore.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/swift/libswiftCoreFoundation.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/swift/libswiftDarwin.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/swift/libswiftDispatch.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/swift/libswiftObjectiveC.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_WEAK_DYLIB",
+      "path": "/usr/lib/swift/libswiftXPC.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/swift/libswift_Concurrency.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/swift/libswift_StringProcessing.dylib",
+      "present_in_cache": true
+    },
+    {
+      "kind": "LOAD_DYLIB",
+      "path": "/usr/lib/swift/libswiftos.dylib",
+      "present_in_cache": true
+    }
+  ],
+  "scope": "Direct dependencies present in cached image inventory; no claim transitive initializers or runtime platform services work",
+  "api_references": [
+    "https://developer.apple.com/documentation/Foundation/RunLoop?language=objc",
+    "https://developer.apple.com/documentation/Foundation/RunLoop/add(_:forMode:)-392ag?language=objc"
+  ],
+  "source_commit": "bc369532fe193bdfde113105b8f697f53d53e8fc",
+  "ci_run": 40504043215,
+  "implementation": "Deferred Foundation dlopen after unchanged M39/M40 baselines; typed Objective-C runtime messages, three real NSTimer callbacks, payload/thread and cancellation checks",
+  "hardware": "PENDING"
+}
