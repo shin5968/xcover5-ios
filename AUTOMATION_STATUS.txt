@@ -1,3 +1,26 @@
+2026-10-27 M39V video205722: original M39 hardware PASS exit60
+
+Video SHA25663c2c4cee3859e1bc4b0839ff73725b7e486737745e73660dec116e68dc47196.
+result024: SELF_LOOKUP reader13 rc0; REMOTE_READ caller10 target13 v31
+exact org.xcover5.m39 rc0. coarse006/007: original parent6 rv3c00,
+AUTO TEST_END wait_status3c00 and launchd exit(60).
+Unchanged exact M39H root/test requires sync, actual regular nonempty plist,
+separate exec reader expected value/exit59, deletion/sync/absent value.
+Previous M39U FAIL148 remote-read blocker resolved for this test domain.
+Review ../artifacts/m39v-remote-read/video-205722/review.json.
+
+RAM filesystem only, not reboot persistence. No raw XPC reply capture/general
+Sandbox or complete daemon correctness claim. Query trace overflow13 means
+warning absence is not exhaustive proof. Final details snapshot0; later
+FSEvents lookup denied/permission1100 remains; delayed reprint NO_LATE_HANDLE.
+These do not negate original exit60. Do not blanket-allow unrelated services.
+Freeze M39V AP/source4325d625 as passing baseline. Next focused milestone:
+two live processes, changed preference visibility/notification/update flow;
+trace FSEvents only if measured behavior actually fails. USB remains deferred.
+No new firmware needed/generated for this successful video review.
+
+Previous records follow:
+
 2026-10-27 M39U video203641 -> scoped M39V remote-read package verified
 
 Video203641 SHA256 cfe470226601bc47c1a349a48bf475a7e9b4dea3f290237f74d2d7ebde058480.
