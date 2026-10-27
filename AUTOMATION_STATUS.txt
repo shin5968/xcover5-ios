@@ -1,3 +1,23 @@
+2026-10-27 M42 video221705 hardware mapping gate PASS; M41 exit63 retained
+
+Video SHA256 a79a30056afc8642c82181a199fffeafc25917767c1e37c5fd914f2d7a4569c3.
+Full detail017 and51.5s crop show stage4 map_ok1 pages261 ready1 vinfo_same0;
+parent6 native wait_status3f00 and launchd exit(63). ADT physicalfa000000,
+reserved20971520/used4262400,720x1480 stride2880. vinfo metadata reports same
+physical/dimensions/stride, depth32, with distinct virtual address. Exact-VA
+vinfo_same0 does not constitute failure; no unconditional vinfo mutation needed.
+M42 walked console VA pages only: vinfo VA itself still needs translation check
+before driver use. Full evidence ../artifacts/m42-framebuffer-contract/.
+Existing parent-path ENOENT/FSEvents warnings remain; detail overflow1/inflight0
+means diagnostics are not exhaustive. No graphics, IOSurface or touch claim.
+
+Next: pinned upstream MiniIOSurface adaptation with bounded memory, actual
+create/map/write/fresh-process lookup/read/release, then software framebuffer
+presentation using validated Samsung mapping. Keep hardware baseline, no Qualcomm
+MMIO, no unrelated kernel replacements. USB and reboot persistence deferred.
+
+Previous records follow:
+
 2026-10-27 M42 framebuffer contract PACKAGE VERIFIED; hardware PENDING
 
 Final sourcec0e215b945786ad3c539c6c3154372358db15381 / CI40508818199 SUCCESS.
