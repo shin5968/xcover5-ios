@@ -1,0 +1,41 @@
+{
+  "evidence": {
+    "corefoundation_sha256": "362251c0f5b191d55a48e7caa5ff7507fda38ff7eb6da033089ba1d70508194f",
+    "raw_strings": {
+      "0x1871147a4": "__CFPREFERENCES_AVOID_DAEMON",
+      "0x187114f6c": "com.apple.cfprefsd.daemon",
+      "0x187114f2c": "com.apple.cfprefsd.daemon.system",
+      "0x1871147c1": "mach-lookup"
+    },
+    "stubs": {
+      "0x18dbad6c8": [
+        "0x0",
+        "0x1d0c2ebd4"
+      ],
+      "0x18dbacccc": [
+        "0x0",
+        "0x1c1853520"
+      ]
+    },
+    "filter2_branch": "0x1d0c2ed60",
+    "assembly_sha256": {
+      "direct-mode-init.asm": "970d8c1ff9fed2773e160a293897992647132c07f0153b9caa7bbc94aafd6171",
+      "direct-mode-warning.asm": "3c4481413d8a338213eaa65602bf70e6dc27a552e3293be75044ae7d7c9e2029"
+    }
+  },
+  "finding": "__CFPrefsDirectMode block calls getpid and sandbox_check(pid,mach-lookup,SANDBOX_CHECK_NO_REPORT|2,cfprefsd daemon service). Any nonzero sandbox result is ORed into process direct-mode flag and logs the observed warning.",
+  "addresses": {
+    "self_check": "0x186eb617c..0x186eb619c",
+    "failure_flag": "0x186eb61bc..0x186eb61cc",
+    "warning": "0x186f7dc00",
+    "pid_wrapper": "0x1d0c2ebd4 (zeroes version; normal PID lookup)",
+    "filter2": "0x1d0c2ed60 -> internal6"
+  },
+  "abi": "self PID, version0, internal filter6, flags0x40000001; exact mach-lookup and two cfprefsd daemon services",
+  "change": "Scoped root64 m39-probe self query with verified init/fresh reader ancestry. Registered policy refusals retained. Original M39H root unchanged.",
+  "limits": [
+    "device result pending",
+    "allow decision alone does not prove XPC request/reply or daemon storage path",
+    "Windows REA deep analysis unsupported for Mach-O arm64; reused matching raw cache assembly"
+  ]
+}

@@ -1,0 +1,52 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -1667,2 +1667,3 @@
+ #include "xcover5_prefs_write.h"
++#include "xcover5_prefs_self_lookup.h"
+ #endif
+@@ -1732,2 +1733,3 @@
+         if (error == ENOPOLICY) error = xcover5_preferences_write(p,uap->arg);
++        if (error == ENOPOLICY) error = xcover5_preferences_self_lookup(p,uap->arg);
+     } else if (uap->call == 4 && strcmp(target, "Sandbox") == 0) {
+--- /dev/null
++++ b/security/xcover5_prefs_self_lookup.h
+@@ -0,0 +1,39 @@
++/* M39U: exact self mach-lookup check used by __CFPrefsDirectMode.
++ * PID wrapper has no audit-token version (zero); require the live caller PID.
++ * Missing-policy bring-up fallback only; never replaces a registered policy. */
++#ifndef XCOVER5_PREFS_SELF_LOOKUP_H
++#define XCOVER5_PREFS_SELF_LOOKUP_H
++static int
++xcover5_preferences_self_lookup(proc_t p,user_addr_t address)
++{
++    struct {uint64_t result,pid,operation,filter_type,filter,flags,pidversion;} a;
++    char operation[32],service[64];size_t length;
++    proc_t parent=PROC_NULL,grandparent=PROC_NULL;
++    kauth_cred_t cred;boolean_t allowed;uint64_t decision=0;int error;
++    if(proc_getuid(p)!=0 || !proc_is64bit_data(p) ||
++       strcmp(p->p_comm,"m39-probe"))return ENOPOLICY;
++    error=copyin(address,&a,sizeof(a));if(error)return error;
++    if(a.pid!=(uint64_t)proc_pid(p) || a.pidversion!=0 ||
++       a.filter_type!=6 || a.flags!=0x40000001ULL)return ENOPOLICY;
++    error=copyinstr(a.operation,operation,sizeof(operation),&length);if(error)return error;
++    if(strcmp(operation,"mach-lookup"))return ENOPOLICY;
++    error=copyinstr(a.filter,service,sizeof(service),&length);if(error)return error;
++    if(strcmp(service,"com.apple.cfprefsd.daemon") &&
++       strcmp(service,"com.apple.cfprefsd.daemon.system"))return ENOPOLICY;
++    error=ENOPOLICY;
++    parent=proc_find(proc_ppid(p));
++    allowed=parent!=PROC_NULL && parent==initproc && proc_pid(parent)==1;
++    if(!allowed && parent!=PROC_NULL && proc_ppid(parent)==1 &&
++       proc_is64bit_data(parent) && strcmp(parent->p_comm,"m39-probe")==0){
++        cred=kauth_cred_proc_ref(parent);allowed=kauth_cred_issuser(cred);kauth_cred_unref(&cred);
++        if(allowed){grandparent=proc_find(proc_ppid(parent));allowed=grandparent!=PROC_NULL && grandparent==initproc && proc_pid(grandparent)==1;}
++    }
++    if(!allowed)goto out;
++    error=copyout(&decision,a.result,sizeof(decision));
++    printf("XCOVER5 M39U SELF_LOOKUP pid=%d service=%s rc=%d\n",proc_pid(p),service,error);
++out:
++    if(grandparent!=PROC_NULL)proc_rele(grandparent);
++    if(parent!=PROC_NULL)proc_rele(parent);
++    return error;
++}
++#endif

@@ -49,6 +49,9 @@ if (repo/'xnu/patches/0064-xcover5-preferences-passthrough.patch').exists():
 if (repo/'xnu/patches/0070-xcover5-m39-domain-write.patch').exists():
  func=func.replace('        if (error == ENOPOLICY) error = xcover5_preferences_access(p,uap->arg);','        if (error == ENOPOLICY) error = xcover5_preferences_access(p,uap->arg);\n        if (error == ENOPOLICY) error = xcover5_preferences_write(p,uap->arg);')
  prefix+='static unsigned write_calls; static int xcover5_preferences_write(proc_t p,user_addr_t a){(void)p;(void)a;write_calls++;return ENOPOLICY;}\n'
+if (repo/'xnu/patches/0071-xcover5-cfprefs-self-lookup.patch').exists():
+ func=func.replace('        if (error == ENOPOLICY) error = xcover5_preferences_write(p,uap->arg);','        if (error == ENOPOLICY) error = xcover5_preferences_write(p,uap->arg);\n        if (error == ENOPOLICY) error = xcover5_preferences_self_lookup(p,uap->arg);')
+ prefix+='static unsigned self_lookup_calls; static int xcover5_preferences_self_lookup(proc_t p,user_addr_t a){(void)p;(void)a;self_lookup_calls++;return ENOPOLICY;}\n'
 if len(sys.argv)>1:
  tree=Path(sys.argv[1]);source=(tree/'security/mac_base.c').read_text()
  pos=source.index('int\n__mac_syscall(');stop=source.index('\n}\n',pos)+3
@@ -67,7 +70,7 @@ fixture=fixture[:start]+prefix+func+fixture[end:]
 at=fixture.rfind('}')
 fixture=fixture[:at]+'''
  caller.p_comm="cfprefsd";
- unsigned writes_before=write_calls;policy_result=ENOPOLICY;DISPATCH(ENOPOLICY);assert(write_calls==writes_before);
+ unsigned writes_before=write_calls,lookups_before=self_lookup_calls;policy_result=ENOPOLICY;DISPATCH(ENOPOLICY);assert(write_calls==writes_before&&self_lookup_calls==lookups_before);
  policy_result=EPERM;DISPATCH(EPERM);
  policy_result=EINVAL;DISPATCH(EINVAL);
  mac_policy_list.entries[1].mpc=NULL;args.call=3;DISPATCH(ENOPOLICY);
