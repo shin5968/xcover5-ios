@@ -5,7 +5,7 @@
   */
  
 +#if defined(XCOVER5)
-+#include <pexpert/arm/xcover5_fb_layout.h>
++#include "xcover5_fb_layout.h"
 +#include <console/video_console.h>
 +#include <vm/pmap.h>
 +extern struct vc_info vinfo;
