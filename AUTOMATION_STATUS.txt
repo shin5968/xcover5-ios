@@ -1,3 +1,24 @@
+2026-10-27 M40 video211517 hardware PASS exit62
+
+Video SHA25653a05304836d68b09aa5407ee736a7fb32da351730ef203fc3daff90ebdd68f8.
+Native detail013/result010 show parent6 rv3e00 / AUTO TEST_END status3e00 /
+launchd exit(62). Packaged original control flow returns62 only after real
+M39 baseline return60 and live reader A->B->absent with matching notify tokens,
+no explicit reader CF synchronize after READY, cancel, child61 and cleanup.
+Full review ../artifacts/m40-live-preferences/video-211517/review.json.
+Individual M40 progress strings obscured by overlapping console refresh; no
+claim every printed line was recovered. Native final exit and source establish
+functional result. Existing FSEvents/NO_LATE_HANDLE remain; query overflow35.
+Scope: explicit writer-posted notify wakeups + live cached preference coherence,
+not CF automatic change notifications. RAM only; USB still deferred.
+
+Freeze M39V kernel/M40 userspace as passing settings/notify baseline.
+Next meaningful milestone: inspect Foundation framework dependencies then
+validate native Foundation RunLoop/timer execution; no more speculative
+patches to the successful M39 request. No new firmware in this video review.
+
+Previous records follow:
+
 2026-10-27 M40 live preferences/notify wakeup package prepared
 
 Source9d270d31e81004d069fea445b67f77dd26684170 / CI40501703354 SUCCESS.
