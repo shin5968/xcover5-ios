@@ -64,6 +64,7 @@ on:
       - "tools/preferences-probe.c"
       - "tools/m39s-reply-observer.h"
       - "tools/m39s-calibration.c"
+      - "tools/m39s-observer-api.h"
       - "tools/test_m39_policy.c"
       - "tools/test_m39*.py"
       - "tools/mkprocessipcprobe.py"

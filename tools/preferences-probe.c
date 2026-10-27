@@ -19,8 +19,7 @@ extern kern_return_t bootstrap_look_up(mach_port_t, const char *, mach_port_t *)
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "m39s-reply-observer.h"
-extern int m39s_calibrate(void);
+#include "m39s-observer-api.h"
 static CFStringRef app, key;
 static int use_app_api=1;
 static void preferences_set(CFPropertyListRef value) {
@@ -131,8 +130,8 @@ int main(int argc,char **argv) {
     filesystem_probe("/Library/Preferences");
     install_source_observer();
     int calibration=m39s_calibrate();
-    printf("M39S OBSERVER calibration_value=%d interpose_hits=%u (zero means unavailable, not no error)\n",calibration,atomic_load(&m39s_calibration_hits));
-    atomic_store_explicit(&m39s_active,1,memory_order_relaxed);
+    printf("M39S OBSERVER calibration_value=%d interpose_hits=%u (zero means unavailable, not no error)\n",calibration,m39s_calibration_count());
+    m39s_activate();
     puts("XCOVER5 M39 BEGIN: cfprefsd bootstrap lookup");
     mach_port_t port=MACH_PORT_NULL;
     kern_return_t kr=bootstrap_look_up(bootstrap_port,"com.apple.cfprefsd.daemon",&port);

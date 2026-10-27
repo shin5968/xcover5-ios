@@ -88,7 +88,7 @@ static const struct {const void *replacement,*original;} m39s_interposers[]={
     {(const void *)m39s_send_async,(const void *)xpc_connection_send_message_with_reply}
 };
 #endif
-static void m39s_dump(void) {
+static void m39s_snapshot_dump(void) {
     int saved_errno=errno;
     unsigned total=atomic_load_explicit(&m39s_total,memory_order_acquire),stored=total<M39S_CAP?total:M39S_CAP,inflight=0;
     printf("XCOVER5 M39S FINAL_REPLIES calibration=%u sync=%u async=%u getters=%u error_keys=%u dictionaries=%u xpc_errors=%u\n",

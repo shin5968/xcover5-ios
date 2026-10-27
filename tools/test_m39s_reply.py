@@ -52,7 +52,7 @@ int main(void){
  char longtext[800];memset(longtext,'r',799);longtext[300]='\n';longtext[799]=0;
  m39s_record("long",longtext,"4");assert(m39s_events[count].truncated&&strlen(m39s_events[count].description)==512&&m39s_events[count].description[300]=='?');
  for(unsigned i=0;i<12;i++)m39s_record("overflow","bounded","4");
- errno=EBUSY;m39s_dump();assert(errno==EBUSY&&atomic_load(&m39s_total)>M39S_CAP);
+ errno=EBUSY;m39s_snapshot_dump();assert(errno==EBUSY&&atomic_load(&m39s_total)>M39S_CAP);
  assert(!strcmp(rejection.description,"write denied because exact reason")&&normal.description==NULL);
  puts("M39S actual observer: original calls/arguments/return pointer/errno, delayed block lifetime, NULL/typed replies, bounded immutable copies PASS (host only)");
 }
