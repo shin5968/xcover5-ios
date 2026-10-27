@@ -1,3 +1,20 @@
+2026-10-27 M39T hardware video200904: original M39 RAM preferences PASS
+
+Video SHA256 cfe8907549b56f8225b7b2d53b53214677616fc7a45af353756be841d505bb1d.
+Evidence ../artifacts/m39t-domain-write/video-200904/review.json.
+Final parent pid6 m39-probe exit60 / rv3c00 / AUTO TEST_END wait_status3c00;
+M39 reader and final PASS visible in evidence-020.jpg; result-019.jpg confirms exit.
+Unchanged original test requires actual regular nonempty plist, fresh exec reader
+expected value and exit59, then key deletion/sync/absent value. This test passed.
+
+Remaining direct access mode warnings in parent and reader mean cfprefsd-mediated
+RPC persistence is NOT established. RAM root only; no reboot persistence claim.
+Exact M39T query marker not confidently recovered from overlapping fast output.
+Next investigate specific daemon access denial / request-response, preserving
+real file and independent reader checks. Do not broaden Sandbox globally or
+force CF success. USB remains deferred. No new firmware generated in this review.
+
+Previous records follow:
 2026-10-27 M39T exact test-domain preference-write implementation prepared
 
 M39S native rejection identified user-preference-write/file-write-data denial.
@@ -322,3 +339,4 @@ change or userdata deletion added. No background collector remains running
 after its timeout; no scheduled automatic task was created before USB proof.
 Detailed evidence: ../artifacts/auto1-usb-log/hardware-review.json,
 verification.json, READ_FIRST.txt, collector.stderr.txt and CI logs.
+
