@@ -21,6 +21,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          gh run watch '${{ inputs.kernel_run }}' --interval 30 --exit-status
           gh run view '${{ inputs.kernel_run }}' --json conclusion --jq .conclusion | grep -x success
           gh run download '${{ inputs.kernel_run }}' --name xnu-kernel --dir out
       - name: Compile unchanged M39 M40 M41 and new deferred IOSurface driver
