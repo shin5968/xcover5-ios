@@ -849,7 +849,7 @@
 +bool
 +IOSurfaceRootUserClient::initWithTask(task_t owningTask, void * securityID, UInt32 type, OSDictionary * properties)
 +{
-+	if (proc_selfuid() != 0) return false; /* root-only bring-up, no Sandbox bypass */
++	if (proc_getuid(current_proc_EXTERNAL()) != 0) return false; /* root-only bring-up, no Sandbox bypass */
 +	if (!IOUserClient::initWithTask(owningTask, securityID, type, properties)) {
 +		return false;
 +	}
