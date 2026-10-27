@@ -1,3 +1,24 @@
+2026-10-27 M39R hardware video232451 reviewed
+
+Video source/hash/native frames: ../artifacts/m39r-small-font/video-232451/.
+Small font and delayed final page confirmed; M39 still fails stage142/exit142.
+Both isolated Preferences folder file-operation probes PASS.
+Final details total1/stored1: m39-probe pid6 call470 rc2 fd-2, flags20,
+copy0 bytes52, /var/root/Library/Preferences/org.xcover5.m39.plist.
+DETAIL_END overflow0/inflight0. FINAL_TAILS is empty. SOURCE_SYNC not recovered.
+The error-only writev collector cannot establish whether output succeeded,
+used another path, or was not emitted. Empty tails do NOT imply no rejection.
+ENOENT after failed sync is not established as the cause.
+
+Next investigation changes to direct CFPreferencesErrorDescription/ErrorType
+response observation, with validated runtime entry/ABI and invocation counts.
+Do not repeat the unavailable handleErrorReply selector assumption, enlarge
+an errno list, force sync success, or blanket-allow Sandbox. Keep actual reply,
+handler return and storage behavior unchanged. Require real plist creation and
+fresh-process reread for PASS. No new firmware or installation in this review.
+
+Previous records follow:
+
 2026-10-26 M39R small font / rejection suffix diagnostic prepared
 
 M39P video223743 confirms explicit rejection of the preference write.
