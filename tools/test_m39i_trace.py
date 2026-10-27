@@ -129,11 +129,13 @@ if has_container:
  anchor=' assert(xc_prefs_total==6);caller.p_comm="launchd";'
  extra=' args.call=4;DISPATCH(EINVAL);assert(container_calls==1);args.call=12;DISPATCH(EINVAL);assert(passthrough_calls==1);args.call=3;\n'
  assert anchor in fixture
- fixture=fixture.replace(anchor,extra+' assert(xc_prefs_total==7);caller.p_comm="launchd";')
+ fixture=fixture.replace(anchor,extra+' assert(xc_prefs_total==8);caller.p_comm="launchd";')
 with tempfile.TemporaryDirectory() as d:
  d=Path(d);(d/'prefs-trace.h').write_text(header);(d/'test.c').write_text(fixture)
  subprocess.run(['cc','-pthread','-Wno-format','-Wno-unused-parameter',str(d/'test.c'),'-o',str(d/'test')],check=True)
- p=subprocess.run([str(d/'test')],capture_output=True,text=True,check=True)
+ p=subprocess.run([str(d/'test')],capture_output=True,text=True)
+ if p.returncode:print(p.stdout+p.stderr)
+ p.check_returncode()
  assert 'total=133 stored=133 overflow=0 inflight=0' in p.stdout
  assert 'call=381 rc=103 count=132' in p.stdout
  assert 'total=517 stored=512 overflow=5 inflight=0' in p.stdout
