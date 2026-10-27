@@ -21,8 +21,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh run watch '${{ inputs.kernel_run }}' --interval 30 --exit-status
-          gh run view '${{ inputs.kernel_run }}' --json conclusion --jq .conclusion | grep -x success
+          # Run-summary updates can lag the completed build job. Require every
+          # nonempty job to finish successfully, including its artifact upload.
+          result=pending
+          for attempt in $(seq 1 60); do
+            result=$(gh api 'repos/${{ github.repository }}/actions/runs/${{ inputs.kernel_run }}/jobs?per_page=100' --jq '.jobs | if length == 0 then "pending" elif all(.status == "completed") then if all(.conclusion == "success") then "success" else "failure" end else "pending" end')
+            test "$result" != failure || exit 1
+            test "$result" != success || break
+            sleep 10
+          done
+          test "$result" = success
           gh run download '${{ inputs.kernel_run }}' --name xnu-kernel --dir out
       - name: Compile unchanged M39 M40 M41 and new deferred IOSurface driver
         run: |
