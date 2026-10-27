@@ -1,0 +1,59 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -1668,2 +1668,3 @@
+ #include "xcover5_prefs_self_lookup.h"
++#include "xcover5_prefs_remote_read.h"
+ #endif
+@@ -1733,2 +1734,3 @@
+         if (error == ENOPOLICY) error = xcover5_preferences_self_lookup(p,uap->arg);
++        if (error == ENOPOLICY) error = xcover5_preferences_remote_read(p,uap->arg);
+     } else if (uap->call == 4 && strcmp(target, "Sandbox") == 0) {
+--- /dev/null
++++ b/security/xcover5_prefs_remote_read.h
+@@ -0,0 +1,46 @@
++/* M39V: daemon audit-token read query for the single M39 preference domain.
++ * Exact shipped iOS16 ABI: public filter6 -> internal28, flags0x40000011.
++ * Do not override registered policies or grant arbitrary file-read access. */
++#ifndef XCOVER5_PREFS_REMOTE_READ_H
++#define XCOVER5_PREFS_REMOTE_READ_H
++static int
++xcover5_preferences_remote_read(proc_t p,user_addr_t address)
++{
++    struct {uint64_t result,pid,operation,filter_type,filter,flags,pidversion;} a;
++    char operation[64],domain[64];size_t length;
++    proc_t client=PROC_NULL,parent=PROC_NULL,grandparent=PROC_NULL;
++    kauth_cred_t cred;boolean_t allowed;uint64_t decision=0;int error;
++    if(proc_getuid(p)!=0 || !proc_is64bit_data(p) ||
++       strcmp(p->p_comm,"cfprefsd") || proc_ppid(p)!=1)return ENOPOLICY;
++    error=copyin(address,&a,sizeof(a));if(error)return error;
++    if(!a.pid || a.pid>INT_MAX || a.pidversion>UINT32_MAX ||
++       a.filter_type!=28 || a.flags!=0x40000011ULL)return ENOPOLICY;
++    error=copyinstr(a.operation,operation,sizeof(operation),&length);if(error)return error;
++    if(strcmp(operation,"user-preference-read"))return ENOPOLICY;
++    error=copyinstr(a.filter,domain,sizeof(domain),&length);if(error)return error;
++    if(strcmp(domain,"org.xcover5.m39"))return ENOPOLICY;
++    client=proc_find((pid_t)a.pid);if(client==PROC_NULL)return ESRCH;
++    error=ENOPOLICY;
++    cred=kauth_cred_proc_ref(client);
++    allowed=kauth_cred_issuser(cred) && proc_is64bit_data(client) &&
++        strcmp(client->p_comm,"m39-probe")==0 &&
++        (uint32_t)proc_pidversion(client)==a.pidversion;
++    kauth_cred_unref(&cred);
++    if(!allowed)goto out;
++    parent=proc_find(proc_ppid(client));
++    allowed=parent!=PROC_NULL && parent==initproc && proc_pid(parent)==1;
++    if(!allowed && parent!=PROC_NULL && proc_ppid(parent)==1 &&
++       proc_is64bit_data(parent) && strcmp(parent->p_comm,"m39-probe")==0){
++        cred=kauth_cred_proc_ref(parent);allowed=kauth_cred_issuser(cred);kauth_cred_unref(&cred);
++        if(allowed){grandparent=proc_find(proc_ppid(parent));allowed=grandparent!=PROC_NULL && grandparent==initproc && proc_pid(grandparent)==1;}
++    }
++    if(!allowed)goto out;
++    error=copyout(&decision,a.result,sizeof(decision));
++    printf("XCOVER5 M39V REMOTE_READ caller=%d target=%llu v=%llu domain=%s rc=%d\n",
++        proc_pid(p),(unsigned long long)a.pid,(unsigned long long)a.pidversion,domain,error);
++out:
++    if(grandparent!=PROC_NULL)proc_rele(grandparent);
++    if(parent!=PROC_NULL)proc_rele(parent);
++    proc_rele(client);return error;
++}
++#endif

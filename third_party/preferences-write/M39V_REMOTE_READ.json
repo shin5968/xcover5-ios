@@ -1,0 +1,26 @@
+{
+  "corefoundation_sha256": "362251c0f5b191d55a48e7caa5ff7507fda38ff7eb6da033089ba1d70508194f",
+  "addresses": {
+    "function": "-[CFPDSource validateSandboxForRead:containerPath:] 0x186ed0b94",
+    "domain_getter": "0x186ed0c1c..0x186ed0c2c gets CFPreferencesDomain into x19",
+    "token": "0x186ed0c3c..0x186ed0cb0 resolves audit token to sp+0x30",
+    "query": "0x186ed0dc8..0x186ed0e00 builds NO_REPORT|ALLOW_APPROVAL|6, token at sp+0x10, domain x19 at sp, then audit-token sandbox wrapper",
+    "success": "zero result at0x186ed0e04 ->0x186ed0eb4 (return0 authorization code)"
+  },
+  "raw_strings": {
+    "0x187113cba": "CFPreferencesDomain",
+    "0x187105030": "user-preference-read"
+  },
+  "wrapper": [
+    "0x0",
+    "0x1d0c2eb18"
+  ],
+  "assembly_sha256": "890c56da3187181ca28fbf0be001d081074b6bfcefc0939b4e23641ff6297401",
+  "runtime": "M39U video203641: cfprefsd pid10 rejects remote read for fresh reader pid14, exact org.xcover5.m39 plist; parent exits148",
+  "contract": "Only direct-PID1 root64 cfprefsd checks live root64 M39 parent/fresh reader, exact PIDversion, domain org.xcover5.m39, operation user-preference-read, internal28/40000011. Existing registered policies remain authoritative.",
+  "limits": [
+    "Full M39 device result pending",
+    "No arbitrary file-read-data permission",
+    "Existing self-read helper unchanged; only exact missing remote form added"
+  ]
+}

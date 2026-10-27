@@ -1,0 +1,19 @@
+{
+  "raw_sha256": "ceb9265a5948e683fa07e1b458cd8ed880c3956e7d8ad53088afffffcc618ed7",
+  "cases": [
+    {
+      "audit": true,
+      "query": [
+        "0x20df20",
+        "0x6",
+        "0x300000",
+        "0x1c",
+        "0x300100",
+        "0x40000011",
+        "0x13"
+      ],
+      "zero_decision_return": 0
+    }
+  ],
+  "limits": "Only operation fixup and host mac syscall boundary hooked; actual wrapper/filter parser ARM64 bytes emulated, not hardware"
+}
