@@ -27,7 +27,7 @@
 +       strcmp(p->p_comm,"m39-probe"))return ENOPOLICY;
 +    error=copyin(address,&a,sizeof(a));if(error)return error;
 +    if(a.pid!=(uint64_t)proc_pid(p) || a.pidversion!=0 ||
-+       a.filter_type!=6 || a.flags!=0x40000001ULL)return ENOPOLICY;
++       a.filter_type!=6 || a.flags!=0x1ULL)return ENOPOLICY;
 +    error=copyinstr(a.operation,operation,sizeof(operation),&length);if(error)return error;
 +    if(strcmp(operation,"mach-lookup"))return ENOPOLICY;
 +    error=copyinstr(a.filter,service,sizeof(service),&length);if(error)return error;

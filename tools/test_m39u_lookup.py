@@ -14,7 +14,7 @@ f=f[:at]+r'''
  caller=(struct process){1,0,1,0,1,"launchd"};
  server=(struct process){6,1,6,0,1,"m39-probe"};
  child=(struct process){7,6,7,0,1,"m39-probe"};
- uint64_t decision=99,q[7]={(uintptr_t)&decision,6,(uintptr_t)"mach-lookup",6,(uintptr_t)"com.apple.cfprefsd.daemon",0x40000001,0},saved[7];
+ uint64_t decision=99,q[7]={(uintptr_t)&decision,6,(uintptr_t)"mach-lookup",6,(uintptr_t)"com.apple.cfprefsd.daemon",0x1,0},saved[7];
  memcpy(saved,q,sizeof(q));
  #define LOOKUP_CHECK(actor,want) do {decision=99;assert(xcover5_preferences_self_lookup((actor),(uintptr_t)q)==(want));assert(refs==0&&creds==0);assert(decision==((want)==0?0:99));}while(0)
  LOOKUP_CHECK(&server,0);assert(!memcmp(saved,q,sizeof(q)));

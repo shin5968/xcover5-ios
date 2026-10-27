@@ -31,11 +31,12 @@
     "pid_wrapper": "0x1d0c2ebd4 (zeroes version; normal PID lookup)",
     "filter2": "0x1d0c2ed60 -> internal6"
   },
-  "abi": "self PID, version0, internal filter6, flags0x40000001; exact mach-lookup and two cfprefsd daemon services",
+  "abi": "self PID, version0, internal filter6, flags0x1; exact mach-lookup and two cfprefsd daemon services",
   "change": "Scoped root64 m39-probe self query with verified init/fresh reader ancestry. Registered policy refusals retained. Original M39H root unchanged.",
   "limits": [
     "device result pending",
     "allow decision alone does not prove XPC request/reply or daemon storage path",
     "Windows REA deep analysis unsupported for Mach-O arm64; reused matching raw cache assembly"
-  ]
+  ],
+  "emulation": "M39U_WRAPPER_EMULATION.json: exact normal PID wrapper yields flags1/version0; audit token wrapper differs flags40000001/version19. Supersedes initial audit-flag assumption before packaging."
 }
