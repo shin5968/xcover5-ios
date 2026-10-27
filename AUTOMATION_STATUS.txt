@@ -1,3 +1,33 @@
+2026-10-27 M39S direct XPC response observer prepared
+
+M39R hardware still exit142; final error-only output collector empty except
+plist fstatat64 ENOENT. No storage root cause established from that evidence.
+M39S moves to actual client XPC sync/async responses and ErrorDescription getter.
+Owned standalone dylib only; original arguments/reply/handler/errno forwarded.
+Main-image interpose attempt failed native calibration and was NOT packaged.
+Dylib interpose then passed actual native cross-image calibration. iOS still
+requires calibration_value1/interpose_hits1 and actual call counters on device.
+8 error records,512byte descriptions, explicit truncation/overflow/inflight.
+Empty-key lookups counted separately, avoiding error-buffer starvation.
+Source synchronize state/call counts retained. Stage142 evidence held3seconds
+before original exit142; film M39S FINAL_REPLIES through FINAL_END, not late Q.
+
+Source45e0cca2f85e9f958e6708c2521aa9feeabc0f18; userspace CI40489561722 SUCCESS.
+Actual-header mock forwarding/errno/async lifetime/bounds tests and native dyld
+calibration PASS (host-only). iOS arm64 compile and full signature pages PASS.
+Exact M39R kernel e0e50bebdab97c5cb0a05a2f67e4e2a08a98ef2c1a3c939c8542784ffd7b3ce5.
+Raw HFS comparison: only m39-probe changed; one observer dylib added; other
+logical file bytes and common ownership/modes identical to verified M39H.
+Package/MD5/fit and independent root/ADT memory mapping PASS. USB deferred.
+AP ../artifacts/m39s-xpc-replies/AP_M39S_XPC_REPLIES.tar.md5
+SHA256 3404ba3ef6139f5df8a3a70b0aa64929f98e74360cc51ede0257153ba3a9fc6b.
+Agent did NOT install; hardware PENDING. Interposing is diagnostic and may
+change dyld binding behavior; no claim that all original CF paths execute.
+Next: actual error reply determines a functional patch; no forced sync or
+blanket Sandbox allow. Real plist and fresh-reader checks remain mandatory.
+
+Previous records follow:
+
 2026-10-27 M39R hardware video232451 reviewed
 
 Video source/hash/native frames: ../artifacts/m39r-small-font/video-232451/.
