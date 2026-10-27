@@ -32,7 +32,15 @@ static Boolean preferences_sync(void) {
 static CFPropertyListRef preferences_copy(void) {
     return use_app_api?hackios_preferences_copy(key,app):CFPreferencesCopyValue(key,app,kCFPreferencesCurrentUser,kCFPreferencesAnyHost);
 }
-static void fail(int stage) { m39s_dump(); fprintf(stderr,"XCOVER5 M39 FAIL stage=%d errno=%d\n",stage,errno); _exit(stage); }
+static void fail(int stage) {
+    m39s_dump();
+    fprintf(stderr,"XCOVER5 M39 FAIL stage=%d errno=%d\n",stage,errno);
+    if(stage==142){
+        puts("M39S CAPTURE: response page held for 3 seconds before original exit142");
+        sleep(3); /* After the test has failed; only makes its evidence filmable. */
+    }
+    _exit(stage);
+}
 /* M39D: the error handler is a direct function, absent from the runtime method
  * list in the exact device cache. Observe the registered synchronize method.
  * Read atomic state before its original implementation consumes lastWriteFailed.
