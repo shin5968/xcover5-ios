@@ -4,7 +4,9 @@
 #define M39S_REPLY_OBSERVER_H
 #ifndef M39S_HOST
 #include <dispatch/dispatch.h>
-#include <mach-o/dyld-interposing.h>
+#if defined(__arm64e__)
+#error M39S interpose tuples require the non-PAC arm64 ABI
+#endif
 typedef void *m39s_xpc;
 extern m39s_xpc xpc_get_type(m39s_xpc);
 extern const char *xpc_dictionary_get_string(m39s_xpc,const char *);
@@ -77,9 +79,14 @@ static void m39s_send_async(m39s_xpc connection,m39s_xpc message,dispatch_queue_
     });
 }
 #ifndef M39S_HOST
-DYLD_INTERPOSE(m39s_get_string,xpc_dictionary_get_string)
-DYLD_INTERPOSE(m39s_send_sync,xpc_connection_send_message_with_reply_sync)
-DYLD_INTERPOSE(m39s_send_async,xpc_connection_send_message_with_reply)
+/* dyld's two-pointer interposing section ABI; no private SDK header needed.
+ * Reference: apple-oss-distributions/dyld include/mach-o/dyld-interposing.h. */
+__attribute__((used,section("__DATA,__interpose,interposing")))
+static const struct {const void *replacement,*original;} m39s_interposers[]={
+    {(const void *)m39s_get_string,(const void *)xpc_dictionary_get_string},
+    {(const void *)m39s_send_sync,(const void *)xpc_connection_send_message_with_reply_sync},
+    {(const void *)m39s_send_async,(const void *)xpc_connection_send_message_with_reply}
+};
 #endif
 static void m39s_dump(void) {
     int saved_errno=errno;
