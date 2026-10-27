@@ -1,3 +1,39 @@
+2026-10-27 M43 IOSurface package prepared; hardware PENDING
+
+Pinned HackiOS MiniIOSurface CPP/header d82c64a3 imported with source digests,
+adaptations and APSL in third_party/hackios-surface. Samsung platform startup;
+root-only BGRA bounded subset,8MiB allocation/32MiB wired budget incl state pages,
+256 IDs/64 refs per client, no retained memory cache, all new buffers zeroed.
+No Qualcomm MMIO/GPU/display takeover or blanket Sandbox change. Captures alloc
+size before potentially final unhold to avoid upstream failed-addRef logging UAF.
+
+Kernel source9eba936035dc15f069c5127cc5da6c3957329bea / CI40515446121 SUCCESS.
+Initial40512979677 compile failed missing proc_selfuid; changed to available
+proc_getuid(current_proc_EXTERNAL()), root restriction preserved. No failed AP.
+Userspace source1d510e3cd373395ac421f10618b530a51fd123e8 / CI40517011584 SUCCESS.
+Real host IOSurface two exec readers/read A/write B/parent read/released-ID lookup
+and deliberate corrupt pixel rejection PASS; only earlier M41 baseline stubbed
+in host test. iOS target retains unchanged original M39/M40/M41 and resolves
+IOSurface dynamically only after baseline63. Two rounds, negative dimensions/
+row/huge integer/9MiB cases, child65/gone66, final parent64; all bounded.
+
+AP ../artifacts/m43-iosurface-sharing/AP_M43_IOSURFACE_SHARING.tar.md5
+SHA256 4ed73f5785e4b15c4814c475bd840345db46c231f49046b63d7637c39f9cd2cc
+Kernel67a2729136e2a97ce81eeaf537f9c280fc41f4ec8f5a669d24309490daa7b097
+Rootc60eea949443ea68e6ad0da43c6059fe73946b64c13d9c35c5af57b95bd27188
+Independent HFS check: only /sbin/m39-probe differs from M41; other logical data,
+ownership/modes exact. Full signature-page hashes/target markers/no host flag/
+no entry-time framework loads PASS. Boot33540096 bytes; exact shim/DTB/cmdline,
+255MiB, boot-only tar/MD5/fit and RAMDisk phys0xa21b4000 independently verified.
+
+Device gate: M43 final parent exit64 (wait4000), both readers65 and gone66,
+and final M43 SURFACE count0/pixels0/wired0. No device success yet. No onscreen
+presentation/IOFramebuffer/GPU/touch/full SpringBoard claim. Manual user Odin;
+no agent flash, USB and reboot persistence deferred. Full READ_FIRST and reports
+in artifact directory. Next after lifecycle/cleanup PASS: software presenter.
+
+Previous records follow:
+
 2026-10-27 M42 video221705 hardware mapping gate PASS; M41 exit63 retained
 
 Video SHA256 a79a30056afc8642c82181a199fffeafc25917767c1e37c5fd914f2d7a4569c3.

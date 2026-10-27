@@ -5,7 +5,7 @@ on:
       kernel_run:
         description: Successful M43 XNU build run
         required: true
-        default: '40512979677'
+        default: '40515446121'
 permissions:
   actions: read
   contents: read
