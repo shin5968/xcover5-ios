@@ -1,0 +1,15 @@
+{
+  "corefoundation_sha256": "362251c0f5b191d55a48e7caa5ff7507fda38ff7eb6da033089ba1d70508194f",
+  "authority": "Pinned local shipped cache raw ARM64 instructions and latest native device video; not inferred from a decompiler",
+  "runtime": "artifacts/m39s-xpc-replies/video-194010/detail-010.jpg: explicit user-preference-write/file-write-data rejection, writeFailed1 and sync0",
+  "chain": {
+    "CFPDSource_validateSandboxForWrite": "0x186ed3ef0; CFPreferencesDomain getter at0x186ed4068 -> x21; user-preference-write string loaded0x186ed409c; domain placed atSP0x186ed4098; flags composed0x186ed408c; sandbox call0x186ed40a8; zero return branches0x186ed41c4, true at0x186ed41cc",
+    "public_wrapper": "0x18dbad6d4 resolves directly to0x1d0c2eb18 (audit-token query)",
+    "filter": "Raw table0x1d0c3179c index6 ->0x1d0c2ed80 -> internal28; payload read as uint64 pointer and passed unchanged",
+    "flags": "Constant pointer0x1df4018e8 ->0x1d0c317fc value0x40000000;0x1df4018d0 ->0x1d0c3180c value0x08000000; public0x48000006 -> internal0x40000011; result struct initialized0x40000000, bit30->1, bit27->0x10",
+    "identity": "Audit token offset0x14 ->pid,0x1c ->pidversion at0x1d0c2eb3c/54; mac syscall2 result/target/op/filter_type/filter/flags/version uint64 slots",
+    "original_denial": "0063 accepts read only; domain write therefore reaches unregistered-policy ENOPOLICY; no existing registered policy is replaced"
+  },
+  "contract": "root64 m39-probe self, or direct-PID1 root64 cfprefsd for live root64 m39-probe target; exact PIDversion and test/fresh-reader ancestry; exact domain org.xcover5.m39; op user-preference-write; filter28 flags40000011; bounded copies;64bit zero decision only",
+  "hardware": "PENDING; no forced CF success; require actual plist plus fresh exec read"
+}

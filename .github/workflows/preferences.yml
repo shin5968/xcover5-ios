@@ -17,20 +17,16 @@ jobs:
       - name: Compile diagnostic and rebuild RAM root
         run: |
           python3 tools/test_hackios_services.py
-          python3 tools/test_m39s_reply.py
-          python3 tools/test_m39s_calibration.py
-          xcrun clang -target arm64-apple-ios16.0 -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" -O1 -Wall -Wextra -Werror -dynamiclib -install_name /usr/lib/libm39s-observer.dylib -Wl,-adhoc_codesign tools/m39s-calibration.c -o out/libm39s-observer.dylib
-          xcrun clang -target arm64-apple-ios16.0 -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" -O1 -Wall -Wextra -Werror -framework CoreFoundation -lobjc -Lout -lm39s-observer -Wl,-adhoc_codesign tools/preferences-probe.c -o out/m39-probe
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe out/m30-probe out/m31-probe out/m32-probe out/m33-probe out/m34-probe out/m35-proof out/m36-probe out/m37-server out/m37-client out/m38-probe out/m39-probe out/libm39s-observer.dylib
+          xcrun clang -target arm64-apple-ios16.0 -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" -O1 -Wall -Wextra -Werror -framework CoreFoundation -lobjc -Wl,-adhoc_codesign tools/preferences-probe.c -o out/m39-probe
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe out/m30-probe out/m31-probe out/m32-probe out/m33-probe out/m34-probe out/m35-proof out/m36-probe out/m37-server out/m37-client out/m38-probe out/m39-probe
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
-          (cd out && shasum -a 256 m39-probe libm39s-observer.dylib root-hfs.img > M39S_SHA256SUMS)
+          (cd out && shasum -a 256 kernel.development.sweet > SHA256SUMS)
       - uses: actions/upload-artifact@v4
         with:
-          name: m39s-userspace
+          name: m39h-userspace
           path: |
             out/root-hfs.img
             out/m39-probe
-            out/libm39s-observer.dylib
             out/kernel.development.sweet
-            out/M39S_SHA256SUMS
+            out/SHA256SUMS
             out/HFS_SHA256SUMS

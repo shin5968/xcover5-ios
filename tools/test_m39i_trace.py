@@ -46,6 +46,9 @@ if (repo/'xnu/patches/0063-xcover5-preferences-self-read.patch').exists():
 if (repo/'xnu/patches/0064-xcover5-preferences-passthrough.patch').exists():
  func=func.replace('        error = xcover5_prefs_container_path(p, uap->arg);\n    }','        error = xcover5_prefs_container_path(p, uap->arg);\n    } else if (uap->call == 12 && strcmp(target, "Sandbox") == 0) {\n        error = xcover5_prefs_passthrough(p,uap->arg);\n    }')
  prefix+='static int passthrough_calls; static int xcover5_prefs_passthrough(proc_t p,user_addr_t a){(void)p;(void)a;passthrough_calls++;return EINVAL;}\n'
+if (repo/'xnu/patches/0070-xcover5-m39-domain-write.patch').exists():
+ func=func.replace('        if (error == ENOPOLICY) error = xcover5_preferences_access(p,uap->arg);','        if (error == ENOPOLICY) error = xcover5_preferences_access(p,uap->arg);\n        if (error == ENOPOLICY) error = xcover5_preferences_write(p,uap->arg);')
+ prefix+='static unsigned write_calls; static int xcover5_preferences_write(proc_t p,user_addr_t a){(void)p;(void)a;write_calls++;return ENOPOLICY;}\n'
 if len(sys.argv)>1:
  tree=Path(sys.argv[1]);source=(tree/'security/mac_base.c').read_text()
  pos=source.index('int\n__mac_syscall(');stop=source.index('\n}\n',pos)+3
@@ -64,12 +67,13 @@ fixture=fixture[:start]+prefix+func+fixture[end:]
 at=fixture.rfind('}')
 fixture=fixture[:at]+'''
  caller.p_comm="cfprefsd";
+ unsigned writes_before=write_calls;policy_result=ENOPOLICY;DISPATCH(ENOPOLICY);assert(write_calls==writes_before);
  policy_result=EPERM;DISPATCH(EPERM);
  policy_result=EINVAL;DISPATCH(EINVAL);
  mac_policy_list.entries[1].mpc=NULL;args.call=3;DISPATCH(ENOPOLICY);
  precheck=EPERM;DISPATCH(EPERM);precheck=0;
  args.policy=0;DISPATCH(EFAULT);args.policy=(uintptr_t)"Sandbox";
- assert(xc_prefs_total==5);caller.p_comm="launchd";
+ assert(xc_prefs_total==6);caller.p_comm="launchd";
  memset(xc_prefs_events,0,sizeof(xc_prefs_events));xc_prefs_total=0;
  child.p_comm="m39-probe";child.uid=501;
  xcover5_prefs_trace_record(&child,0,"Sandbox",2,103);assert(xc_prefs_total==0);
@@ -122,7 +126,7 @@ fixture=fixture[:at]+'''
  puts("M39I scope, real return preservation, publication, capacity and overflow PASS (host only)");
 '''+fixture[at:]
 if has_container:
- anchor=' assert(xc_prefs_total==5);caller.p_comm="launchd";'
+ anchor=' assert(xc_prefs_total==6);caller.p_comm="launchd";'
  extra=' args.call=4;DISPATCH(EINVAL);assert(container_calls==1);args.call=12;DISPATCH(EINVAL);assert(passthrough_calls==1);args.call=3;\n'
  assert anchor in fixture
  fixture=fixture.replace(anchor,extra+' assert(xc_prefs_total==7);caller.p_comm="launchd";')
