@@ -62,6 +62,8 @@ on:
       - "tools/mkbootstrapprobe.py"
       - "tools/stage_launchd.py"
       - "tools/preferences-probe.c"
+      - "tools/m39s-reply-observer.h"
+      - "tools/m39s-calibration.c"
       - "tools/test_m39_policy.c"
       - "tools/test_m39*.py"
       - "tools/mkprocessipcprobe.py"
@@ -293,8 +295,9 @@ jobs:
           out/test_m39_policy
           xcrun clang -target arm64-apple-ios16.0 -c tools/sweet-notify.S -o out/m38-probe.o
           python3 tools/mknotifyprobe.py out/m38-probe.o out/m38-probe
-          xcrun clang -target arm64-apple-ios16.0 -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" -O1 -Wall -Wextra -Werror -framework CoreFoundation -lobjc -Wl,-adhoc_codesign tools/preferences-probe.c -o out/m39-probe
-          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe out/m30-probe out/m31-probe out/m32-probe out/m33-probe out/m34-probe out/m35-proof out/m36-probe out/m37-server out/m37-client out/m38-probe out/m39-probe
+          xcrun clang -target arm64-apple-ios16.0 -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" -O1 -Wall -Wextra -Werror -dynamiclib -install_name /usr/lib/libm39s-observer.dylib -Wl,-adhoc_codesign tools/m39s-calibration.c -o out/libm39s-observer.dylib
+          xcrun clang -target arm64-apple-ios16.0 -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" -O1 -Wall -Wextra -Werror -framework CoreFoundation -lobjc -Lout -lm39s-observer -Wl,-adhoc_codesign tools/preferences-probe.c -o out/m39-probe
+          bash tools/mkhfsroot.sh out/init-mockfs.img out/root-hfs.img out/m21-probe out/m22-probe out/m22-loader out/m23-probe out/m23-code out/m24-probe out/m25-probe out/libm25.dylib out/m26-probe out/libm26.dylib out/m27-probe out/m27-apple-dyld.placeholder out/m28-probe out/m29-probe out/m30-probe out/m31-probe out/m32-probe out/m33-probe out/m34-probe out/m35-proof out/m36-probe out/m37-server out/m37-client out/m38-probe out/m39-probe out/libm39s-observer.dylib
           shasum -a 256 out/root-hfs.img > out/HFS_SHA256SUMS
 
       - name: Build synthetic cache volume template

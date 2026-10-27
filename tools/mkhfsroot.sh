@@ -28,6 +28,7 @@ EXECSERVER=${24:?EXECSERVER required}
 EXECCLIENT=${25:?EXECCLIENT required}
 NOTIFYPROBE=${26:?NOTIFYPROBE required}
 PREFSPROBE=${27:?PREFSPROBE required}
+OBSERVER=${28:-}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
@@ -43,6 +44,10 @@ sudo chmod 755 "$WORK/mnt/sbin/launchd"
 sudo cp "$PROBE" "$WORK/mnt/sbin/m21-probe"
 sudo chmod 755 "$WORK/mnt/sbin/m21-probe"
 sudo mkdir -p "$WORK/mnt/usr/lib"
+if [ -n "$OBSERVER" ]; then
+  sudo cp "$OBSERVER" "$WORK/mnt/usr/lib/libm39s-observer.dylib"
+  sudo chmod 755 "$WORK/mnt/usr/lib/libm39s-observer.dylib"
+fi
 sudo cp "$DYNAMIC" "$WORK/mnt/sbin/m22-probe"
 sudo cp "$LOADER" "$WORK/mnt/usr/lib/m22-loader"
 sudo chmod 755 "$WORK/mnt/sbin/m22-probe" "$WORK/mnt/usr/lib/m22-loader"

@@ -19,6 +19,8 @@ extern kern_return_t bootstrap_look_up(mach_port_t, const char *, mach_port_t *)
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include "m39s-reply-observer.h"
+extern int m39s_calibrate(void);
 static CFStringRef app, key;
 static int use_app_api=1;
 static void preferences_set(CFPropertyListRef value) {
@@ -31,7 +33,7 @@ static Boolean preferences_sync(void) {
 static CFPropertyListRef preferences_copy(void) {
     return use_app_api?hackios_preferences_copy(key,app):CFPreferencesCopyValue(key,app,kCFPreferencesCurrentUser,kCFPreferencesAnyHost);
 }
-static void fail(int stage) { fprintf(stderr,"XCOVER5 M39 FAIL stage=%d errno=%d\n",stage,errno); _exit(stage); }
+static void fail(int stage) { m39s_dump(); fprintf(stderr,"XCOVER5 M39 FAIL stage=%d errno=%d\n",stage,errno); _exit(stage); }
 /* M39D: the error handler is a direct function, absent from the runtime method
  * list in the exact device cache. Observe the registered synchronize method.
  * Read atomic state before its original implementation consumes lastWriteFailed.
@@ -40,13 +42,26 @@ typedef BOOL (*prefs_sync_imp)(id,SEL);
 static prefs_sync_imp original_sync;
 static ptrdiff_t state_offsets[4];
 static _Atomic unsigned sync_logs;
+static struct { _Atomic unsigned ready; unsigned flags[4]; int result; } source_events[8];
+static void dump_source_observer(void) {
+    int saved_errno=errno;unsigned total=atomic_load(&sync_logs),stored=total<8?total:8;
+    printf("M39S SOURCE_CALLS total=%u stored=%u\n",total,stored);
+    for(unsigned i=0;i<stored;i++)if(atomic_load_explicit(&source_events[i].ready,memory_order_acquire))
+        printf("M39S SOURCE_SYNC seq=%u writeFailed=%u volatile=%u readonly=%u directMode=%u result=%d\n",i,source_events[i].flags[0],source_events[i].flags[1],source_events[i].flags[2],source_events[i].flags[3],source_events[i].result);
+    errno=saved_errno;
+}
 static BOOL observe_preferences_sync(id self,SEL selector) {
     unsigned flags[4];
     for(unsigned i=0;i<4;i++)
         flags[i]=atomic_load_explicit((const _Atomic unsigned char *)((const char *)self+state_offsets[i]),memory_order_acquire);
     BOOL result=original_sync(self,selector);
-    if(atomic_fetch_add_explicit(&sync_logs,1,memory_order_relaxed)<8)
+    int saved_errno=errno;unsigned slot=atomic_fetch_add_explicit(&sync_logs,1,memory_order_relaxed);
+    if(slot<8){
+        memcpy(source_events[slot].flags,flags,sizeof(flags));source_events[slot].result=(int)result;
+        atomic_store_explicit(&source_events[slot].ready,1,memory_order_release);
         fprintf(stderr,"M39D SOURCE_SYNC writeFailed=%u volatile=%u readonly=%u directMode=%u result=%d\n",flags[0],flags[1],flags[2],flags[3],(int)result);
+    }
+    errno=saved_errno;
     return result;
 }
 static void install_source_observer(void) {
@@ -115,6 +130,9 @@ int main(int argc,char **argv) {
     filesystem_probe("/var/root/Library/Preferences");
     filesystem_probe("/Library/Preferences");
     install_source_observer();
+    int calibration=m39s_calibrate();
+    printf("M39S OBSERVER calibration_value=%d interpose_hits=%u (zero means unavailable, not no error)\n",calibration,atomic_load(&m39s_calibration_hits));
+    atomic_store_explicit(&m39s_active,1,memory_order_relaxed);
     puts("XCOVER5 M39 BEGIN: cfprefsd bootstrap lookup");
     mach_port_t port=MACH_PORT_NULL;
     kern_return_t kr=bootstrap_look_up(bootstrap_port,"com.apple.cfprefsd.daemon",&port);
@@ -124,8 +142,10 @@ int main(int argc,char **argv) {
     preferences_set(CFSTR("m39-independent-read"));
     errno=0;
     Boolean synced=preferences_sync();
+    dump_source_observer();
     printf("M39A SYNC returned=%d (errno is not a CFPreferences error code)\n",synced);
     if (!synced) fail(142);
+    m39s_dump();
     struct stat st;
     if (stat("/var/root/Library/Preferences/org.xcover5.m39.plist",&st) || !S_ISREG(st.st_mode) || st.st_size<=0) fail(143);
     puts("XCOVER5 M39: preference synchronized to RAM filesystem, starting fresh reader");
