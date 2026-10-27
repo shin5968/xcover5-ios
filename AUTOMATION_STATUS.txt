@@ -1,3 +1,28 @@
+2026-10-27 M39S hardware video194010: exact write rejection recovered
+
+Native detail-010.jpg (~48s) shows rejection of keyproof/domain org.xcover5.m39
+because setting these preferences requires user-preference-write or
+file-write-data sandbox access. Path/var/root/Library/Preferences/org.xcover5.m39.plist,
+managed0. Both isolated folder FS probes PASS. SOURCE_CALLS total3: first2
+writeFailed0/result1, last writeFailed1/result0; volatile/readonly/directMode0.
+SYNC returned0, stage142 and launchd exit142 remain. Kernel detailonly fstatat64
+ENOENT is an aftermath, not established as the initiating cause.
+
+M39S calibration_value1 but interpose_hits0; all XPC observer counters0.
+Interposing did NOT activate on device. Empty table is not a response result.
+Host calibration did not establish iOS functionality. No new firmware this review.
+Evidence/hash/native frames: ../artifacts/m39s-xpc-replies/video-194010/review.json.
+
+0063 accepts user-preference-read only; it explicitly rejects preference-write.
+Next validate exact write request ABI/target/flags/filter/payload from pinned
+Sandbox and CF assembly, retaining specifically the write request if generic
+first16-query limit hides it. Avoid larger errno lists or blanket allow.
+Patch only established M39 test-domain authorization, preserve policy denials,
+and test negative actor/domain/ABI/copy cases. Remove inactive interpose for
+functional comparison. Require real plist and fresh reader for success.
+
+Previous records follow:
+
 2026-10-27 M39S direct XPC response observer prepared
 
 M39R hardware still exit142; final error-only output collector empty except
