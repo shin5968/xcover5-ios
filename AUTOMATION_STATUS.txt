@@ -1,3 +1,29 @@
+2026-10-27 M42 framebuffer contract PACKAGE VERIFIED; hardware PENDING
+
+Final sourcec0e215b945786ad3c539c6c3154372358db15381 / CI40508818199 SUCCESS.
+Patch0073 applied-source host tests, full kernel compile/link and required marker
+checks PASS. Full serial/kern_exit replay passed. Additional actual report mock
+checks validate all261 pages, intermediate missing page, stage3, unchanged vinfo.
+First CI40507362372 rejected because line1 hook context caused skipped patch;
+fixed with full source context. Source-relative header corrected; superseded
+CI40508604844 cancelled. Neither rejected build was packaged or installed.
+
+AP ../artifacts/m42-framebuffer-contract/AP_M42_FRAMEBUFFER_CONTRACT.tar.md5
+SHA256 99fbfb9c26db55d5e7541a16df33a2428b0f782b82362015c864c77a6f1fb749
+Kernel8fc41d0a633e2b4444a895c36cdef3ebf7594bd6259841c1c23c014e3a436fd8.
+Whole M41 root e7cf3caedcaa53414bac6425c18179c0cecec1c5e7017a686827bcf70b634b8a
+byte-identical. Boot33490944 bytes; boot-only tar/MD5/fit, exact shim/DTB/cmdline,
+255MiB geometry, actual framebuffer ADT and RAMDisk phys0xa21a8000 PASS.
+Manual user Odin installation only. No agent flash; USB remains deferred.
+
+Hardware gate: original M41 exit63 plus M42 stage4/map_ok1/pages261 and all five
+M42 metadata lines. vinfo_same0 alone is not failure: it compares exact VA; aliases
+can differ. No vinfo mutation, graphics takeover, pixel pattern, IOSurface or
+SpringBoard claim. Compare actual physical/geometry metadata before bridge/import.
+Evidence, source hashes, host limits and READ_FIRST in artifact directory.
+
+Previous records follow:
+
 2026-10-27 M42 framebuffer contract implementation (CI/device pending)
 
 Patch0073 validates exact ADT property lengths, Samsung splash aperture, bounded
