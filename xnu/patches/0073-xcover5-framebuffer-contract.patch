@@ -128,7 +128,9 @@
 +#endif
 --- a/bsd/kern/kern_exit.c
 +++ b/bsd/kern/kern_exit.c
-@@ -1,4 +1,6 @@
+@@ -1871,6 +1871,8 @@
+ 		    p->p_exit_reason ? (unsigned long long)p->p_exit_reason->osr_flags : 0ULL);
+ 	}
  #if defined(XCOVER5)
 +	extern void xcover5_framebuffer_report(void);
 +	if (proc_getuid(p) == 0 && proc_ppid(p) == 1 && !strcmp(p->p_comm, "m39-probe")) xcover5_framebuffer_report();
