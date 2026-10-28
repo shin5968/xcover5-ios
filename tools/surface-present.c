@@ -12,7 +12,7 @@ static struct {
  int (*call)(mach_port_t,uint32_t,const uint64_t *,uint32_t,const void *,size_t,uint64_t *,uint32_t *,void *,size_t *);
 } io;
 static void load_io(void) {
- void *h=dlopen("/System/Library/Frameworks/IOKit.framework/IOKit",RTLD_NOW|RTLD_LOCAL);
+ void *h=dlopen("/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",RTLD_NOW|RTLD_LOCAL);
  if(!h)fail(220,"IOKit_dlopen");
 #define IO_RESOLVE(member,symbol) do {void *p=dlsym(h,symbol);if(!p)fail(221,symbol);memcpy(&io.member,&p,sizeof(p));}while(0)
  IO_RESOLVE(matching,"IOServiceMatching");IO_RESOLVE(service,"IOServiceGetMatchingService");
@@ -68,3 +68,4 @@ int main(int argc,char **argv) {
  if(argc!=1 || result!=64)return result;
  return run_present();
 }
+
