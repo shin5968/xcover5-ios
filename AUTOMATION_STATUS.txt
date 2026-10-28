@@ -627,3 +627,5 @@ after its timeout; no scheduled automatic task was created before USB proof.
 Detailed evidence: ../artifacts/auto1-usb-log/hardware-review.json,
 verification.json, READ_FIRST.txt, collector.stderr.txt and CI logs.
 
+
+2026-10-28 M43 DEVICE PASS: video20261027_230926 SHA256=f5b7e7a4b1fbd19dc197a7908bbefa141cf275541d498fca7612b406b68d310d. Native parent pid6 rv4000/AUTO wait_status4000/launchd exit64. Final surface count0 pixels0 wired0; M42 ready1/map_ok1/pages261. Individual M43 progress markers not separately recovered; final64 control flow requires both rounds. Evidence: ../artifacts/m43-iosurface-sharing/video-230926/result-crop.jpg and hardware-review.json. Existing CF warnings remain. Next: bounded software framebuffer presentation/color pattern/console restore. No visible UI claim.

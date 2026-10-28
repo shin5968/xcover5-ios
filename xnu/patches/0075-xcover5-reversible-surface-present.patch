@@ -1,0 +1,155 @@
+--- a/pexpert/arm/pe_serial.c
++++ b/pexpert/arm/pe_serial.c
+@@ -732,6 +732,21 @@
+ #define FBCON_FG        0xffffffffu
+ #define FBCON_BG        0xff000000u
+ 
++/* M44: serialize text drawing and reversible bounded presentation. Interrupts
++ * are disabled only during short memory copies, never across the display hold. */
++#if defined(XCOVER5)
++static volatile unsigned xc_fb_draw_lock;
++static unsigned xc_fb_presenting;
++static boolean_t xc_fb_lock(void) {
++    boolean_t enabled = ml_set_interrupts_enabled(FALSE);
++    while (__sync_lock_test_and_set(&xc_fb_draw_lock, 1)) { }
++    return enabled;
++}
++static void xc_fb_unlock(boolean_t enabled) {
++    __sync_lock_release(&xc_fb_draw_lock);
++    ml_set_interrupts_enabled(enabled);
++}
++#endif
+ static volatile uint32_t *fbcon_base;
+ static uint32_t fbcon_width, fbcon_height, fbcon_stride;
+ static uint32_t fbcon_cols, fbcon_rows, fbcon_col, fbcon_row;
+@@ -774,7 +789,7 @@
+ }
+ 
+ static void
+-fbcon_transmit_data(uint8_t c)
++fbcon_draw_byte(uint8_t c)
+ {
+ #if defined(XCOVER5)
+ 	extern void xcover5_log_byte(uint8_t);
+@@ -805,6 +820,21 @@
+ 		}
+ 	}
+ 	fbcon_col++;
++}
++
++static void
++fbcon_transmit_data(uint8_t c)
++{
++#if defined(XCOVER5)
++    boolean_t enabled = xc_fb_lock();
++    if (xc_fb_presenting) {
++        extern void xcover5_log_byte(uint8_t);
++        xcover5_log_byte(c); /* Keep capture, suspend screen/cursor updates. */
++    } else fbcon_draw_byte(c);
++    xc_fb_unlock(enabled);
++#else
++    fbcon_draw_byte(c);
++#endif
+ }
+ 
+ static unsigned int
+@@ -1413,3 +1443,49 @@
+ 	}
+ #endif /* APPLE_UART */
+ }
++
++#if defined(XCOVER5)
++/* Exact 64x32 BGRA input, nearest-neighbour 4x into a centered 256x128 rectangle.
++ * Buffer sizes are fixed; caller owns valid kernel memory. No user pointer/MMIO. */
++int xcover5_present_begin(const uint32_t *pixels, uint32_t *saved)
++{
++    if (!pixels || !saved || xc_fb_stage != 4 || !fbcon_base ||
++        !xc_fb_layout_valid(&xc_fb) || xc_fb.width < 256 || xc_fb.height < 128) return 1;
++    uint64_t va = (uint64_t)(uintptr_t)fbcon_base;
++    for (uint64_t off = 0; off < xc_fb.used; off += PAGE_SIZE) {
++        ppnum_t page = pmap_find_phys(kernel_pmap, (addr64_t)(va + off));
++        if (!page || ((uint64_t)page << PAGE_SHIFT) != xc_fb.physical + off) return 2;
++    }
++    boolean_t enabled = xc_fb_lock();
++    if (xc_fb_presenting) { xc_fb_unlock(enabled); return 3; }
++    xc_fb_presenting = 1;
++    uint32_t x0 = (xc_fb.width - 256) / 2, y0 = (xc_fb.height - 128) / 2;
++    for (uint32_t y = 0; y < 128; y++) {
++        volatile uint32_t *line = fbcon_base + (y0 + y) * (xc_fb.stride / 4) + x0;
++        for (uint32_t x = 0; x < 256; x++) {
++            saved[y * 256 + x] = line[x];
++            line[x] = pixels[(y / 4) * 64 + x / 4];
++        }
++    }
++    __sync_synchronize();
++    xc_fb_unlock(enabled);
++    return 0;
++}
++int xcover5_present_end(const uint32_t *saved)
++{
++    if (!saved) return 1;
++    boolean_t enabled = xc_fb_lock();
++    if (!xc_fb_presenting) { xc_fb_unlock(enabled); return 2; }
++    uint32_t x0 = (xc_fb.width - 256) / 2, y0 = (xc_fb.height - 128) / 2;
++    unsigned mismatch = 0;
++    for (uint32_t y = 0; y < 128; y++) {
++        volatile uint32_t *line = fbcon_base + (y0 + y) * (xc_fb.stride / 4) + x0;
++        for (uint32_t x = 0; x < 256; x++) line[x] = saved[y * 256 + x];
++        for (uint32_t x = 0; x < 256; x++) mismatch |= line[x] != saved[y * 256 + x];
++    }
++    __sync_synchronize();
++    xc_fb_presenting = 0;
++    xc_fb_unlock(enabled);
++    return mismatch ? 3 : 0;
++}
++#endif
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -1725,4 +1725,36 @@
+ 	return ref ? kIOReturnSuccess : kIOReturnNotFound;
+ }
+ 
++extern "C" int xcover5_present_begin(const uint32_t *, uint32_t *);
++extern "C" int xcover5_present_end(const uint32_t *);
++extern "C" void xcover5_present_test(void)
++{
++    static bool attempted;
++    if (attempted) return;
++    attempted = true;
++    if (!gSurfaceLock) { IOLog("XCOVER5 M44 FAIL service_unavailable\n"); return; }
++    IOLockLock(gSurfaceLock);
++    bool clean = gSurfaceCount == 0;
++    IOLockUnlock(gSurfaceLock);
++    if (!clean) { IOLog("XCOVER5 M44 FAIL baseline_surfaces_live\n"); return; }
++    MiniIOSurface *s = MiniIOSurfaceCreateSimple(64, 32, 'BGRA');
++    uint32_t *saved = (uint32_t *)IOMalloc(256U * 128U * 4U);
++    if (!s || !saved) {
++        if (s) MiniIOSurfaceDrop(s);
++        if (saved) IOFree(saved, 256U * 128U * 4U);
++        IOLog("XCOVER5 M44 FAIL allocation\n"); return;
++    }
++    const uint32_t colors[8] = {0xffff0000U,0xff00ff00U,0xff0000ffU,0xffffffffU,
++        0xff00ffffU,0xffff00ffU,0xffffff00U,0xff000000U};
++    uint32_t *pixels = (uint32_t *)s->kpixels;
++    for (unsigned y=0;y<32;y++) for (unsigned x=0;x<64;x++) pixels[y*64+x]=colors[x/8];
++    IOLog("XCOVER5 M44 BEGIN kernel IOSurface bars R G B W C M Y K, centered256x128 hold2000ms\n");
++    int begin = xcover5_present_begin(pixels, saved), restored = -1;
++    if (!begin) { IOSleep(2000); restored = xcover5_present_end(saved); }
++    IOFree(saved, 256U * 128U * 4U);
++    MiniIOSurfaceDrop(s);
++    IOLog("XCOVER5 M44 %s begin=%d restored=%d source=kernel_IOSurface visual=USER_VERIFY\n",
++        !begin && !restored ? "COPY_RESTORE_PASS" : "FAIL", begin, restored);
++}
++
+ #endif /* XCOVER5 */
+--- a/bsd/kern/kern_exit.c
++++ b/bsd/kern/kern_exit.c
+@@ -1873,6 +1873,8 @@
+ #if defined(XCOVER5)
+ 	extern void xcover5_framebuffer_report(void);
+ 	if (proc_getuid(p) == 0 && proc_ppid(p) == 1 && !strcmp(p->p_comm, "m39-probe")) xcover5_framebuffer_report();
++	extern void xcover5_present_test(void);
++	if (rv == 0x4000 && proc_getuid(p) == 0 && proc_ppid(p) == 1 && !strcmp(p->p_comm, "m39-probe")) xcover5_present_test();
+ 	extern void xcover5_surface_report(void);
+ 	if (proc_getuid(p) == 0 && proc_ppid(p) == 1 && !strcmp(p->p_comm, "m39-probe")) xcover5_surface_report();
+ 	extern void xcover5_test_finish(proc_t,int);

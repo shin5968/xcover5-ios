@@ -103,6 +103,7 @@ jobs:
           python3 tools/test_m39v_remote_read.py
           python3 tools/test_m42_framebuffer.py
           python3 tools/test_m43_surface_bounds.py
+          python3 tools/test_m44_present.py
 
       - name: Fetch build script
         run: |
@@ -216,6 +217,11 @@ jobs:
             python3 tools/test_m43_surface_bounds.py
           fi
           python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M43 SURFACE service registered" in k.read_bytes() and b"XCOVER5 M43 SURFACE count=" in k.read_bytes() for k in ks)'
+
+      - name: Verify reversible IOSurface presentation
+        run: |
+          python3 tools/test_m44_present.py dxb/xnu
+          python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M44 BEGIN" in k.read_bytes() and b"COPY_RESTORE_PASS" in k.read_bytes() for k in ks)'
 
       - name: Verify automatic log snapshot protocol
         run: |
