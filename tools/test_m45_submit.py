@@ -26,7 +26,7 @@ struct minisurf_client_ref{MiniIOSurface *surface;};
 struct Args {unsigned scalarInputCount=2,scalarOutputCount=3;size_t structureInputSize=0,structureOutputSize=0;void *structureInputDescriptor=nullptr,*structureOutputDescriptor=nullptr;uint64_t scalarInput[2]={1,1},scalarOutput[3]={};};
 typedef int proc_t;static int uid=0,ppid=1,holds=0,owned=0,nomem=0,active=0,begin_fail=0,end_fail=0;static unsigned slept=0;static void *gSurfaceLock;
 static MiniIOSurface surface;static minisurf_client_ref ref={&surface};
-static proc_t current_proc_EXTERNAL(){return 1;}static int proc_getuid(proc_t){return uid;}static int proc_ppid(proc_t){return ppid;}static int proc_getpid(proc_t){return 6;}
+static proc_t current_proc_EXTERNAL(){return 1;}static int proc_getuid(proc_t){return uid;}static int proc_ppid(proc_t){return ppid;}static int proc_pid(proc_t){return 6;}
 static void proc_name(int,char *p,size_t n){snprintf(p,n,"m39-probe");}
 static void IOLockLock(void*){}static void IOLockUnlock(void*){}
 static void surfaceHold(MiniIOSurface*){holds++;}static void MiniIOSurfaceDrop(MiniIOSurface*){assert(holds>0);holds--;}

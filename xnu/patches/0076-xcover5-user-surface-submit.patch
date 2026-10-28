@@ -31,7 +31,7 @@
 +     * A prior lookup on THIS connection is required; no arbitrary global ID access. */
 +    if (selector == 90) {
 +        proc_t caller = current_proc_EXTERNAL();
-+        char name[32]; bzero(name, sizeof(name)); proc_name(proc_getpid(caller), name, sizeof(name));
++        char name[32]; bzero(name, sizeof(name)); proc_name(proc_pid(caller), name, sizeof(name));
 +        if (proc_getuid(caller) != 0 || proc_ppid(caller) != 1 ||
 +            strcmp(name, "m39-probe")) return kIOReturnNotPrivileged;
 +        if (args->scalarInputCount != 2 || args->scalarOutputCount != 3 ||
