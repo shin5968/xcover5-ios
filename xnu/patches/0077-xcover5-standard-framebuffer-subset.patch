@@ -1,0 +1,112 @@
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -1805,4 +1805,81 @@
+         !begin && !restored ? "COPY_RESTORE_PASS" : "FAIL", begin, restored);
+ }
+ 
++#include "XCoverFramebufferABI.h"
++/* Pinned upstream standard service/selector names and swap field layout, with
++ * Samsung's proven mapping. No upstream unconditional SwapWait success. */
++class IOMobileFramebuffer : public IOService {
++ OSDeclareDefaultStructors(IOMobileFramebuffer);
++public:
++ bool start(IOService *provider) APPLE_KEXT_OVERRIDE {
++  if(!IOService::start(provider))return false;
++  setProperty(kIOUserClientClassKey,"IOMobileFramebufferUserClient");
++  setName("disp0");registerService();
++  IOLog("XCOVER5 M46 FB SERVICE registered standard selectors4/5/6/8\n");return true;
++ }
++};
++OSDefineMetaClassAndStructors(IOMobileFramebuffer,IOService);
++class IOMobileFramebufferUserClient : public IOUserClient {
++ OSDeclareDefaultStructors(IOMobileFramebufferUserClient);
++ IOLock *fLock;uint32_t fIssued,fCompleted;
++public:
++ bool initWithTask(task_t task,void *security,UInt32 type,OSDictionary *properties) APPLE_KEXT_OVERRIDE {
++  proc_t p=current_proc_EXTERNAL();char name[32];bzero(name,sizeof(name));proc_name(proc_pid(p),name,sizeof(name));
++  if(proc_getuid(p)!=0 || proc_ppid(p)!=1 || strcmp(name,"m39-probe"))return false;
++  if(!IOUserClient::initWithTask(task,security,type,properties))return false;
++  fLock=IOLockAlloc();fIssued=fCompleted=0;return fLock!=NULL;
++ }
++ IOReturn clientClose(void) APPLE_KEXT_OVERRIDE {if(!isInactive())terminate();return kIOReturnSuccess;}
++ void free(void) APPLE_KEXT_OVERRIDE {if(fLock)IOLockFree(fLock);IOUserClient::free();}
++ IOReturn externalMethod(uint32_t selector,IOExternalMethodArguments *a,IOExternalMethodDispatch *,OSObject *,void *) APPLE_KEXT_OVERRIDE {
++  IOLockLock(fLock);IOReturn result=kIOReturnUnsupported;
++  if(selector==5 && a->structureInput && a->structureInputSize==0x46c){
++   const uint8_t *b=(const uint8_t *)a->structureInput;
++   IOLog("XCOVER5 M46 ABI id=%u sid=%u src=%u,%u,%u,%u dst=%u,%u,%u,%u layers=%x/%x\n",
++    xc_fb_word(b,0x50),xc_fb_word(b,0x54),xc_fb_word(b,0x64),xc_fb_word(b,0x68),xc_fb_word(b,0x6c),xc_fb_word(b,0x70),
++    xc_fb_word(b,0xc4),xc_fb_word(b,0xc8),xc_fb_word(b,0xcc),xc_fb_word(b,0xd0),xc_fb_word(b,0x104),xc_fb_word(b,0x108));
++  }
++  if(selector==8 && !a->scalarInputCount && a->scalarOutputCount==2){
++   a->scalarOutput[0]=720;a->scalarOutput[1]=1480;result=kIOReturnSuccess;
++  }else if(selector==7 && a->scalarOutputCount==1){a->scalarOutput[0]=1;result=kIOReturnSuccess;
++  }else if(selector==4 && !a->scalarInputCount && a->scalarOutputCount==1 && fIssued==fCompleted && fIssued<2){
++   a->scalarOutput[0]=++fIssued;result=kIOReturnSuccess;
++  }else if(selector==5 && !a->scalarInputCount && !a->scalarOutputCount &&
++      !a->structureInputDescriptor && !a->structureOutputSize && fIssued>fCompleted &&
++      xc_fb_swap_valid((const uint8_t *)a->structureInput,a->structureInputSize,fIssued)){
++   const uint8_t *b=(const uint8_t *)a->structureInput;uint32_t sid=xc_fb_word(b,0x54);
++   MiniIOSurface *s=MiniIOSurfaceCopy(sid);
++   result=kIOReturnBadArgument;
++   if(s && s->info.width==64 && s->info.height==32 && s->info.bytesPerRow==256 &&
++      s->info.pixelFormat=='BGRA' && s->info.allocSize>=8192 && s->kpixels && !s->client){
++    uint32_t *buffer=(uint32_t *)IOMalloc(8192+131072);
++    result=kIOReturnNoMemory;
++    if(buffer){
++     memcpy(buffer,s->kpixels,8192);uint64_t hash=14695981039346656037ULL;
++     for(unsigned i=0;i<8192;i++)hash=(hash^((uint8_t *)buffer)[i])*1099511628211ULL;
++     int begin=xcover5_present_begin(buffer,buffer+2048),restored=-1;
++     if(!begin){IOSleep(2000);restored=xcover5_present_end(buffer+2048);}
++     IOFree(buffer,8192+131072);
++     result=!begin&&!restored?kIOReturnSuccess:kIOReturnError;
++     if(result==kIOReturnSuccess){fCompleted=fIssued;IOLog("XCOVER5 M46 SWAP_PASS id=%u hash=%llx restored=0\n",fCompleted,hash);}
++     else IOLog("XCOVER5 M46 SWAP_FAIL id=%u begin=%d restored=%d\n",fIssued,begin,restored);
++    }
++   }
++   if(s)MiniIOSurfaceDrop(s);
++  }else if(selector==6 && a->scalarInputCount==3 && !a->scalarOutputCount &&
++      !a->structureInputSize && !a->structureOutputSize && a->scalarInput[0] &&
++      a->scalarInput[0]==fCompleted && !a->scalarInput[1] && !a->scalarInput[2]){
++   result=kIOReturnSuccess;IOLog("XCOVER5 M46 WAIT_PASS id=%u actual_completion=1\n",fCompleted);
++  }
++  if(result!=kIOReturnSuccess)IOLog("XCOVER5 M46 FB reject selector=%u rc=%x issued=%u completed=%u\n",selector,result,fIssued,fCompleted);
++  IOLockUnlock(fLock);return result;
++ }
++};
++OSDefineMetaClassAndStructors(IOMobileFramebufferUserClient,IOUserClient);
++void XCoverFramebufferStart(IOService *provider){
++ IOMobileFramebuffer *fb=OSTypeAlloc(IOMobileFramebuffer);
++ if(fb && fb->init() && fb->attach(provider)){if(!fb->start(provider))fb->detach(provider);}
++ OSSafeReleaseNULL(fb);
++}
++
+ #endif /* XCOVER5 */
+--- /dev/null
++++ b/iokit/Kernel/arm/XCoverFramebufferABI.h
+@@ -0,0 +1,14 @@
++/* M46 iOS16.5 single-layer diagnostic subset of standard swap1132-byte ABI. */
++#ifndef XCOVER_FRAMEBUFFER_ABI_H
++#define XCOVER_FRAMEBUFFER_ABI_H
++static uint32_t xc_fb_word(const uint8_t *b,unsigned off){uint32_t v;memcpy(&v,b+off,4);return v;}
++static bool xc_fb_swap_valid(const uint8_t *b,size_t n,uint32_t issued) {
++ if(!b || n!=0x46c || !issued || issued>2 || xc_fb_word(b,0x50)!=issued) return false;
++ uint32_t sid=xc_fb_word(b,0x54);if(!sid || sid>=256)return false;
++ for(unsigned i=1;i<4;i++)if(xc_fb_word(b,0x54+4*i))return false;
++ if(xc_fb_word(b,0x104)!=1 || xc_fb_word(b,0x108))return false;
++ const uint32_t src[4]={0,0,64,32},dst[4]={232,676,256,128};
++ for(unsigned i=0;i<4;i++)if(xc_fb_word(b,0x64+4*i)!=src[i] || xc_fb_word(b,0xc4+4*i)!=dst[i])return false;
++ return true;
++}
++#endif
+--- a/iokit/Kernel/arm/SweetPlatformExpert.cpp
++++ b/iokit/Kernel/arm/SweetPlatformExpert.cpp
+@@ -35,6 +35,8 @@
+ #if defined(XCOVER5)
+ 	extern void MiniIOSurfaceStart(IOService *);
+ 	MiniIOSurfaceStart(this);
++	extern void XCoverFramebufferStart(IOService *);
++	XCoverFramebufferStart(this);
+ #endif
+ 	IOLog("SWEET: platform expert registered\n");
+ 	return true;

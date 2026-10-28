@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/oosexgang/hackios-xnu-kernel",
+  "commit": "d82c64a3a31cd27a0a0afbf6e213e467e44b1b4c",
+  "source": "xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp",
+  "sha256": "f777e6d573cc3c13507498f690d55d15f9a1adb10e342e7ef41e9c4353362ba5",
+  "license": "APSL-2.0 repository license copied",
+  "adaptation": [
+    "Standard service/client names and selectors4/5/6/7/8, swap1132-byte field layouts",
+    "New small Samsung bounded subset; no Redwood GPU/MMIO/recording/vsync",
+    "Strict root parent1 m39-probe; two64x32BGRA frames at center256x128",
+    "End succeeds only after real display copy and restore; Wait only exact completedID",
+    "Unimplemented selectors reject; no inherited unconditional SwapWait success"
+  ]
+}
