@@ -1,3 +1,26 @@
+2026-10-28 M47 repeated standard frames PACKAGE VERIFIED; device PENDING
+
+Preserves known-good M46C AP and entire original runtime gate before M47.
+Two fresh standard framework connections x16 swaps, two alternating surfaces;
+source hash checked after each wait; CFRelease and released-ID lookup per round.
+Final native69/wait4500 only after both sessions. First2 frames/connection2s,
+3..16 at75ms; each frame still synchronous copy/restore, no persistent scanout,
+async events or vsync claim. Kernel sequence limit2->16 only; geometry unchanged.
+Actual applied handler UBSan16 transitions/cap/replay/old/future/alloc rejection,
+M47 orchestration32 swaps/two lifecycles/source corruption rejection PASS.
+Source 4019e870bfe03c3a94774255bc6ccd282c9ac8b4; kernel CI40691460744 and userspace CI40691575045 SUCCESS.
+Original M39/M40/M41 objects byte-identical to M46C. HFS only probe changed;
+other logical files/modes/owners identical; signatures, kernel/shim/DTB/cmdline,
+255MiB mapping, sole boot.img/Odin MD5/fit independently checked PASS.
+AP ../artifacts/m47-repeated-frames/AP_M47_REPEATED_FRAMES.tar.md5
+SHA256 4b1741c9bfafff49a4e764e2122fbaba993b63181239550a53f51f600223ded0
+No agent flash. Need old M46 patterns then moving red/green bars, console
+restore; SESSION PASS rounds0/1, M47 PASS, native69/wait4500, surface counters0.
+Previous intermittent timeouts not declared fixed; M46C retained diagnostics
+remain. Hardware proof pending user video. USB remains deferred.
+
+Previous records follow:
+
 2026-10-28 M46C video214220: bounded framework/panel runtime PASS (one run)
 
 55.3s checkerboard and ABI id1/sid4 correct source/destination/layer;57s red-left
