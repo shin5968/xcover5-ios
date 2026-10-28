@@ -1,0 +1,35 @@
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -1867,7 +1867,7 @@
+   if(selector==8 && !a->scalarInputCount && a->scalarOutputCount==2){
+    a->scalarOutput[0]=720;a->scalarOutput[1]=1480;result=kIOReturnSuccess;
+   }else if(selector==7 && a->scalarOutputCount==1){a->scalarOutput[0]=1;result=kIOReturnSuccess;
+-  }else if(selector==4 && !a->scalarInputCount && a->scalarOutputCount==1 && fIssued==fCompleted && fIssued<2){
++  }else if(selector==4 && !a->scalarInputCount && a->scalarOutputCount==1 && fIssued==fCompleted && fIssued<16){
+    a->scalarOutput[0]=++fIssued;result=kIOReturnSuccess;
+   }else if(selector==5 && !a->scalarInputCount && !a->scalarOutputCount &&
+       !a->structureInputDescriptor && !a->structureOutputSize && fIssued>fCompleted &&
+@@ -1883,10 +1883,10 @@
+      memcpy(buffer,s->kpixels,8192);uint64_t hash=14695981039346656037ULL;
+      for(unsigned i=0;i<8192;i++)hash=(hash^((uint8_t *)buffer)[i])*1099511628211ULL;
+      int begin=xcover5_present_begin(buffer,buffer+2048),restored=-1;
+-     if(!begin){IOSleep(2000);restored=xcover5_present_end(buffer+2048);}
++     if(!begin){IOSleep(fIssued<=2?2000:75);restored=xcover5_present_end(buffer+2048);}
+      IOFree(buffer,8192+131072);
+      result=!begin&&!restored?kIOReturnSuccess:kIOReturnError;
+-     if(result==kIOReturnSuccess){fCompleted=fIssued;IOLog("XCOVER5 M46 SWAP_PASS id=%u hash=%llx restored=0\n",fCompleted,hash);}
++     if(result==kIOReturnSuccess){fCompleted=fIssued;if(fIssued>2)IOLog("XCOVER5 M47 FRAME id=%u hash=%llx restored=0\n",fCompleted,hash);IOLog("XCOVER5 M46 SWAP_PASS id=%u hash=%llx restored=0\n",fCompleted,hash);}
+      else IOLog("XCOVER5 M46 SWAP_FAIL id=%u begin=%d restored=%d\n",fIssued,begin,restored);
+     }
+    }
+--- a/iokit/Kernel/arm/XCoverFramebufferABI.h
++++ b/iokit/Kernel/arm/XCoverFramebufferABI.h
+@@ -3,7 +3,7 @@
+ #define XCOVER_FRAMEBUFFER_ABI_H
+ static uint32_t xc_fb_word(const uint8_t *b,unsigned off){uint32_t v;memcpy(&v,b+off,4);return v;}
+ static bool xc_fb_swap_valid(const uint8_t *b,size_t n,uint32_t issued) {
+- if(!b || n!=0x46c || !issued || issued>2 || xc_fb_word(b,0x50)!=issued) return false;
++ if(!b || n!=0x46c || !issued || issued>16 || xc_fb_word(b,0x50)!=issued) return false;
+  uint32_t sid=xc_fb_word(b,0x54);if(!sid || sid>=256)return false;
+  for(unsigned i=1;i<4;i++)if(xc_fb_word(b,0x54+4*i))return false;
+  if(xc_fb_word(b,0x104)!=1 || xc_fb_word(b,0x108))return false;

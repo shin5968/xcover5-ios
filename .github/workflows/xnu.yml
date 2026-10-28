@@ -107,6 +107,7 @@ jobs:
           python3 tools/test_m45_submit.py
           python3 tools/test_m46_framebuffer.py
           python3 tools/test_m46c_diag.py
+          python3 tools/test_m47_sequence.py
 
       - name: Fetch build script
         run: |

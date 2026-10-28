@@ -6,6 +6,13 @@ def added(name):
  part=p.split('+++ b/'+name+'\n')[1].split('--- ')[0]
  return ''.join(x[1:] for x in part.splitlines(True) if x.startswith('+'))
 h=added('iokit/Kernel/arm/XCoverFramebufferABI.h');c=added('iokit/Kernel/arm/MiniIOSurface.cpp')
+# Apply only M47's checked substitutions to the prior actual service body.
+assert 'issued>2' in h and 'fIssued<2' in c
+h=h.replace('issued>2','issued>16')
+c=c.replace('fIssued<2','fIssued<16').replace('if(!begin){IOSleep(2000);restored=xcover5_present_end(buffer+2048);}',
+ 'if(!begin){IOSleep(fIssued<=2?2000:75);restored=xcover5_present_end(buffer+2048);}')
+c=c.replace('fCompleted=fIssued;IOLog("XCOVER5 M46 SWAP_PASS',
+ 'fCompleted=fIssued;if(fIssued>2)IOLog("XCOVER5 M47 FRAME id=%u hash=%llx restored=0\\n",fCompleted,hash);IOLog("XCOVER5 M46 SWAP_PASS')
 start=c.index('  IOLockLock(fLock);');end=c.index('\n }\n};',start);body=c[start:end]
 if len(sys.argv)>1:
  t=Path(sys.argv[1]);assert (t/'iokit/Kernel/arm/XCoverFramebufferABI.h').read_text()==h
@@ -56,8 +63,16 @@ assert(!c.call(5,&a));assert(c.fCompleted==1&&!holds&&!active);assert(c.call(5,&
 a.structureInput=nullptr;a.structureInputSize=0;a.scalarInputCount=3;a.scalarInput[0]=1;assert(!c.call(6,&a));a.scalarInput[0]=2;assert(c.call(6,&a));
 a.scalarInputCount=0;a.scalarOutputCount=1;assert(!c.call(4,&a));assert(a.scalarOutput[0]==2);
 word(swap,0x50,2);a.scalarOutputCount=0;a.structureInput=swap;a.structureInputSize=sizeof(swap);assert(!c.call(5,&a));
-a.structureInputSize=0;a.scalarInputCount=3;a.scalarInput[0]=2;assert(!c.call(6,&a));a.scalarInputCount=0;a.scalarOutputCount=1;assert(c.call(4,&a));
-assert(!holds&&!active&&!locked&&slept==4000);puts("M46 actual selectors: layout/truncation/multilayer rejection, no premature/future/replayed completion, retained surface and allocation cleanup, two real copy/wait state transitions PASS");}
+a.structureInputSize=0;a.scalarInputCount=3;a.scalarInput[0]=2;assert(!c.call(6,&a));for(unsigned frame=3;frame<=16;frame++) {
+ a.scalarInputCount=0;a.scalarOutputCount=1;assert(!c.call(4,&a));assert(a.scalarOutput[0]==frame);
+ word(swap,0x50,frame);a.scalarOutputCount=0;a.structureInput=swap;a.structureInputSize=sizeof(swap);
+ assert(!c.call(5,&a));assert(c.fCompleted==frame);assert(c.call(5,&a));
+ a.structureInput=nullptr;a.structureInputSize=0;a.scalarInputCount=3;a.scalarInput[0]=frame-1;assert(c.call(6,&a));
+ a.scalarInput[0]=frame+1;assert(c.call(6,&a));a.scalarInput[0]=frame;assert(!c.call(6,&a));
+}
+a.scalarInputCount=0;a.scalarOutputCount=1;assert(c.call(4,&a));
+word(swap,0x50,17);assert(!xc_fb_swap_valid(swap,sizeof(swap),17));
+assert(!holds&&!active&&!locked&&slept==5050);puts("M46 actual selectors: layout/truncation/multilayer rejection, no premature/future/replayed completion, retained surface and allocation cleanup, 16 copy/wait transitions, cap16, old/future/replayed completion rejected PASS");}
 '''
 with tempfile.TemporaryDirectory() as tmp:
  d=Path(tmp);(d/'test.cpp').write_text(prefix+h+suffix+body+test)
