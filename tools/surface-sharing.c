@@ -93,7 +93,10 @@ static void reader_progress(unsigned char phase) {
     }
 #ifdef M43_HOST_TEST
     const char *hold=getenv("M46C_TEST_HOLD_PHASE");
-    if(hold && (unsigned)strtoul(hold,NULL,10)==phase) sleep(20);
+    if(hold && (unsigned)strtoul(hold,NULL,10)==phase) {
+        /* Host-only fault isolates parent timeout from the child alarm race. */
+        alarm(0);sleep(20);
+    }
 #endif
 }
 static void publish_reader_timeout(pid_t pid,uint32_t sid,unsigned round,const char *mode,
