@@ -1,3 +1,21 @@
+2026-10-28 M46A CF framebuffer lifetime PACKAGE VERIFIED; device PENDING
+
+M46 video205653: M45 color bars + swap1/2 restored0, final exit235/eb00.
+Static exact iOS16.5 framework: IOMobileFramebufferClose absent. Replace with
+CF type check + CFRelease matching registered runtime class finalizer. Each
+requested export present; resolver logs exact failed name/dlerror if needed.
+Source 47a2da44a8165f7240807b6ed601f8bfaf713ca2; userspace CI40685153620 SUCCESS.
+Exact M46 kernel CI40680854458 retained, SHA25672ca49b439d093fff4c1b91dd4a97f20e2d6d7cdd02c46c6e2c0bf4c7e9c52c6.
+Only probe logical file changed vs M46; ownership/modes/other files identical.
+Host tests, iOS signatures, root/payload mapping and boot-only Odin checks PASS.
+AP ../artifacts/m46a-framebuffer-lifetime/AP_M46A_FRAMEBUFFER_LIFETIME.tar.md5
+SHA256 30200b715ba3440f3a71f6b3e58aa1dd9ff445f4be3c14e74a9681aedfd6999c
+No agent flash. Need actual checkerboard/red-blue patterns, completion/restore,
+CFRelease marker, native final exit68/wait4400 and zero surface accounting.
+On failure inspect exact resolver name or actual API/IOReturn. USB deferred.
+
+Previous records follow:
+
 2026-10-27 M43 IOSurface package prepared; hardware PENDING
 
 Pinned HackiOS MiniIOSurface CPP/header d82c64a3 imported with source digests,
