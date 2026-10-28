@@ -1,3 +1,20 @@
+2026-10-28 M46B BASELINE PHASE DIAGNOSTIC package verified; device PENDING
+
+M46A timeout evidence retained. Added only M39 phase fprintf breadcrumbs and
+outer entry/return PID/argument logs; alarm60 and actual success gates unchanged.
+M40/M41/M43/M45 source unchanged; exact M46 kernel retained. Logging can change
+timing, so a future PASS alone is not proof that prior timeout root cause fixed.
+Source bcc0966ac36c9b3e2d9f3f114cc9679e65611962; CI40686558838 SUCCESS.
+Host tests, iOS CodeDirectory hashes, HFS logical comparison/ownership, unchanged
+kernel/shim/DTB/cmdline,255MiB mapping, boot-only Odin MD5/fit PASS.
+AP ../artifacts/m46b-baseline-phases/AP_M46B_BASELINE_PHASES.tar.md5
+SHA256 8c82d336ee7284cebf5dbc39a714d5a3ec89fceb0c95c03053710847f6869c39
+No agent flash. Need last M46B PHASE, reader PID and ENTRY versus kernel exec
+SIGTHREAD_BEGIN. If output missing, no causal conclusion; no baseline bypass.
+Full M46 success remains patterns/restore/CFRelease/native exit68/wait4400.
+
+Previous records follow:
+
 2026-10-28 M46A video210913 / photo211024: baseline TIMEOUT, M46 pending
 
 Final photo AUTO TEST_END pid6 wait_status=e, launchd signal(14). Matches
