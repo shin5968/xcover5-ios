@@ -94,7 +94,9 @@ static void filesystem_probe(const char *directory) {
     printf("M39A FS PASS: create/write/fsync/rename/read/unlink %s\n",directory);
 }
 static int reader(void) {
+    fprintf(stderr,"M46B PHASE reader_sync_begin pid=%d\n",getpid());
     if (!preferences_sync()) fail(145);
+    fprintf(stderr,"M46B PHASE reader_sync_end pid=%d\n",getpid());
     CFPropertyListRef value=preferences_copy();
     if (!value || CFGetTypeID(value)!=CFStringGetTypeID() || !CFEqual(value,CFSTR("m39-independent-read"))) fail(146);
     CFRelease(value);
@@ -104,6 +106,7 @@ static int reader(void) {
 int main(int argc,char **argv) {
     setvbuf(stdout,NULL,_IONBF,0); setvbuf(stderr,NULL,_IONBF,0);
     alarm(60);
+    fprintf(stderr,"M46B PHASE m39_entry pid=%d ppid=%d argc=%d arg=%s\n",getpid(),getppid(),argc,argc>1?argv[1]:"parent");
     app=CFSTR("org.xcover5.m39"); key=CFSTR("proof");
     use_app_api=!(argc==2 && (!strcmp(argv[1],"--legacy") || !strcmp(argv[1],"--read")));
     printf("M39H API=%s\n",use_app_api?"HackiOS application preferences":"legacy explicit user/host");
@@ -121,22 +124,30 @@ int main(int argc,char **argv) {
     if (kr!=KERN_SUCCESS || !MACH_PORT_VALID(port)) { fprintf(stderr,"M39 bootstrap kr=%d\n",kr); fail(141); }
     mach_port_deallocate(mach_task_self(),port);
     puts("XCOVER5 M39: daemon port acquired, writing preference");
+    fprintf(stderr,"M46B PHASE parent_set_begin pid=%d\n",getpid());
     preferences_set(CFSTR("m39-independent-read"));
     errno=0;
+    fprintf(stderr,"M46B PHASE parent_sync_begin pid=%d\n",getpid());
     Boolean synced=preferences_sync();
+    fprintf(stderr,"M46B PHASE parent_sync_end pid=%d result=%d\n",getpid(),synced);
     printf("M39A SYNC returned=%d (errno is not a CFPreferences error code)\n",synced);
     if (!synced) fail(142);
     struct stat st;
     if (stat("/var/root/Library/Preferences/org.xcover5.m39.plist",&st) || !S_ISREG(st.st_mode) || st.st_size<=0) fail(143);
     puts("XCOVER5 M39: preference synchronized to RAM filesystem, starting fresh reader");
+    fprintf(stderr,"M46B PHASE fork_begin pid=%d\n",getpid());
     pid_t child=fork();
     if(child<0) fail(144);
     if(!child) { execl("/sbin/m39-probe","m39-probe",use_app_api?"--read-app":"--read",(char*)NULL); fail(147); }
+    fprintf(stderr,"M46B PHASE wait_reader parent=%d child=%d\n",getpid(),child);
     int status=0; pid_t got;
     do { got=waitpid(child,&status,0); } while(got<0 && errno==EINTR);
+    fprintf(stderr,"M46B PHASE wait_end parent=%d child=%d got=%d status=%x\n",getpid(),child,got,status);
     if(got!=child || !WIFEXITED(status) || WEXITSTATUS(status)!=59) { fprintf(stderr,"M39 reader status=%x\n",status); fail(148); }
     preferences_set(NULL);
+    fprintf(stderr,"M46B PHASE cleanup_sync_begin pid=%d\n",getpid());
     if (!preferences_sync()) fail(149);
+    fprintf(stderr,"M46B PHASE cleanup_sync_end pid=%d\n",getpid());
     CFPropertyListRef removed=preferences_copy();
     if(removed) { CFRelease(removed); fail(150); }
     puts("XCOVER5 M39 PASS: preferences write + sync + file + fresh exec read + cleanup (RAM only)");

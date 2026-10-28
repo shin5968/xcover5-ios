@@ -57,4 +57,11 @@ static int run_framebuffer(void){
  puts("XCOVER5 M46 PASS: real IOMobileFramebuffer Open/Size/Begin/SetLayer/End/Wait + CFRelease");
  return 68;
 }
-int main(int argc,char **argv){int result=m45_baseline_main(argc,argv);if(argc!=1 || result!=67)return result;return run_framebuffer();}
+int main(int argc,char **argv){
+ setvbuf(stderr,NULL,_IONBF,0);
+ fprintf(stderr,"M46B ENTRY pid=%d ppid=%d argc=%d arg=%s\n",getpid(),getppid(),argc,argc>1?argv[1]:"parent");
+ int result=m45_baseline_main(argc,argv);
+ fprintf(stderr,"M46B BASELINE_RETURN pid=%d argc=%d result=%d\n",getpid(),argc,result);
+ if(argc!=1 || result!=67)return result;
+ return run_framebuffer();
+}
