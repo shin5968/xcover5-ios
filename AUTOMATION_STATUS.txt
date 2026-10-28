@@ -1,3 +1,21 @@
+2026-10-28 M47 video220722: repeated standard framework hardware PASS (one run)
+
+59s round0 sid5/6 alternation and completed4, red bar blue background;64s
+round0 SWAP_PASS16/WAIT_PASS16/SESSION PASS both_buffers_released. Round1 sid7/8
+and increasing completions visible65s; green bar moves.66s console restored,
+native wait_status4500/launchd exit69, final M43 count0 pixels0 wired0.
+Final69 source gate requires both16-frame sessions, per-frame source integrity,
+and both surface IDs released each round. Round1 final PASS text not separately
+transcribed; preserve distinction between observed pixels/status and code gates.
+Evidence/hash/native frames ../artifacts/m47-repeated-frames/video-220722/.
+Preserve verified AP_M47_REPEATED_FRAMES.tar.md5. Video is not installed hash
+attestation. No persistent scanout/vsync/compositor/GPU/touch claim. Earlier
+intermittent timeout cause remains unknown. Next scope: bounded larger/full-panel
+surface geometry and copy/restore, then actual compositor requirements.
+No new code/package/phone writes in this video review.
+
+Previous records follow:
+
 2026-10-28 M47 repeated standard frames PACKAGE VERIFIED; device PENDING
 
 Preserves known-good M46C AP and entire original runtime gate before M47.
