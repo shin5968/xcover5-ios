@@ -5,7 +5,7 @@ on:
       kernel_run:
         description: Successful M45 XNU build run
         required: true
-        default: '0'
+        default: '40676746471'
 permissions:
   actions: read
   contents: read
