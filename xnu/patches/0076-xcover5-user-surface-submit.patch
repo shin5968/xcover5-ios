@@ -1,0 +1,75 @@
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -779,6 +779,7 @@
+ {
+ 	OSDeclareDefaultStructors(IOSurfaceRootUserClient);
+ 
++	uint32_t fPresentationSequence; /* M45 two synchronous frames per connection */
+ 	task_t                          fTask;
+ 	struct minisurf_client_ref *    fRefs;
+ 	uint32_t                        fRefCount;
+@@ -829,6 +830,7 @@
+ 	if (!IOUserClient::initWithTask(owningTask, securityID, type, properties)) {
+ 		return false;
+ 	}
++	fPresentationSequence = 0;
+ 	fTask = owningTask;
+ 	return true;
+ }
+@@ -1477,10 +1479,56 @@
+ 	return ret;
+ }
+ 
++extern "C" int xcover5_present_begin(const uint32_t *, uint32_t *);
++extern "C" int xcover5_present_end(const uint32_t *);
++
+ IOReturn
+ IOSurfaceRootUserClient::externalMethod(uint32_t selector, IOExternalMethodArguments * args,
+     IOExternalMethodDispatch * dispatch, OSObject * target, void * reference)
+ {
++    /* M45 diagnostic ABI90, deliberately separate from Apple's framebuffer ABI.
++     * A prior lookup on THIS connection is required; no arbitrary global ID access. */
++    if (selector == 90) {
++        proc_t caller = current_proc_EXTERNAL();
++        char name[32]; bzero(name, sizeof(name)); proc_name(proc_getpid(caller), name, sizeof(name));
++        if (proc_getuid(caller) != 0 || proc_ppid(caller) != 1 ||
++            strcmp(name, "m39-probe")) return kIOReturnNotPrivileged;
++        if (args->scalarInputCount != 2 || args->scalarOutputCount != 3 ||
++            args->structureInputSize || args->structureOutputSize ||
++            args->structureInputDescriptor || args->structureOutputDescriptor) return kIOReturnBadArgument;
++        uint64_t sid = args->scalarInput[0], sequence = args->scalarInput[1];
++        if (!sid || sid >= MINISURF_TABLE_SIZE || sequence != fPresentationSequence + 1 || sequence > 2)
++            return kIOReturnBadArgument;
++        IOLockLock(gSurfaceLock);
++        struct minisurf_client_ref *owned = findRef((uint32_t)sid, false);
++        MiniIOSurface *surface = owned ? owned->surface : NULL;
++        if (surface && (surface->info.width != 64 || surface->info.height != 32 ||
++            surface->info.bytesPerRow != 256 || surface->info.pixelFormat != 'BGRA' ||
++            surface->info.allocSize < 8192 || !surface->kpixels || surface->client)) surface = NULL;
++        if (surface) surfaceHold(surface);
++        IOLockUnlock(gSurfaceLock);
++        if (!surface) return kIOReturnNotFound;
++        uint32_t *buffer = (uint32_t *)IOMalloc(8192 + 131072);
++        if (!buffer) { MiniIOSurfaceDrop(surface); return kIOReturnNoMemory; }
++        memcpy(buffer, surface->kpixels, 8192); /* Freeze pixels before the display copy. */
++        uint64_t hash = 14695981039346656037ULL;
++        const uint8_t *bytes = (const uint8_t *)buffer;
++        for (unsigned i = 0; i < 8192; i++) hash = (hash ^ bytes[i]) * 1099511628211ULL;
++        int begin = xcover5_present_begin(buffer, buffer + 2048), restored = -1;
++        if (!begin) { IOSleep(2000); restored = xcover5_present_end(buffer + 2048); }
++        IOFree(buffer, 8192 + 131072);
++        MiniIOSurfaceDrop(surface);
++        if (begin || restored) {
++            IOLog("XCOVER5 M45 FAIL seq=%llu begin=%d restored=%d\n", sequence, begin, restored);
++            return kIOReturnError;
++        }
++        fPresentationSequence = (uint32_t)sequence;
++        args->scalarOutput[0] = sequence;
++        args->scalarOutput[1] = hash;
++        args->scalarOutput[2] = 0;
++        IOLog("XCOVER5 M45 SUBMIT_PASS seq=%llu hash=%llx restored=0 source=user_IOSurface\n",sequence,hash);
++        return kIOReturnSuccess;
++    }
+     if (selector != kSurfaceMethodCreate && selector != kSurfaceMethodLookup &&
+         selector != kSurfaceMethodInit && selector != kSurfaceMethodLookupFromPort &&
+         selector != kSurfaceMethodCreatePort) return kIOReturnUnsupported;

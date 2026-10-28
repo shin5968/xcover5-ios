@@ -104,6 +104,7 @@ jobs:
           python3 tools/test_m42_framebuffer.py
           python3 tools/test_m43_surface_bounds.py
           python3 tools/test_m44_present.py
+          python3 tools/test_m45_submit.py
 
       - name: Fetch build script
         run: |
@@ -222,6 +223,11 @@ jobs:
         run: |
           python3 tools/test_m44_present.py dxb/xnu
           python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M44 BEGIN" in k.read_bytes() and b"COPY_RESTORE_PASS" in k.read_bytes() for k in ks)'
+
+      - name: Verify user IOSurface submission
+        run: |
+          python3 tools/test_m45_submit.py dxb/xnu
+          python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M45 SUBMIT_PASS" in k.read_bytes() for k in ks)'
 
       - name: Verify automatic log snapshot protocol
         run: |
