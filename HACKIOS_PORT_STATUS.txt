@@ -80,3 +80,17 @@ M39I hardware / M39J upstream contract import
   Existing registered policy handlers keep priority. Other policy requests,
   launchd jobs, filesystem layout and the exact M39H root remain unchanged.
   Provenance/license: third_party/hackios-kernel/. Hardware result pending.
+
+2026-10-28 M46 video / M46A framebuffer lifetime fix
+Video20261028_205653: M45 color bars and SUBMIT_PASS swaps1/2 restored0; final
+exit235 / wait_status eb00, M43 count0 pixels0 wired0. M46 not PASS.
+Exact iOS16.5 framework SHA256 2a2883b3fbc1e392aebfa53026cf83abc0d20c1983250be1eac629175495c12d
+exports first six requested symbols but no IOMobileFramebufferClose. GetTypeID
+is exported. Constructor creates CFRuntime instance; CF class at1e2289150
+registers ioMobileFramebufferFinalize1af1c81dc. Remove nonexistent Close lookup,
+check CF type and CFRelease the display after completed swaps. Resolver now
+logs each successful symbol and exact dlerror on failure. No kernel change.
+M46A workflow reuses successful kernel CI40680854458. Device pending; final
+exit68 still requires checkerboard/red-blue output, restored console, release
+and zero remaining surface accounting. Source/build/package evidence will be
+saved in ../artifacts/m46a-framebuffer-lifetime/. USB remains deferred.
