@@ -14,7 +14,7 @@ body=body[:body.rindex('#endif')]
 if len(sys.argv)>1:
  t=Path(sys.argv[1]);s=(t/'pexpert/arm/pe_serial.c').read_text()
  assert body in s
- assert 'if (xc_fb_presenting)' in s and 'xcover5_log_byte(c); /* Keep capture' in s
+ assert 'if (!xc_fb_presenting) fbcon_draw_byte(c);' in s and s.count('xcover5_log_byte(c);')==1
  assert 'rv == 0x4000' in (t/'bsd/kern/kern_exit.c').read_text()
  assert 'IOSleep(2000)' in (t/'iokit/Kernel/arm/MiniIOSurface.cpp').read_text()
 prefix='''#include <stdint.h>

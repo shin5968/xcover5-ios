@@ -22,16 +22,22 @@
  static volatile uint32_t *fbcon_base;
  static uint32_t fbcon_width, fbcon_height, fbcon_stride;
  static uint32_t fbcon_cols, fbcon_rows, fbcon_col, fbcon_row;
-@@ -774,7 +789,7 @@
+@@ -774,12 +789,8 @@
  }
  
  static void
 -fbcon_transmit_data(uint8_t c)
+-{
+-#if defined(XCOVER5)
+-	extern void xcover5_log_byte(uint8_t);
+-	xcover5_log_byte(c);
+-#endif
 +fbcon_draw_byte(uint8_t c)
- {
- #if defined(XCOVER5)
- 	extern void xcover5_log_byte(uint8_t);
-@@ -805,6 +820,21 @@
++{
+ 	if (c == '\r') {
+ 		fbcon_col = 0;
+ 		return;
+@@ -805,6 +816,20 @@
  		}
  	}
  	fbcon_col++;
@@ -41,11 +47,10 @@
 +fbcon_transmit_data(uint8_t c)
 +{
 +#if defined(XCOVER5)
++    extern void xcover5_log_byte(uint8_t);
++    xcover5_log_byte(c); /* Capture every byte exactly once, including the display hold. */
 +    boolean_t enabled = xc_fb_lock();
-+    if (xc_fb_presenting) {
-+        extern void xcover5_log_byte(uint8_t);
-+        xcover5_log_byte(c); /* Keep capture, suspend screen/cursor updates. */
-+    } else fbcon_draw_byte(c);
++    if (!xc_fb_presenting) fbcon_draw_byte(c);
 +    xc_fb_unlock(enabled);
 +#else
 +    fbcon_draw_byte(c);
@@ -53,7 +58,7 @@
  }
  
  static unsigned int
-@@ -1413,3 +1443,49 @@
+@@ -1413,3 +1438,49 @@
  	}
  #endif /* APPLE_UART */
  }
