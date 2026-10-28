@@ -1,3 +1,19 @@
+2026-10-28 M48 video224736/photo224842: M40 readiness176; full panel pending
+
+Photo native rv/wait_statusb000 and launchd exit176; final surface0/pixels0/wired0.
+Actual176 is M40 first expect_ack R: poll15000 result!=1 OR read!=1/wrong byte;
+exact where/poll/revents/read/child last phase not recovered. Do not label exact
+timeout cause from stage alone. M39 reader14 REMOTE_READ rc0 visible42s; reaching
+M40 follows M39 success gate. No M48 full patterns or copy reached in this run.
+Earlier intermittent M39 alarm/M43 reader216 and current M40 readiness failure
+remain unresolved. This is not evidence of full-panel allocation/copy failure.
+Media hashes/native frames/review ../artifacts/m48-full-panel/video-224736/.
+Next retain M40 reader exec/notify/initial CF sync/ack phase plus parent poll/read
+outcome before functional fix. No baseline bypass or speculative display change.
+No new package or device writes during this review. M47 remains known-good.
+
+Previous records follow:
+
 2026-10-28 M48 full-panel standard surface PACKAGE VERIFIED; device PENDING
 
 Entire M47 baseline retained. Exact720x1480BGRA, stride2880, full source/dest,
