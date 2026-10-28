@@ -1,3 +1,16 @@
+2026-10-28 M46A video210913 / photo211024: baseline TIMEOUT, M46 pending
+
+Final photo AUTO TEST_END pid6 wait_status=e, launchd signal(14). Matches
+unchanged M39 alarm60, not explicit M46 exit235. Video43s pid14 remote read;
+44..51.8s pid15 exec SIGTHREAD_BEGIN remains visible. Exact blocking point
+unknown; final photo surface count0 pixels0 wired0. No M46A resolver or new
+pattern success established; installed package hash not verified by media.
+Evidence/hash/crops ../artifacts/m46a-framebuffer-lifetime/video-210913/review.json.
+Next identify exact baseline phase/child exec wait, preserve baseline checks;
+no speculative framebuffer/kernel changes or timeout-only claimed fix.
+
+Previous records follow:
+
 2026-10-28 M46A CF framebuffer lifetime PACKAGE VERIFIED; device PENDING
 
 M46 video205653: M45 color bars + swap1/2 restored0, final exit235/eb00.
