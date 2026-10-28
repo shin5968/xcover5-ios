@@ -106,6 +106,7 @@ jobs:
           python3 tools/test_m44_present.py
           python3 tools/test_m45_submit.py
           python3 tools/test_m46_framebuffer.py
+          python3 tools/test_m46c_diag.py
 
       - name: Fetch build script
         run: |
@@ -232,6 +233,7 @@ jobs:
 
       - name: Verify standard framebuffer subset
         run: |
+          python3 tools/test_m46c_diag.py dxb/xnu
           python3 tools/test_m46_framebuffer.py dxb/xnu
           python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M46 FB SERVICE registered" in k.read_bytes() and b"XCOVER5 M46 WAIT_PASS" in k.read_bytes() for k in ks)'
 

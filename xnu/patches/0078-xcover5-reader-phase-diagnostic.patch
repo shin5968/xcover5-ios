@@ -1,0 +1,47 @@
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -162,12 +162,27 @@
+         p->getObject("IOSurfacePlaneInfo") || p->getObject("IOSurfaceAddress") || p->getObject("IOSurfaceAddressRanges")) return false;
+     return xc_surface_shape(values[0],values[1],values[3],values[4],values[5]);
+ }
++/* M46C: scalar-only diagnostic snapshot. No process refs, surfaces or user
++ * pointers retained. Published after reader timeout; reprinted at parent exit. */
++static uint64_t gReaderDiag[8];
++static bool xcReaderDiagValid(const uint64_t *v, uint32_t n) {
++    return v && n==7 && v[0]>0 && v[0]<=0x7fffffffULL &&
++        v[1]>0 && v[1]<256 && v[2]<2 && (v[3]==1 || v[3]==2) &&
++        v[4]<=13 && v[5]<=0xffffffffULL && (v[6]&1) && v[6]<=7;
++}
++static void xcReaderDiagReport(void) {
++    uint64_t v[8];IOLockLock(gSurfaceLock);memcpy(v,gReaderDiag,sizeof(v));IOLockUnlock(gSurfaceLock);
++    if(!v[0])return;
++    IOLog("XCOVER5 M46C READER parent=%llu child=%llu sid=%llu round=%llu mode=%llu\n",v[0],v[1],v[2],v[3],v[4]);
++    IOLog("XCOVER5 M46C LAST phase=%llu status=%llx flags=%llu FINAL\n",v[5],v[6],v[7]);
++}
+ extern "C" void xcover5_surface_report(void);
+ extern "C" void xcover5_surface_report(void) {
+     if(gSurfaceLock==NULL || gSurfaceKeptLock==NULL) { IOLog("XCOVER5 M43 SURFACE unavailable\n"); return; }
+     IOLockLock(gSurfaceLock); uint32_t count=gSurfaceCount; uint64_t pixel=gSurfaceBytes; IOLockUnlock(gSurfaceLock);
+     IOLockLock(gSurfaceKeptLock); uint64_t wired=gSurfaceWired; IOLockUnlock(gSurfaceKeptLock);
+     IOLog("XCOVER5 M43 SURFACE count=%u pixels=%llu wired=%llu budget=%llu\n",count,pixel,wired,XC_SURFACE_BUDGET);
++    xcReaderDiagReport();
+ }
+ 
+ void
+@@ -1832,6 +1847,16 @@
+  IOReturn clientClose(void) APPLE_KEXT_OVERRIDE {if(!isInactive())terminate();return kIOReturnSuccess;}
+  void free(void) APPLE_KEXT_OVERRIDE {if(fLock)IOLockFree(fLock);IOUserClient::free();}
+  IOReturn externalMethod(uint32_t selector,IOExternalMethodArguments *a,IOExternalMethodDispatch *,OSObject *,void *) APPLE_KEXT_OVERRIDE {
++  if(selector==91) {
++   proc_t p=current_proc_EXTERNAL();char name[32];bzero(name,sizeof(name));proc_name(proc_pid(p),name,sizeof(name));
++   if(proc_getuid(p)!=0 || proc_ppid(p)!=1 || strcmp(name,"m39-probe"))return kIOReturnNotPrivileged;
++   if(!a || a->scalarOutputCount || a->structureInputSize || a->structureOutputSize ||
++      a->structureInputDescriptor || a->structureOutputDescriptor ||
++      !xcReaderDiagValid(a->scalarInput,a->scalarInputCount))return kIOReturnBadArgument;
++   IOLockLock(gSurfaceLock);gReaderDiag[0]=(uint32_t)proc_pid(p);
++   memcpy(gReaderDiag+1,a->scalarInput,7*sizeof(uint64_t));IOLockUnlock(gSurfaceLock);
++   xcReaderDiagReport();return kIOReturnSuccess;
++  }
+   IOLockLock(fLock);IOReturn result=kIOReturnUnsupported;
+   if(selector==5 && a->structureInput && a->structureInputSize==0x46c){
+    const uint8_t *b=(const uint8_t *)a->structureInput;
