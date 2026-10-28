@@ -1,3 +1,22 @@
+2026-10-28 M46C video214220: bounded framework/panel runtime PASS (one run)
+
+55.3s checkerboard and ABI id1/sid4 correct source/destination/layer;57s red-left
+blue-right plus SWAP_PASS1 restored0 and WAIT_PASS1 actual_completion1.
+60s console restored, native wait_status4400/launchd exit68; M43 count0,
+pixels0,wired0. Final68 source gate requires both frames/waits, CFRelease,
+released-ID lookup and all prior baseline stages. Second swap/wait/CFRelease
+text not individually recovered; distinguish this source inference from observed
+pixels/final status. Video does not attest installed image hash.
+Evidence/hash/native frames ../artifacts/m46c-retained-reader/video-214220/.
+Preserve AP_M46C_RETAINED_READER.tar.md5 as one-run verified fallback.
+This diagnostic build did not implement a proven timeout fix. Earlier M39 alarm
+and M43 child216 remain intermittent/unexplained until repeatability evidence.
+No full compositor/SpringBoard/GPU/touch/vsync claim. Next repeat same package,
+then bounded continuous swap/lifecycle extension or actual compositor contract.
+No code/panel behavior changes or phone writes during this review.
+
+Previous records follow:
+
 2026-10-28 M46C retained reader diagnostic PACKAGE VERIFIED; device PENDING
 
 M46B exit216 reader timeout remains unresolved. Inherited progress pipe records
