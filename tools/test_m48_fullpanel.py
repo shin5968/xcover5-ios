@@ -92,5 +92,5 @@ with tempfile.TemporaryDirectory() as tmp:
  abi=''.join(x[1:] for x in abi.splitlines(True) if x.startswith('+'))
  for name,source,compiler in [('copy',prefix+copy+copytest,'cc'),('helper',kp+abi+helper+'\nclass Client{public:void*fLock=nullptr;unsigned fIssued=0,fCompleted=0;int call(unsigned selector,Args*a){\n'+branch+kt,'c++')]:
   f=d/(name+('.c' if compiler=='cc' else '.cpp'));f.write_text(source)
-  subprocess.run([compiler,'-O1','-Wall','-Wextra','-Werror','-Wno-misleading-indentation','-Wno-multichar','-fsanitize=undefined','-I'+str(d),str(f),'-o',str(d/name)],check=True)
+  subprocess.run([compiler,*(['-std=c++17'] if compiler=='c++' else ['-std=c11']),'-O1','-Wall','-Wextra','-Werror','-Wno-misleading-indentation','-Wno-multichar','-fsanitize=undefined','-I'+str(d),str(f),'-o',str(d/name)],check=True)
   subprocess.run([str(d/name)],check=True)
