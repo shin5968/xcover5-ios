@@ -1,3 +1,18 @@
+2026-10-28 M46B video211952: M43 reader TIMEOUT216; M46 pending
+
+Final84s native wait_statusd800 + launchd exit216. Actual source216 maps to
+M43 child200x50ms wait timeout then kill/reap; this path follows M39/M40/M41
+gates. Prior child15 rv3d00(61), child18 shadow1 exit0 visible. Exact timed-out
+child PID/mode/round and blocking phase not recovered. Final M43 count1,
+pixels16384,wired32768; failure snapshot is not proof of persistent leak.
+M46B phase text not reliably recovered; console flood remains a diagnostic gap.
+Video hash/native frames/review ../artifacts/m46b-baseline-phases/video-211952/.
+Next retain child phase evidence and exact timeout PID/mode/round, correlate
+exec completion before choosing spawn/driver changes. No causal attribution
+from mere error counts. No M46 PASS; no new package or phone writes this review.
+
+Previous records follow:
+
 2026-10-28 M46B BASELINE PHASE DIAGNOSTIC package verified; device PENDING
 
 M46A timeout evidence retained. Added only M39 phase fprintf breadcrumbs and
