@@ -1,3 +1,26 @@
+2026-10-28 M46C retained reader diagnostic PACKAGE VERIFIED; device PENDING
+
+M46B exit216 reader timeout remains unresolved. Inherited progress pipe records
+last child phase; parent publishes7 bounded scalars on timeout via selector91.
+Root,parent1,exactname caller gate; fixed8-word snapshot under surface lock;
+no process/surface/user-pointer retention. Reprints final READER/LAST lines in
+surface report. Original alarms,200x50ms wait/kill/reap and success gates retained.
+Userspace source b92b334e9608ad2b4282d2d30924b4b1b13cdcdf; CI40688883486 SUCCESS.
+Kernel source e8d1b3e6fe99bd873df7016d0ad776582ab12e14; CI40688518058 SUCCESS.
+First userspace40688680202 rejected: injected host hold raced child alarm;
+fixed host-only isolation. No target alarm change; failed build not packaged.
+Actual handler UBSan/applied source, normal real host sharing/corrupt rejection,
+injected phases1/5 parent timeout snapshots, iOS compile/signatures PASS.
+AP ../artifacts/m46c-retained-reader/AP_M46C_RETAINED_READER.tar.md5
+SHA256 ff5b024eb08c490cd5ad21494ac09c1b70c6157cbe0a0cb3542db562f5a8735d
+Independent root logical files (probe only changed), ownership, kernel identity,
+shim/DTB/cmdline,255MiB mapping, sole boot.img/Odin MD5/fit PASS. No agent flash.
+Need final M46C READER PID/mode/round and LAST phase/status/flags; absence is
+not proof of child state because diagnostic publish can fail. If full run,
+M46 patterns/restore/CFRelease/native68 and zero surface accounting still required.
+
+Previous records follow:
+
 2026-10-28 M46B video211952: M43 reader TIMEOUT216; M46 pending
 
 Final84s native wait_statusd800 + launchd exit216. Actual source216 maps to
