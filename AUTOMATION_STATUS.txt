@@ -1,3 +1,29 @@
+2026-10-28 M48 full-panel standard surface PACKAGE VERIFIED; device PENDING
+
+Entire M47 baseline retained. Exact720x1480BGRA, stride2880, full source/dest,
+one layer, fresh standard framework connection IDs1/2. Surface4262400 requested
+bytes plus two kernel scratch blocks of4262400 each; bounds/pmap pages validated
+before framebuffer writes. Freeze pixels, save whole console, hold2s, restore
+and readback every pixel. Both scratch blocks freed each swap; final CFRelease
+and ID lookup required before native70/wait4600. No new physical mapping.
+Source 589fe353532a82db235c4db0169777ecbaafa2b8; kernel CI40697791665 / userspace CI40697907004 SUCCESS.
+Initial40697402151 failed host C++ default standard; explicit C11/C++17 fixed
+host harness only. Failed build not packaged. Actual copy/pmap/geometry/edge
+canary/exclusivity/restore tests, parser/state/replay/partial allocation/copy
+failure cleanup, actual user orchestration/corrupt-source rejection PASS.
+Original M39/M40/M41 objects byte-identical to M47. Root logical files except
+probe/modes/owners identical. Signature pages, kernel/shim/DTB/cmdline,255MiB
+mapping, boot-only Odin MD5/fit PASS.
+AP ../artifacts/m48-full-panel/AP_M48_FULL_PANEL.tar.md5
+SHA256 2230af3b8a015c017822a419e2182dbf1711f1bfbd72518ad6585342f98d86f3
+No agent flash. Need old M47 patterns followed by full-panel color bars and
+8x8 checkerboard with white4px border; console restored each time; M48 FULL1/2
+begin0/restored0/rc0; final70/wait4600 and surface counters0. Fail252..255 needs
+exact where/API/kernel record. Known-good M47 preserved. Earlier timeouts not
+claimed fixed; no compositor/GPU/touch/vsync claim. USB deferred.
+
+Previous records follow:
+
 2026-10-28 M47 video220722: repeated standard framework hardware PASS (one run)
 
 59s round0 sid5/6 alternation and completed4, red bar blue background;64s
