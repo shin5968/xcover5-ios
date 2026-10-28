@@ -1,0 +1,102 @@
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -1823,6 +1823,31 @@
+ #include "XCoverFramebufferABI.h"
+ /* Pinned upstream standard service/selector names and swap field layout, with
+  * Samsung's proven mapping. No upstream unconditional SwapWait success. */
++
++#include "XCoverFullPanelABI.h"
++extern "C" int xcover5_full_present_begin(const uint32_t *,uint32_t *);
++extern "C" int xcover5_full_present_end(const uint32_t *);
++static IOReturn xcFullPanelSubmit(uint32_t sid,uint32_t issued) {
++ MiniIOSurface *s=MiniIOSurfaceCopy(sid);
++ IOReturn result=kIOReturnBadArgument;
++ if(s && s->info.width==720 && s->info.height==1480 && s->info.bytesPerRow==2880 &&
++    s->info.pixelFormat=='BGRA' && s->info.allocSize>=XC_FULL_BYTES && s->info.allocSize<=(8U<<20) && s->kpixels && !s->client) {
++  uint32_t *pixels=(uint32_t *)IOMalloc(XC_FULL_BYTES),*saved=(uint32_t *)IOMalloc(XC_FULL_BYTES);
++  result=kIOReturnNoMemory;
++  if(pixels && saved) {
++   memcpy(pixels,s->kpixels,XC_FULL_BYTES);uint64_t hash=14695981039346656037ULL;
++   for(unsigned i=0;i<XC_FULL_BYTES;i++)hash=(hash^((uint8_t *)pixels)[i])*1099511628211ULL;
++   int begin=xcover5_full_present_begin(pixels,saved),restored=-1;
++   if(!begin){IOSleep(2000);restored=xcover5_full_present_end(saved);}
++   result=!begin&&!restored?kIOReturnSuccess:kIOReturnError;
++   IOLog("XCOVER5 M48 FULL id=%u sid=%u hash=%llx begin=%d restored=%d rc=%x bytes=%u\n",issued,sid,hash,begin,restored,result,XC_FULL_BYTES);
++  }
++  if(saved)IOFree(saved,XC_FULL_BYTES);if(pixels)IOFree(pixels,XC_FULL_BYTES);
++ }
++ if(s)MiniIOSurfaceDrop(s);
++ return result;
++}
++
+ class IOMobileFramebuffer : public IOService {
+  OSDeclareDefaultStructors(IOMobileFramebuffer);
+ public:
+@@ -1856,6 +1881,15 @@
+    IOLockLock(gSurfaceLock);gReaderDiag[0]=(uint32_t)proc_pid(p);
+    memcpy(gReaderDiag+1,a->scalarInput,7*sizeof(uint64_t));IOLockUnlock(gSurfaceLock);
+    xcReaderDiagReport();return kIOReturnSuccess;
++  }
++  if(selector==5 && a && xc_fb_full_swap_valid((const uint8_t *)a->structureInput,a->structureInputSize)) {
++   IOLockLock(fLock);IOReturn full=kIOReturnBadArgument;
++   if(!a->scalarInputCount && !a->scalarOutputCount && !a->structureInputDescriptor && !a->structureOutputDescriptor &&
++      !a->structureOutputSize && fIssued>fCompleted && fIssued<=2 && xc_fb_word((const uint8_t *)a->structureInput,0x50)==fIssued) {
++    full=xcFullPanelSubmit(xc_fb_word((const uint8_t *)a->structureInput,0x54),fIssued);
++    if(full==kIOReturnSuccess)fCompleted=fIssued;
++   }
++   IOLockUnlock(fLock);return full;
+   }
+   IOLockLock(fLock);IOReturn result=kIOReturnUnsupported;
+   if(selector==5 && a->structureInput && a->structureInputSize==0x46c){
+--- /dev/null
++++ b/iokit/Kernel/arm/XCoverFullPanelABI.h
+@@ -0,0 +1,15 @@
++/* M48 exact full-panel variant; no arbitrary geometry or addresses. */
++#ifndef XCOVER_FULL_PANEL_ABI_H
++#define XCOVER_FULL_PANEL_ABI_H
++#define XC_FULL_BYTES (720U*1480U*4U)
++static bool xc_fb_full_swap_valid(const uint8_t *b,size_t n) {
++ if(!b || n!=0x46c)return false;
++ uint32_t id=xc_fb_word(b,0x50),sid=xc_fb_word(b,0x54);
++ if(!id || id>2 || !sid || sid>=256)return false;
++ for(unsigned i=1;i<4;i++)if(xc_fb_word(b,0x54+4*i))return false;
++ if(xc_fb_word(b,0x104)!=1 || xc_fb_word(b,0x108))return false;
++ const uint32_t rect[4]={0,0,720,1480};
++ for(unsigned i=0;i<4;i++)if(xc_fb_word(b,0x64+4*i)!=rect[i] || xc_fb_word(b,0xc4+4*i)!=rect[i])return false;
++ return true;
++}
++#endif
+--- a/pexpert/arm/pe_serial.c
++++ b/pexpert/arm/pe_serial.c
+@@ -39,4 +39,31 @@
+     xc_fb_unlock(enabled);
+     return mismatch ? 3 : 0;
+ }
++
++/* M48: exact720x1480 BGRA into validated Samsung splash mapping. */
++static unsigned xc_fb_full_presenting;
++int xcover5_full_present_begin(const uint32_t *pixels,uint32_t *saved) {
++ if(!pixels || !saved || xc_fb_stage!=4 || !fbcon_base || !xc_fb_layout_valid(&xc_fb) ||
++    xc_fb.width!=720 || xc_fb.height!=1480 || xc_fb.stride!=2880 || xc_fb.used!=4262400ULL)return 1;
++ uint64_t va=(uint64_t)(uintptr_t)fbcon_base;
++ for(uint64_t off=0;off<xc_fb.used;off+=PAGE_SIZE) {
++  ppnum_t page=pmap_find_phys(kernel_pmap,(addr64_t)(va+off));
++  if(!page || ((uint64_t)page<<PAGE_SHIFT)!=xc_fb.physical+off)return 2;
++ }
++ boolean_t enabled=xc_fb_lock();
++ if(xc_fb_presenting){xc_fb_unlock(enabled);return 3;}
++ xc_fb_presenting=xc_fb_full_presenting=1;
++ for(unsigned i=0;i<1065600;i++){saved[i]=fbcon_base[i];fbcon_base[i]=pixels[i];}
++ __sync_synchronize();xc_fb_unlock(enabled);return 0;
++}
++int xcover5_full_present_end(const uint32_t *saved) {
++ if(!saved)return 1;
++ boolean_t enabled=xc_fb_lock();
++ if(!xc_fb_presenting || !xc_fb_full_presenting){xc_fb_unlock(enabled);return 2;}
++ unsigned mismatch=0;
++ for(unsigned i=0;i<1065600;i++)fbcon_base[i]=saved[i];
++ for(unsigned i=0;i<1065600;i++)mismatch|=fbcon_base[i]!=saved[i];
++ __sync_synchronize();xc_fb_full_presenting=xc_fb_presenting=0;
++ xc_fb_unlock(enabled);return mismatch?3:0;
++}
+ #endif
