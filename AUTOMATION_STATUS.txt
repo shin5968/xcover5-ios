@@ -1,3 +1,29 @@
+2026-10-30 M62 camera224701: POLICY/GRAPH/LIBRARY STARTUP CONFIRMED, RESOURCE/VAR GAPS
+
+Reattached source preserved locally source.mp41208444410bytes/300.82sec,
+SHA256cdf66289045cfc18f902125417b946a453a7f906f4736c3e4f558b13e5448d23.
+../artifacts/m62-hackios-ui/video-224701 contains source/fullframes/review.
+Frame25 actual AMFI/Sandbox registration and M62HACKIOS_POLICIES marker.
+SpringBoardPID6 launchd INIT0/running; RunningBoardPID5 and supportjobs start.
+Frame85 cfprefsd Sandboxcall2/AMFIcall90 bothrc0 (previous ENOPOLICY replaced).
+Frame150 M62INJECT containermanagerd and redwood:no personas prove its
+injected library constructor runs. Do not generalize to all renderer hooks.
+Frame100 RunningBoard assertion Code2: could not find plist for domain
+com.apple.frontboard; same SpringBoard acquisition failures. Original local
+rootfs listing contains System/Library/LifecyclePolicy/DomainAttributes/
+com.apple.frontboard.plist7229bytes. M62 omitted this resource family.
+Frames150,200,298 containermanagerd home /var/installd missing, then nullFAR0
+SIGSEGV repeatedly (PID32/37/43 etc). Missing dir is observed prerequisite,
+not yet proven sole crashcause. Analyticsd home also not setup. HackiOS
+uses full original /private/var skeleton; M62 manual directory subset is
+insufficient. HFS VERY_LOW_DISK freeblks232/291, purge~816; writable root/log
+space is also a material blocker. Failedopen swapfile2/CFPrefs parentENOENT.
+Next: restore LifecyclePolicy/RunningBoard data and real var skeleton/owners,
+address writable-log space; rerun before diagnosing further crash mechanics.
+No lockscreen shown; backboard renderer hook/presentation not established.
+No new package created in this media-review turn. Original first attachment
+cache disappeared; reattachment is now preserved for continued inspection.
+
 2026-10-30 M62 INTEGRATED HACKIOS UI GRAPH PACKAGED / HARDWARE PENDING
 
 User explicitly requested1 launchd jobs/files2 Sandbox/AMFI compatibility
