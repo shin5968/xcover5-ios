@@ -1,3 +1,20 @@
+2026-10-30 M51 video162847 HARDWARE PASS (one run)
+
+Video117.75s, final116s: PID6 rv4900/AUTO wait_status4900/launchd exit73;
+surface count0 pixels0 wired0; AUTO snapshot306582 crcdd8ef22f dropped0.
+Visible CPU scene after recovery bars: overlapping blue/back and purple/front
+windows, changing chart, foreground moving right with edge clipping, progress
+bar advancing; console restored at end. Native73 source gates imply original
+M50 death/recovery baseline72 and all M51 submit/hash/hold/close-restore/release
+checks passed. Individual reason/frame/ID diagnostic lines not independently
+transcribed; do not describe source-gated checks as separate visual evidence.
+Review/original hash/contact/end frame ../artifacts/m51-scene/video-162847/.
+Preserve AP_M51_SCENE.tar.md5 as new passing reference. No new code/package or
+flash in this review. CPU composition only; no actual apps/SpringBoard/input/
+GPU/vsync/tear-free claim. Startup intermittency still deferred by user.
+
+Previous records follow:
+
 2026-10-30 M51 CPU-composed scene PACKAGE VERIFIED; device PENDING
 
 Initial boot intermittency explicitly deferred by user; no reliability fix claim.
