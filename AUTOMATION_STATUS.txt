@@ -1,3 +1,26 @@
+2026-10-30 M49 video134045: persistent full-panel hardware PASS (one run)
+
+Full color bars/checker baseline followed by full-panel moving alternating red/
+green bar on dark blue with white perimeter. Initial two display/restore frames
+match IDs1/2; persistent sequence sampled77.5..84.5s without intervening console.
+86s console restored, launchd exit(71), native wait_status4700, kernel rv4700;
+final surface count0 pixels0 wired0. Verified source71 gate requires all earlier
+M39-M48A gates,16 full swaps/14 persistent copies, source hash integrity,
+new restore generation, active0, ownerPID match,last16,restore0 and both IDs gone.
+Individual M49 COPY/RESTORE reason not separately transcribed; distinguish
+observations from code-gated inference. Some update samples have mixed old/new
+bar portions: camera rolling shutter vs display tearing not resolved; no
+tear-free/vsync claim. One successful run does not resolve intermittent baseline
+failures. No abnormal process death cleanup hardware proof, installed AP hash
+attestation, compositor/GPU/touch proof. Evidence/media SHA256/native frames at
+../artifacts/m49-persistent/video-134045/.
+Preserve verified M49 AP as passing persistent-display reference. Next scope:
+repeated session/close and abnormal termination cleanup reliability, with repeated
+cold boots for baseline intermittency before expanding compositor integration.
+This turn reviewed media and recorded evidence only; no code build/device writes.
+
+Previous records follow:
+
 2026-10-30 M49 persistent full-panel PACKAGE VERIFIED; device PENDING
 
 Complete M48A hardware-passing baseline retained. New fresh standard framework
