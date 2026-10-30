@@ -76,6 +76,9 @@ sudo chmod 755 "$WORK/mnt/sbin/m33-probe"
 sudo cp "$PROCESSIPC" "$WORK/mnt/sbin/m34-probe"
 sudo chmod 755 "$WORK/mnt/sbin/m34-probe"
 sudo python3 tools/stage_launchd.py "$WORK/mnt"
+if [[ "${XCOVER_UI_BOOT:-0}" == 1 ]]; then
+  sudo python3 tools/stage_ui_boot.py "$WORK/mnt"
+fi
 sudo cp "$LAUNCHDPROOF" "$WORK/mnt/sbin/m35-proof"
 sudo chmod 755 "$WORK/mnt/sbin/m35-proof"
 sudo cp "$BOOTSTRAP" "$WORK/mnt/sbin/m36-probe"
@@ -90,6 +93,9 @@ echo 'XCOVER5 HFS root test' | sudo tee "$WORK/mnt/root-test.txt" >/dev/null
 # Persist actual root ownership; host images otherwise inherit runner uid501.
 sudo chown -hR 0:0 "$WORK/mnt"
 sudo chown 501:501 "$WORK/mnt/private/var/mobile"
+if [[ "${XCOVER_UI_BOOT:-0}" == 1 ]]; then
+  sudo chown -R 501:501 "$WORK/mnt/private/var/mobile/Library"
+fi
 sudo chmod 644 "$WORK/mnt/System/Library/LaunchDaemons/org.xcover5.m35.proof.plist"
 sync
 hdiutil detach "$WORK/mnt" >/dev/null

@@ -1,3 +1,28 @@
+2026-10-30 DIRECTION: prioritize real iOS boot/lock-screen; M55 UI launch diagnostic
+
+User explicitly prioritizes actual boot and lock screen over more synthetic
+render tests. M54 video172844 shows native paragraph reflow through16, console
+restore; last blurry status not confidently transcribed, no native76 claim yet.
+Actual iOS16.5 SpringBoard112048 SHA7926a1ba... and backboardd1182960 SHA686f26a6...
+plus SpringBoard Info4367 extracted locally from existing rootfs DMG. REA open
+confirms SpringBoardarm64 MachO SHA; deep native provider unavailable onWindows
+(GhidraPE-only/Hopperunsupported/IDAunconfigured), fallback metadata/stockplist.
+Stock jobs both mobile501, SpringBoard POSIXSpawnTypeApp, backboardInteractive.
+M55 retains actual arguments/identity/MachServices and stages single-launch jobs
+KeepAlivefalse RunAtLoadtrue console+oslog; bounded diagnostic omits stock hardware/
+home-screen/RunningBoard activation gates (does not claim faithful whole boot).
+Original Apple executable bytes remain local: deterministic CI placeholders then
+hash/length-checked injection. Only executable+Info included, full app resources/
+font catalogs/other system daemons not staged yet; failures expected and useful.
+No AMFI/signature/identity/IOFramebuffer authorization widening or kernel change.
+M55 observer replaces m39-probe, file-size/MachO precheck then45s heartbeat and
+77/wait4d00 capture endpoint ONLY, never readiness/lockscreen success. Real UI
+jobs spawned by Apple launchd, not observer. Previous ~3min graphics baselines
+omitted from this startup package; references M53/M54 preserved. Missing services,
+policy denial, loader/runtime exits will guide next required fixes. Build pending.
+
+Previous records follow:
+
 2026-10-30 M54 CoreText paragraph PACKAGE VERIFIED; device PENDING
 
 Final sourcebad28a390066df70953f8e52c12dd4b4955dd56f CI41025761751 SUCCESS.

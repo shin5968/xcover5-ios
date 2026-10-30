@@ -1,5 +1,5 @@
 """Read HFS+ catalog ownership directly, independently of host mount options."""
-import struct,sys,json
+import struct,sys,json,os
 from pathlib import Path
 def catalog(path):
  b=Path(path).read_bytes();h=1024;block=struct.unpack_from('>I',b,h+40)[0]
@@ -27,7 +27,8 @@ def catalog(path):
 if __name__=='__main__':
  rows=catalog(sys.argv[1])
  for path,row in rows.items():
-  expected=(501,501) if path=='/private/var/mobile' else (0,0)
+  mobile_ui=os.environ.get('XCOVER_UI_BOOT')=='1' and path in ('/private/var/mobile/Library','/private/var/mobile/Library/Preferences','/private/var/mobile/Library/Caches','/private/var/mobile/Library/SpringBoard')
+  expected=(501,501) if path=='/private/var/mobile' or mobile_ui else (0,0)
   assert (row['uid'],row['gid'])==expected,(path,row)
  for path,mode in [('/System',0o40755),('/System/Library',0o40755),('/System/Library/LaunchDaemons',0o40755),('/System/Library/LaunchDaemons/org.xcover5.m35.proof.plist',0o100644),('/sbin/m35-proof',0o100755),('/private/etc/master.passwd',0o100600),('/private/var/mobile',0o40700)]:
   assert int(rows[path]['mode'],8)==mode,(path,rows[path])
