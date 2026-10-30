@@ -1,3 +1,34 @@
+2026-10-30 M52 actual CoreGraphics PACKAGE VERIFIED; device PENDING
+
+CI41021317721 attempt1 SUCCESS, source5c39097de17b3912f221312dc364c97e2ee3ec10.
+Real macOS CoreGraphics draws16 distinct guarded full bitmaps: exact caller data
+identity/geometry/bitmapinfo, red/blue BGRA rails and opaque coverage PASS.
+Actual new submit/cleanup orchestration tested with real CoreGraphics and mocked
+framebuffer, including corrupted-source/premature-completion/bad-restore rejection.
+CoreGraphics and mock CoreFoundation compile in separate translation units so
+mock CF declarations do not conflict with actual SDK. Target separately compiled
+using iOS SDK CoreGraphics headers and typeof exports, strict warnings PASS.
+All earlier real host readiness/IOSurface fault tests/regressions PASS first run.
+No entry-time CoreGraphics load dependency, dynamic load only after M51 baseline.
+Independent HFS78 records: only /sbin/m39-probe differs from hardware-passingM51;
+Apple files/ownership/modes and baselineM39/40/41 object bytes unchanged. All
+new executable CodeDirectory SHA256 signature pages verified. Root466aa8e3... .
+Kernel exact passingM50B649df6bd... CI41016867150; no kernel change. Boot33566720,
+AP33577018, shim/DTB/commandline/RAM255MiB and ADT RAMDisk a21b8000 unchanged;
+boot-only tar/MD5 and44MiB partition fit PASS. Passing M51 AP hash unchanged.
+AP ../artifacts/m52-coregraphics/AP_M52_COREGRAPHICS.tar.md5
+SHA25680f205cc8d6e496443d5f808d24832fd4657c7d634bb692e22573fa45dab6c70
+Expected original M51 windows, then CoreGraphics circles/chart/progress panel,
+left red/right blue rails, console restoration. Success74/AUTO wait4a00 and
+surface counters0; failures192setup/193submit-integrity-restore/194CG load-draw.
+Capture M52 PHASE dlopen/colorspace/bitmap_create/draw and draw rc if failed.
+Actual iOS CoreGraphics runtime and panel still PENDING; macOS host is different.
+No GPU/CoreAnimation/SpringBoard/touch/vsync/tear-free claim. Initial boot
+intermittency remains explicitly deferred. No device flash by agent.
+All provenance/logs/hash/signature/root/package evidence ../artifacts/m52-coregraphics/.
+
+Previous records follow:
+
 2026-10-30 M52 actual Apple CoreGraphics rendering IN PROGRESS
 
 User asks next after M51 hardware73. Initial boot intermittency stays DEFERRED.
