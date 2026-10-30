@@ -1,3 +1,28 @@
+2026-10-30 M57 video194316: real Chrono activation attempted; exec EACCES blocker
+
+Video310.03s (5min10), no lockscreen. Frame84 directly shows SpringBoardPID7
+CSOPS24000001 rc0 pb_after1 and launchd running. Frames108/end308 repeatedly
+show com.apple.chronod demand IPC(mach) activation, xpcproxy invokes native
+/System/Library/PrivateFrameworks/ChronoCore.framework/Support/chronod but
+posix_spawn error0xd Permission denied, INIT code13 and xpcproxy exit78.
+Kernel WAKE_BEGIN pid17 error13 confirms failed spawn cleanup. Native chronod
+successful LOAD/INIT/runtime not confirmed. Do not label xpcproxy as daemonready.
+Direct M57 CHRONO_LOOKUP/CHRONO_PLATFORM prints not independently transcribed;
+service demand activation proves job is found, allowed lookup is source-gated
+inference rather than separate camera evidence. Repeated demand requests can
+retry failed job despite KeepAlivefalse; video indeed continues through5min.
+EACCES exact stage still unknown. Do not assume chmod or bypass signature:
+packaged executable/ancestor755 and original CodeDirectory pages were checked,
+but need targeted first-failure access/image/signature/exec stage trace next.
+Persona errno3 warning is not itself proven fatal. Prior platform panic absent.
+Original INetCache media disappeared during review; do not invent hash or ask
+user to refilm by default. Saved contact/nativeframes/end hashes and ffmpeg
+metadata support observations; original SHA explicitly unavailable in review.
+Evidence ../artifacts/m57-chrono/video-194316/. No new kernel/package/flash in
+this review. Actual boot/lockscreen priority retained, startup intermittency deferred.
+
+Previous records follow:
+
 2026-10-30 M57 real Chrono service PACKAGE VERIFIED; hardware PENDING
 
 Final source9ddbaf301a848c5ac3ea61ac1ca65f37b8bd6f85 kernelCI41040004825 and
