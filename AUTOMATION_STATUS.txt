@@ -1,4 +1,23 @@
-2026-10-30 M61 exact native display-service lookup IN PROGRESS
+M61 final source b32fd24830271be370200a37cd040a71e1ee9326,
+CI41053780939 all jobs SUCCESS including actual applied helper/dispatcher.
+Local git apply against prior dispatcher and new source equality PASS.
+Partial local replay lacks older trace headers; broad applied-tree dispatcher
+check was therefore completed in full CI, not inferred from partial replay.
+Kernel SHA2561fef46b3d0e17f84b3dc46bfc9e6096f3eca15994b656863f37139ef146d0c9a.
+Entire M60 root reused SHA256
+6d33c563ec9c9f175e67da4807cd64434f63d230f19a44000edb295009d5d0e5;
+96 catalog records and all bytes/ownership/modes unchanged. Original native
+UI/Chrono/ObjC signature pages, CI manifests,255MiB geometry, RAMDisk
+ a21bc000, shim/DTB/cmdline, boot-only tar/MD5 and partition fit PASS.
+AP ../artifacts/m61-ui-lookup/AP_M61_UI_LOOKUP.tar.md5
+SHA2563becb8b6bd1957bbf9f9aa531d47e0e025e12799a84ef774d7e815ad833e1596
+Boot33583104/AP33587255 bytes. M60 AP unchanged. Not flashed.
+Hardware pending: permission decisions are not service replies or proof
+backboard stays alive. Native77 only capture complete. Capture M61 UI_QUERY/
+UI_LOOKUP and first native UI fatal; no lockscreen readiness claim.
+Provenance/CI status/SHA256SUMS/README/independent reports retained locally.
+
+2026-10-30 M61 exact native display-service lookup PACKAGED / HARDWARE PENDING
 
 M60 camera confirms SpringBoard denied159 system-app-server/CARenderServer,
 Chrono denied159 backboard.display.services. All3 names exist in original
@@ -14,7 +33,7 @@ backend service replies changed. This does not ensure backboard stays alive.
 Actual C helper UBSan3 positivepairs/480 hash mutations/6 race mutations,
 identity/servicecrosspairs/UID/ancestry/version/flags/copyfail/refbalance/
 no-write rejection PASS. M39 dispatcher fixture updated without weakening
-exact applied-source equality or registered-policy preservation. Build pending.
+exact applied-source equality or registered-policy preservation. Full CI PASS.
 
 2026-10-30 M60 hardware video205831: UI SERVICE LOOKUP BLOCKED
 
