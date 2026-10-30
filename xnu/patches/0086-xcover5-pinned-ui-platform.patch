@@ -1,11 +1,12 @@
 --- a/bsd/kern/ubc_subr.c
 +++ b/bsd/kern/ubc_subr.c
-@@ -42,6 +42,7 @@
+@@ -42,7 +42,8 @@
  #if defined(XCOVER5)
  #include "xcover5_notify_platform.h"
 +#include "xcover5_ui_platform.h"
  #endif
  #include <sys/types.h>
+ #include "xcover5_m38c.h"
  #include <sys/param.h>
  #include <sys/systm.h>
 @@ -4764,6 +4765,13 @@
