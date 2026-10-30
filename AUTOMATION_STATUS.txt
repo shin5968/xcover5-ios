@@ -1,3 +1,23 @@
+2026-10-30 M51 CPU scene in progress; startup intermittency explicitly DEFERRED
+
+User asks to skip intermittent startup diagnosis and advance graphics work.
+M50B video160608 now hardware PASS: PID6 rv4800/AUTO wait4800/launchd72,
+zero surface count/pixels/wired; full patterns, death-test magenta and recovery
+moving bars visible before console restore. Review ../artifacts/m50b-bootwatch/video-160608/.
+One pass does not establish startup reliability. Preserve passing M50A/M50B AP.
+M51 adds software-rendered desktop scene (background/status/app tiles/two
+occluding windows, moving chart/window, dock/progress), CPU only, into two
+720x1480 BGRA IOSurfaces with existing standard framebuffer selectors4/5/6.
+Original M39-M50 gates run first, including fresh-exec death roles unchanged.
+16 frames reuse existing bounded kernel semantics, no new kernel/permissions.
+Requires original close generation/14 persistent frames/last16/restore0 and
+both surface IDs absent. Success73/wait4900 only after original baseline72.
+Host actual renderer + orchestration UBSan PASS including extreme clipping,
+canaries/z-order/distinct frames, corruption/premature completion/restore faults.
+CI/package/device pending. No SpringBoard, GPU, touch, vsync or tear-free claim.
+
+Previous records follow:
+
 2026-10-30 M50B launchd startup-watch PACKAGE VERIFIED; device PENDING
 
 M50A is hardware-passing on reboot (photo72/4800), but user confirms intermittent
