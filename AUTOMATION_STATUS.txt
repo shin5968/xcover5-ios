@@ -1,3 +1,48 @@
+2026-10-30 M50A first-failure transport diagnostic PACKAGE VERIFIED; device PENDING
+
+M50 prior PID21 rv=d/SIGPIPE write site and first parent failure still unknown.
+M50A retains first parent failure only via bounded structured selector95,160bytes
+20uint64 fields: stage/errno/known orphan/middle PID, last independent progress
+phase/PID/result/errno, actual pollrc/errno/revents, readrc/errno/bytes, raw START/
+HELD packet fields, middle wait status and progress flags. Kernel saves own parent
+PID, no user pointers/process refs. Exact root/ppid1/name, empty scalar/output/
+descriptor shape and every bounded input validated with alignment-safe memcpy.
+Bad requests and later reports cannot overwrite first snapshot. Final surface
+report reprints5lines FAIL/CHILD/POLL/READ/WAIT even on later child exits. No
+promise of retained output if publication/boot/service itself fails.
+Independent inherited nonblocking progress pipe tracks pre-exec detacher1,
+detacher2, grandchild3, START before4/after5, reparent6, exec7, death entry8,
+APIload9/10, opened11,surface12,frame loop13,mark14,HELD before15/after16.
+Last event is an observed point, not proof of exact blocking instruction.
+Child test roles alone ignore SIGPIPE process-wide across exec; transport errors
+return EPIPE and remain failure88/87. Parent/baseline disposition unchanged.
+Packet remains16bytes; receive tracing and raw malformed packet retained.
+POLL/READ hexfffffffe means not attempted,ffffffff=-1; FIRST WAIT is detacher
+status, not orphan waitpid. README maps parent stages1..11 and all fields.
+Same15s packet waits, parent30s and orphan20s alarms; no baseline bypass or
+claimed functional fix. Original actual SIGKILL/clientDied reason4/restore0/ID
+release/repeated M49 recovery gates remain; successful parent still72/4800.
+Actual diagnostic selector authorization/shape/bounds/unaligned copy/first-write
+retention; actual protocol timeout/EOF/full packet traces, real closed-pipe
+SIGPIPE ignored->EPIPE failure and progress errno/invalid/EOF flags UBSan PASS.
+Existing M50 client-death/capture gates, M49/M48 copies/state/cleanup, prior
+readiness diagnostics and real macOS CF/notify/IOSurface regressions PASS.
+Original M39/M40/M41 objects byte-identical M50; logical root files/owners/modes
+unchanged except probe. Signature pages/manifests/kernel equality, old shim/
+DTB/cmdline,255MiB geometry/RAMDisk a21b8000, boot-only OdinMD5/fit verified.
+Source d413a4644976902ad3b88800d8746981752108eb;
+kernel CI41008031065 and userspace CI41008158161 both SUCCESS.
+AP ../artifacts/m50a-transport/AP_M50A_TRANSPORT.tar.md5
+SHA256 1839fcfaec1892fd627a8fc2364322f0dae69b6dc2a1f2a3f5990a4003409627
+Kernel0efd195bd594b2514980493b6266eb1d3d244ea6082bdd90a531e7225ce6a70e
+M49 passing reference hash rechecked unchanged; no agent flash. Need roughly2min
+video and final5 M50A lines if failure, or original death/recovery visuals and
+parent72/4800 with zero counters. Earlier baseline intermittency unresolved.
+No compositor/GPU/vsync/touch/tear-free claim. Late child EPIPE after parent exit
+may not be retained; first parent failure is the new evidence target.
+
+Previous records follow:
+
 2026-10-30 M50 video140806/photo140954: unexpected SIGPIPE13; death test pending
 
 Original small/full color/checker and moving M49 bars visible.80s bar at right;
