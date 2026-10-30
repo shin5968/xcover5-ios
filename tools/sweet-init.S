@@ -2908,6 +2908,19 @@ m35_stdio:
  adr x2, m35_ready_end
  sub x2, x2, x1
  bl write_console
+ /* HackiOS init.c prepares console for non-root launchd jobs (0666).
+  * Use the already-open console descriptor; failure stops PID1 handoff. */
+ mov w28, #359
+m59_console_prepare:
+ mov x0, x19
+ mov x1, #0x1b6 /* 0666 */
+ mov x16, #124 /* fchmod */
+ svc #0x80
+ b.cs m35_fail
+ adr x1, m59_console_ready
+ adr x2, m59_console_ready_end
+ sub x2, x2, x1
+ bl write_console
  mov w28, #354
  add x9, sp, #128
  mov x10, #24
@@ -2965,6 +2978,8 @@ m35_md0: .asciz "/dev/md0"
 m35_file: .asciz "/private/var/m35-write-check"
 m35_token: .ascii "M35RAMOK"
 m35_launchd: .asciz "/sbin/launchd.ios"
+m59_console_ready: .ascii "XCOVER5 M59 CONSOLE mode=0666 launchd-handoff\n"
+m59_console_ready_end:
 m35_start: .ascii "XCOVER5 M35: preparing RAM root for Apple launchd\n"
 m35_start_end:
 m35_ready: .ascii "XCOVER5 M35: RAM write passed; handing PID1 to Apple launchd\n"
