@@ -1,3 +1,26 @@
+2026-10-30 M50 video140806/photo140954: unexpected SIGPIPE13; death test pending
+
+Original small/full color/checker and moving M49 bars visible.80s bar at right;
+81s onward console with PID20 m39-probe rv0. Later supplied photo PID21 rv=d,
+reason2 code=d, AUTO TEST_END pid21 wait_status=d. Pinned signal.h SIGPIPE=13;
+this is not expected SIGKILL9. PID20/21 are consistent with detacher/orphan,
+but their exact argv/roles and write site were not independently recovered.
+Photo counters count0 pixels0 wired0. No cyan/magenta/yellow death patterns,
+DEATH PASS, recovery session or final parent72/4800 confirmed. Cannot infer
+abnormal display cleanup success from zero counters after early exit.
+Likely transport issue: SIGPIPE matches a write without a reader. Parent may
+have failed a packet/poll/validation first, but its exact FAIL where/errno/poll/
+read/native status was not recovered. Do not call exact cause, timeout or
+framebuffer regression established. Video90.10s ends before supplied photo.
+Evidence/hashes/native frames/review ../artifacts/m50-death/video-140806/.
+Next scope: retain parent started/held poll/read/validation/error plus orphan
+pre-exec/reparent/exec progress; observe diagnostic pipe EPIPE instead of losing
+evidence to SIGPIPE (must remain failure, no bypass/deadline extension). Keep
+M49 reference and all actual death/restore/recovery gates. No new build/device
+writes during this review; earlier intermittency remains unresolved.
+
+Previous records follow:
+
 2026-10-30 M50 task-death/recovery PACKAGE VERIFIED; device PENDING
 
 Complete hardware-passing M49 baseline first. Parent then starts fresh detacher,
