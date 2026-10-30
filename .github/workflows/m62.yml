@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       kernel_run:
-        description: Successful M50B XNU build run
+        description: Successful verified XNU build run
         required: true
-        default: '41058667152'
+        default: '41063855862'
 permissions:
   actions: read
   contents: read
@@ -42,7 +42,7 @@ jobs:
           codesign --verify --strict out/libxcover-hackios.dylib
           codesign --verify --strict out/libxcover-hackios-sb.dylib
           shasum -a 256 out/libxcover-hackios*.dylib > out/M62_LIB_SHA256SUMS
-      - name: Download verified M50B kernel and root build inputs
+      - name: Download verified kernel and root build inputs
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

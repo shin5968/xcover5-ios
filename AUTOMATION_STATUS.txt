@@ -1,3 +1,57 @@
+2026-10-30 M62 INTEGRATED HACKIOS UI GRAPH PACKAGED / HARDWARE PENDING
+
+User explicitly requested1 launchd jobs/files2 Sandbox/AMFI compatibility
+3 backboardd/SpringBoard software rendering together, replacing one-service
+increments. Imported HackiOS kernel d82c64a kern_minimac.c,miniamfi.c,
+miniamfi_entitlements.cpp into0090 with board guards/registration markers.
+Kernel startup registers AMFI/Sandbox. Old SWEET AMFI table excluded only on
+XCOVER5. Upstream permissive Sandbox/adhoc-platform/dyld-policy/entitlement
+behavior retained; native signature parser/page validation not removed.
+Exact4 native process names receive inserted UI libs from exec_extract_strings.
+Upstream km.c TIOCSCTTY ENOTTY fix keeps daemons from revoking sharedconsole.
+Original userland inject.c/inject_sb.c built from pinned a79ff0772a3454fd1ef127e181e5b3bce6c9ce18;
+original offset/method guards retained, no unverified forced offsets.
+
+M62 root contains default HackiOS IOS_JOBS21 stock jobs retaining original
+MachServices/KeepAlive/RunAtLoad/activation fields; only device-tree gate
+removed plus console/OSLOG routing, as upstream. Added16 native programs
+and6 resource plists (22 local-only originals,4220057bytes),2 compiledlibs,
+locked full account identities and basic writable runtime directories.
+Full HackiOS root/assets/fonts/other on-demand jobs and Redwood hardware
+backends NOT imported; this is the requested initial integrated UI graph.
+M59 console preparation/M60 trampoline retained. Cmdline adds autounlock=0
+gl=0, preserving lockscreen instead of upstream automatic unlock.
+
+Final kernel source ddf6166c81402455ee953dfb313e92456e618a8f,
+CI41063855862 all jobs SUCCESS. Kernel SHA256
+b0904c551bfb33d814c17f3d76e71d9c0b50ae2de4e3811d935788efbb21760b.
+Userspace source999128cdc155fea449e9dc565528cf606ff67dc2,
+CI41064374135 all jobs SUCCESS. Uses known M61 CI41053780939 as raw build
+inputs only; final AP uses independently downloaded successful new kernel.
+Root SHA2561030bd8fa0edeeb0b85acf08fb5567402e3424057d096e56388e12b15f322f7d.
+Root151 entries;7 expected existing accounts/job files changed,55 entries
+added,all other M61 bytes and old ownership/modes unchanged. Native job
+fields/locked account mapping/original bytes/all23 signature inventories,
+compiled dylib pages24 each, new mode/ownership, kernel markers/manifests,
+boot-only tar/MD5,partition fit255MiB,ADT mapping/RAMDiska21c0000 PASS.
+AP ../artifacts/m62-hackios-ui/AP_M62_HACKIOS_UI.tar.md5
+SHA256f38810e4dc18f61f95a07f43b9cd970d975c8817beceddcd548099146d289681
+Boot33585152/AP33587256 bytes. M61 reference AP unchanged. Not flashed.
+UI readiness/real lockscreen remains HARDWARE PENDING; native77 only capture.
+Capture M62HACKIOS_POLICIES/M62INJECT/redwood hook logs and first nativefatal.
+
+Rejected/superseded runs NEVER packaged:41058667152 cancelled by nextsource;
+41059337506 missed0090 BSDconf context (late marker check rejected),
+41061083807 cancelled;41061569140/41062041656 preflight caught skippedpatch;
+41062709615 fully applied but deprecated ARM header caused CPU configerror.
+Final uses arm64 board_config.h before board guards. Local partial-tree
+apply alone was insufficient; final full CI applies all files before compile.
+Userspace41059340080/41059647982/41062221845 dependency failed/cancelled;
+41064047062 rejected out/init collision after workflow reordered compilation;
+final41064374135 imports inputs without overwriting freshly compiled files.
+Artifacts retain source/license provenance,CI status,independent verification,
+README,SHA256SUMS. Unrelated modified sweet-bootstrap-exec.S untouched.
+
 2026-10-30 M61 camera212854: CHRONO DISPLAY LOOKUP PASS / SB DISPLAY PAIR MISSING
 
 245.18sec video SHA256
