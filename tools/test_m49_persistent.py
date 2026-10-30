@@ -72,7 +72,7 @@ assert(c.call(5,&a)==2);uint64_t state[7]={};Args query;query.scalarOutput=state
 assert(!c.call(93,&query)&&state[1]==1&&!state[0]);query.scalarInputCount=1;assert(c.call(93,&query)==2);query.scalarInputCount=0;
 for(unsigned id=4;id<=16;id++){word(b,0x50,id);c.fIssued=id;assert(!c.call(5,&a)&&c.fCompleted==id&&allocs==1&&!holds);}
 assert(c.fPersistent.frames==14&&!c.clientClose()&&!allocs);assert(!c.call(93,&query)&&state[0]==1&&!state[1]&&state[2]==6&&state[3]==14&&state[4]==1&&!state[5]&&state[6]==16);
-c.free();assert(gPersistentStats[0]==1&&!allocs);assert(!c.clientClose()&&gPersistentStats[0]==1);
+assert(!c.clientClose()&&gPersistentStats[0]==1);c.free();assert(gPersistentStats[0]==1&&!allocs);
 Client fallback;fallback.fIssued=3;fallback.fCompleted=2;word(b,0x50,3);assert(!fallback.call(5,&a));fallback.free();assert(gPersistentStats[0]==2&&gPersistentStats[4]==2&&!allocs);
 Client bad;bad.fIssued=3;bad.fCompleted=2;update_rc=1;assert(bad.call(5,&a)==4&&bad.fCompleted==2&&bad.fPersistent.failed&&!allocs);update_rc=0;
 assert(gPersistentStats[0]==3&&gPersistentStats[4]==3);assert(bad.call(5,&a)==2);bad.free();

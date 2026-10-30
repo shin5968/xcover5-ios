@@ -21,7 +21,14 @@ with tempfile.TemporaryDirectory() as tmp:
  # Hold before exec and before lookup; parent must retain distinct progress and fail216.
  for phase in (1,5):
   env=os.environ.copy();env['M46C_TEST_HOLD_PHASE']=str(phase)
-  timed=subprocess.run([str(exe)],env=env,text=True,capture_output=True,timeout=30)
+  # The probe's own alarm remains30s. Leave time for its native result and
+  # inherited output pipes to close; still require the intended parent216.
+  try:
+   timed=subprocess.run([str(exe)],env=env,text=True,capture_output=True,timeout=45)
+  except subprocess.TimeoutExpired as error:
+   print('M46C host outer deadline exceeded; partial stdout:',error.stdout,flush=True)
+   print('M46C host partial stderr:',error.stderr,flush=True)
+   raise
   assert timed.returncode==216,(phase,timed.returncode,timed.stderr)
   assert f'phase={phase} ' in timed.stderr and 'M46C TIMEOUT child=' in timed.stderr,timed.stderr
   assert 'XCOVER5 M43 PASS:' not in timed.stdout
