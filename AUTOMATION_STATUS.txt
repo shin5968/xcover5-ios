@@ -1,3 +1,21 @@
+2026-10-30 M56 exact UI signed-platform classification IN PROGRESS
+
+Continue actual UI boot after M55 non-platform SpringBoard panic.
+New0086 xcover5_ui_platform matches only original iOS16.5 platform2 adhoc
+CodeDirectories: SpringBoard453ae2e6057acb2dea0c5ae8ba0973077ea3eab1,
+backboardd11627eea9a126a45b9a2b4abd31d6cafd59d7144. Only after existing
+mac_vnode_check_signature succeeded, before tmp_blob flags published, set
+CS_PLATFORM_BINARY|CS_SIGNED following existing notifyd/cfprefsd mechanism.
+No filename/process-name/path matcher, no signature parser/page check bypass.
+Actual helper UBSan rejects320 single-bit mismatches, all wrong platforms,
+nonadhoc flags/null/unrelated hashes; exact two identities accepted. Local
+context git apply and applied hook order/header byte check PASS. Actual CI
+precompile source-only check prevents silent patch skip; postbuild checks too.
+M55 userspace/root bytes will be reused exactly; no job/observer changes.77
+remains capture endpoint only, not lockscreen success. Kernel build pending.
+
+Previous records follow:
+
 2026-10-30 M55 video174545: actual UI launch reaches platform classification PANIC
 
 Video53.96s, final52s clear panic: userspace panic unexpected exec of non-platform

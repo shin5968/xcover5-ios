@@ -1,0 +1,45 @@
+--- a/bsd/kern/ubc_subr.c
++++ b/bsd/kern/ubc_subr.c
+@@ -42,6 +42,7 @@
+ #if defined(XCOVER5)
+ #include "xcover5_notify_platform.h"
++#include "xcover5_ui_platform.h"
+ #endif
+ #include <sys/types.h>
+ #include <sys/param.h>
+ #include <sys/systm.h>
+@@ -4764,6 +4765,13 @@
+ 
++#if defined(XCOVER5)
++    unsigned int ui_identity=xcover5_ui_platform(tmp_blob.csb_cdhash,cs_flags,platform);
++    if(ui_identity) {
++        cs_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
++        printf("XCOVER5 M56 PINNED_UI kind=%u validated_signature=1\n",ui_identity);
++    }
++#endif
+ 	tmp_blob.csb_flags = cs_flags;
+ 	tmp_blob.csb_signer_type = signer_type;
+ 
+ 	if (tmp_blob.csb_flags & CS_PLATFORM_BINARY) {
+ 		tmp_blob.csb_platform_binary = 1;
+--- /dev/null
++++ b/bsd/kern/xcover5_ui_platform.h
+@@ -0,0 +1,18 @@
++/* M56: exact locally verified iOS16.5 UI CodeDirectories only.
++ * Called after successful signature validation; page checks remain active.
++ * No process name, path, or caller-controlled identity is accepted here. */
++static inline unsigned int
++xcover5_ui_platform(const unsigned char *cdhash,unsigned int cs_flags,unsigned int platform)
++{
++    static const unsigned char expected[2][20] = {
++        {0x45,0x3a,0xe2,0xe6,0x05,0x7a,0xcb,0x2d,0xea,0x0c,0x5a,0xe8,0xba,0x09,0x73,0x07,0x7e,0xa3,0xea,0xb1},
++        {0x11,0x62,0x7e,0xea,0x9a,0x12,0x6a,0x45,0xb9,0xa2,0xb4,0xab,0xd3,0x1d,0x6c,0xaf,0xd5,0x9d,0x71,0x44}
++    };
++    if(cdhash==0 || platform!=2 || !(cs_flags&2))return 0;
++    for(unsigned int row=0;row<2;row++) {
++        unsigned int different=0;
++        for(unsigned int i=0;i<20;i++)different|=cdhash[i]^expected[row][i];
++        if(!different)return row+1;
++    }
++    return 0;
++}
