@@ -1,0 +1,169 @@
+--- a/bsd/kern/kern_exec.c
++++ b/bsd/kern/kern_exec.c
+@@ -450,6 +450,7 @@
+  * in the same fashion as the stack_guard and malloc_entropy keys.
+  */
+ #define EXECUTABLE_KEY "executable_path="
++#include "xcover5_exec_stage.h"
+ 
+ /*
+  * exec_save_path
+@@ -2180,6 +2181,7 @@
+ 		goto bad_notrans;
+ 	}
+ 
++	XC58_STAGE(imgp,"saved_path",0);
+ 	/* Use excpath, which contains the copyin-ed exec path */
+ 	DTRACE_PROC1(exec, uintptr_t, excpath);
+ 
+@@ -2190,6 +2192,7 @@
+ 
+ again:
+ 	error = namei(ndp);
++	XC58_STAGE(imgp,"namei",error);
+ 	if (error) {
+ 		if (error == ERESTART) {
+ 			error = EINTR;
+@@ -2214,11 +2217,14 @@
+ 	}
+ 	error = proc_transstart(p, 1, 0);
+ 	proc_unlock(p);
++	XC58_STAGE(imgp,"transition",error);
+ 	if (error) {
+ 		goto bad_notrans;
+ 	}
+ 
++	XC58_STAGE(imgp,"permissions_begin",0);
+ 	error = exec_check_permissions(imgp);
++	XC58_STAGE(imgp,"permissions_end",error);
+ 	if (error) {
+ 		goto bad;
+ 	}
+@@ -2233,6 +2239,7 @@
+ 	    UIO_SYSSPACE, IO_NODELOCKED,
+ 	    vfs_context_ucred(imgp->ip_vfs_context),
+ 	    &resid, vfs_context_proc(imgp->ip_vfs_context));
++	XC58_STAGE(imgp,"header_read",error);
+ 	if (error) {
+ 		goto bad;
+ 	}
+@@ -2249,7 +2256,9 @@
+ 	}
+ 	error = -1;
+ 	for (i = 0; error == -1 && execsw[i].ex_imgact != NULL; i++) {
++		XC58_STAGE(imgp,"image_begin",0);
+ 		error = (*execsw[i].ex_imgact)(imgp);
++		XC58_STAGE(imgp,"image_end",error);
+ 
+ 		switch (error) {
+ 		/* case -1: not claimed: continue */
+@@ -2326,6 +2335,7 @@
+ 	proc_transend(p, 0);
+ 
+ bad_notrans:
++	XC58_STAGE(imgp,"activate_return",error);
+ 	if (imgp->ip_strings) {
+ 		execargs_free(imgp);
+ 	}
+@@ -6248,6 +6258,7 @@
+ 
+ 	/* Only allow execution of regular files */
+ 	if (!vnode_isreg(vp)) {
++		XC58_STAGE(imgp,"not_regular",EACCES);
+ 		return EACCES;
+ 	}
+ 
+@@ -6261,20 +6272,24 @@
+ 	VATTR_WANTED(vap, va_fileid);
+ 	VATTR_WANTED(vap, va_data_size);
+ 	if ((error = vnode_getattr(vp, vap, imgp->ip_vfs_context)) != 0) {
++		XC58_STAGE(imgp,"getattr",error);
+ 		return error;
+ 	}
+ 
++	XC58_ATTRS(imgp);
+ 	/*
+ 	 * Ensure that at least one execute bit is on - otherwise root
+ 	 * will always succeed, and we don't want to happen unless the
+ 	 * file really is executable.
+ 	 */
+ 	if (!vfs_authopaque(vnode_mount(vp)) && ((vap->va_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) == 0)) {
++		XC58_STAGE(imgp,"no_execute_bits",EACCES);
+ 		return EACCES;
+ 	}
+ 
+ 	/* Disallow zero length files */
+ 	if (vap->va_data_size == 0) {
++		XC58_STAGE(imgp,"zero_size",ENOEXEC);
+ 		return ENOEXEC;
+ 	}
+ 
+@@ -6303,6 +6318,7 @@
+ 
+ #if CONFIG_MACF
+ 	error = mac_vnode_check_exec(imgp->ip_vfs_context, vp, imgp);
++	XC58_STAGE(imgp,"mac_exec",error);
+ 	if (error) {
+ 		return error;
+ 	}
+@@ -6315,9 +6331,11 @@
+ 		action |= KAUTH_VNODE_READ_DATA;
+ 	}
+ 	if ((error = vnode_authorize(vp, NULL, action, imgp->ip_vfs_context)) != 0) {
++		XC58_STAGE(imgp,"vnode_authorize",error);
+ 		return error;
+ 	}
+ 
++	XC58_STAGE(imgp,"vnode_authorize",0);
+ #if 0
+ 	/* Don't let it run if anyone had it open for writing */
+ 	vnode_lock(vp);
+@@ -7571,6 +7589,7 @@
+ 		printf("XCOVER5 M35F SIGPROC_BEGIN pid=%d\n", proc_getpid(p));
+ #endif
+ 		error = proc_process_signature(p, &signature_failure_reason);
++		XC58_STAGE(imgp,"process_signature",error);
+ #if defined(ARM64_BOARD_CONFIG_SWEET)
+ 		printf("XCOVER5 M35F SIGPROC_END pid=%d error=%d\n", proc_getpid(p), error);
+ #endif
+@@ -7587,6 +7606,7 @@
+ 		printf("XCOVER5 M35F SIGTHREAD_BEGIN pid=%d\n", proc_getpid(p));
+ #endif
+ 		kr = thread_process_signature(imgp->ip_new_thread, proc_get_task_raw(p));
++		XC58_STAGE(imgp,"thread_signature",kr);
+ #if defined(ARM64_BOARD_CONFIG_SWEET)
+ 		printf("XCOVER5 M35F SIGTHREAD_END pid=%d kr=%d\n", proc_getpid(p), kr);
+ #endif
+--- /dev/null
++++ b/bsd/kern/xcover5_exec_stage.h
+@@ -0,0 +1,30 @@
++/* M58 read-only exec stages for one exact kernel-copied path.
++ * No user memory access, allocation, retained pointers, or authorization changes. */
++#ifndef XCOVER5_EXEC_STAGE_H
++#define XCOVER5_EXEC_STAGE_H
++#if defined(XCOVER5)
++static int xcover5_exec_stage_target(const struct image_params *imgp) {
++ static const char target[]="/System/Library/PrivateFrameworks/ChronoCore.framework/Support/chronod";
++ const size_t prefix=sizeof(EXECUTABLE_KEY)-1;
++ if(!imgp || !imgp->ip_strings || !imgp->ip_strendp)return 0;
++ uintptr_t start=(uintptr_t)imgp->ip_strings,end=(uintptr_t)imgp->ip_strendp;
++ if(end<start || end-start<prefix+sizeof target || end-start>NCARGS+PAGE_SIZE)return 0;
++ return !memcmp(imgp->ip_strings,EXECUTABLE_KEY,prefix) && !memcmp(imgp->ip_strings+prefix,target,sizeof target);
++}
++static void xcover5_exec_stage(struct image_params *imgp,const char *stage,int result) {
++ if(!xcover5_exec_stage_target(imgp))return;
++ proc_t p=vfs_context_proc(imgp->ip_vfs_context);
++ printf("XCOVER5 M58 EXEC stage=%s rc=%d pid=%d uid=%u flags=%x\n",stage,result,proc_getpid(p),(unsigned)kauth_cred_getuid(vfs_context_ucred(imgp->ip_vfs_context)),(unsigned)imgp->ip_flags);
++}
++static void xcover5_exec_stage_attrs(struct image_params *imgp) {
++ if(!xcover5_exec_stage_target(imgp))return;
++ struct vnode_attr *a=imgp->ip_vattr;
++ printf("XCOVER5 M58 ATTR mode=%o owner=%u group=%u bytes=%llu mount=%llx\n",(unsigned)a->va_mode,(unsigned)a->va_uid,(unsigned)a->va_gid,(unsigned long long)a->va_data_size,(unsigned long long)imgp->ip_vp->v_mount->mnt_flag);
++}
++#define XC58_STAGE(image,stage,result) xcover5_exec_stage(image,stage,result)
++#define XC58_ATTRS(image) xcover5_exec_stage_attrs(image)
++#else
++#define XC58_STAGE(image,stage,result) ((void)0)
++#define XC58_ATTRS(image) ((void)0)
++#endif
++#endif

@@ -1,3 +1,25 @@
+2026-10-30 M58 exact Chrono exec stage diagnostics IN PROGRESS
+
+M57 camera: native Chrono spawn EACCES13, xpcproxy78, stage not known.
+0088 instruments exact kernel-copied chronod path only, no new user memory
+reads, allocations, retained pointers or authorization decisions. Bounded
+EXECUTABLE_KEY/path memcmp includes NUL and checks kernel string-pool span.
+Stages saved_path/namei/transition/permissions begin/end/header_read/image
+begin/end/activate_return plus process/thread signature. Permission sub-stages
+not_regular/getattr/no_execute_bits/zero_size/mac_exec/vnode_authorize and
+mode/owner/group/size/mount metadata only after successful getattr.
+Original permission function stripped of diagnostic calls hashes exactly
+54b08596022dcae7ed61881ae7fd516871d888d423cc547f0d4003c8b10b54b1.
+Actual instrumented vs original body host UBSan: identical errors, attr/flag/
+arch state and policy calls under10 success/failure conditions, plus path/bounds/
+no-write checks and non-XCover no-op fallback PASS. Applied source checked
+against actual fixture and all hook placements before path release; all prior
+exec patches replayed locally and0088 git apply PASS. No permission relaxations.
+Exact entire M57 root will be reused, existing77/capture-only endpoint unchanged.
+New helper local bsd/kern header, not a new exported API. Build/package pending.
+
+Previous records follow:
+
 2026-10-30 M57 video194316: real Chrono activation attempted; exec EACCES blocker
 
 Video310.03s (5min10), no lockscreen. Frame84 directly shows SpringBoardPID7
