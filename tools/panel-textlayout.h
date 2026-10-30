@@ -34,7 +34,9 @@ static int m54_load_layout(void) {
  M54_RESOLVE(ct,count,"CTRunGetGlyphCount");M54_RESOLVE(ct,glyphs,"CTRunGetGlyphs");
  M54_RESOLVE(cg,path,"CGPathCreateWithRect");M54_RESOLVE(cg,path_release,"CGPathRelease");
  /* dlsym addresses the exported CFStringRef variable, not the string object. */
- M54_RESOLVE(ct,font_key,"kCTFontAttributeName");M54_RESOLVE(ct,color_key,"kCTForegroundColorFromContextAttributeName");
+#define M54_KEY(field,symbol) do{dlerror();void *p=dlsym(ct,symbol);const char *e=dlerror();if(e || !p){fprintf(stderr,"M54 attribute=%s error=%s\n",symbol,e?e:"null");return 3;}memcpy(&m54ct.field,p,sizeof m54ct.field);}while(0)
+ M54_KEY(font_key,"kCTFontAttributeName");M54_KEY(color_key,"kCTForegroundColorFromContextAttributeName");
+#undef M54_KEY
 #undef M54_RESOLVE
  if(!m54ct.font_key || !m54ct.color_key)return 4;
  puts("XCOVER5 M54 RESOLVE PASS:14 SDK-typed functions and2 attribute constants");return 0;
