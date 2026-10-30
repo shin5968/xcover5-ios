@@ -1,3 +1,25 @@
+2026-10-30 M48A video131846: full-panel hardware PASS (one run)
+
+71s entire panel eight color bars with white perimeter;73s full8x8 checkerboard;
+75/76s console restored.76s launchd exit(70), native wait_status4600 and bottom
+kernel rv4600. Final M43 surface count0 pixels0 wired0 visible near top.
+Verified source70 gate requires original M39-M47 baseline, both full-panel
+standard framework swaps, per-frame source hash, console restore completion,
+CFRelease and released-ID lookup. M40 passed in this run; retained failure
+WAIT/POLL/READ snapshot is not expected on the successful path.
+Individual M48 FULL1/2 return lines not separately transcribed; distinguish
+visible patterns/final status from source-gated inference. One success does
+not prove earlier intermittent M39/M40/M43 failures fixed. Video does not
+attest the installed AP hash. No persistent scanout/vsync/compositor/GPU/touch
+claim. Evidence SHA256, native frames and review JSON in
+../artifacts/m48a-readiness/video-131846/.
+Preserve verified M48A package as full-panel passing reference. Next scope:
+full-panel repeated updates and bounded display persistence/completion/lifetime,
+with repeated cold boots to assess unresolved intermittent baseline failures.
+This turn reviewed media and recorded evidence only; no new build/device writes.
+
+Previous records follow:
+
 2026-10-30 M48A retained M40 readiness diagnostics PACKAGE VERIFIED; device PENDING
 
 Previous M48 device run exited176 before graphics. Exact poll/read cause unknown.
