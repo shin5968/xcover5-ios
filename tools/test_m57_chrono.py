@@ -30,7 +30,8 @@ prefix=r'''
 #define CS_SIGNED 0x20000000U
 #define CS_PLATFORM_BINARY 0x04000000U
 #define PROC_NULL NULL
-typedef uintptr_t user_addr_t;typedef int pid_t;
+#define user_addr_t uintptr_t
+typedef int pid_t;
 struct Proc{int pid,uid,parent,bits;unsigned version;uint64_t flags;unsigned char hash[20];};typedef struct Proc*proc_t;
 static struct Proc root={.pid=1,.uid=0,.bits=1},app;static proc_t initproc=&root;
 static unsigned refs,fault,race;

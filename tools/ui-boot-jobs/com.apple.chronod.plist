@@ -65,7 +65,7 @@
                 <key>Notification</key>
                 <string>com.apple.mobile.keybagd.lock_status</string>
             </dict>
-            
+
             <!-- WIDGET ENVIRONMENT CHANGES -->
             <!-- Widget environment: Bold Text -->
             <key>environment-accessibility-bold-text-changed</key>
