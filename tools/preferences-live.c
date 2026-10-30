@@ -7,6 +7,9 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <poll.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <dlfcn.h>
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
@@ -19,6 +22,51 @@ static const char notice[]="org.xcover5.m39.live-change";
 static CFStringRef domain,live_key;
 static pid_t live_child=-1;
 static int writer_role;
+
+/* M48A: separate inherited progress pipe; the R/B/D protocol is unchanged. */
+static int progress_fd=-1,progress_read=-1;
+static unsigned last_phase,progress_flags;
+static void progress(unsigned char phase) {
+    if(progress_fd>=0){ssize_t n;do{n=write(progress_fd,&phase,1);}while(n<0&&errno==EINTR);}
+#ifdef M40_HOST_TEST
+    const char *hold=getenv("M48A_TEST_HOLD_PHASE");
+    if(hold && atoi(hold)==phase){alarm(0);sleep(20);}
+#endif
+}
+static void retain_wait(char expected,int poll_rc,int poll_errno,unsigned revents,
+                        int read_rc,int read_errno,unsigned received,unsigned reason) {
+    unsigned char b[32];ssize_t n;
+    while((n=read(progress_read,b,sizeof(b)))>0)
+        for(ssize_t i=0;i<n;i++){
+            if(b[i]>=1 && b[i]<=10 && b[i]>=last_phase)last_phase=b[i];else progress_flags|=4;
+        }
+    if(!n)progress_flags|=2;
+    else if(errno!=EAGAIN && errno!=EINTR)progress_flags|=4;
+    fprintf(stderr,"XCOVER5 M48A WAIT child=%d phase=%u expected=%u flags=%u\n",live_child,last_phase,(unsigned char)expected,progress_flags);
+    fprintf(stderr,"XCOVER5 M48A POLL rc=%d errno=%d revents=%x READ rc=%d errno=%d got=%u reason=%u\n",
+        poll_rc,poll_errno,revents,read_rc,read_errno,received,reason);
+#ifndef M40_HOST_TEST
+    void *lib=dlopen("/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",RTLD_NOW|RTLD_LOCAL);
+    CFMutableDictionaryRef (*matching)(const char *);mach_port_t (*service)(mach_port_t,CFDictionaryRef);
+    int (*open_service)(mach_port_t,mach_port_t,uint32_t,mach_port_t *);
+    int (*close_service)(mach_port_t);int (*release_service)(mach_port_t);
+    int (*call)(mach_port_t,uint32_t,const uint64_t *,uint32_t,const void *,size_t,uint64_t *,uint32_t *,void *,size_t *);
+    if(!lib)return;
+#define M48A_RESOLVE(member,name) do {void *symbol=dlsym(lib,name);if(!symbol)return;memcpy(&member,&symbol,sizeof(symbol));}while(0)
+    M48A_RESOLVE(matching,"IOServiceMatching");M48A_RESOLVE(service,"IOServiceGetMatchingService");
+    M48A_RESOLVE(open_service,"IOServiceOpen");M48A_RESOLVE(close_service,"IOServiceClose");
+    M48A_RESOLVE(release_service,"IOObjectRelease");M48A_RESOLVE(call,"IOConnectCallMethod");
+#undef M48A_RESOLVE
+    mach_port_t object=service(0,matching("IOMobileFramebuffer")),connection=0;
+    if(!object)return;
+    int rc=open_service(object,mach_task_self(),0,&connection);release_service(object);
+    if(!rc){uint64_t in[12]={(uint32_t)live_child,last_phase,(unsigned char)expected,(uint32_t)poll_rc,
+        (uint32_t)poll_errno,revents,(uint32_t)read_rc,(uint32_t)read_errno,received,reason,progress_flags,0};
+        uint32_t count=0;rc=call(connection,92,in,12,NULL,0,NULL,&count,NULL,NULL);close_service(connection);}
+    fprintf(stderr,"M48A diagnostic publish rc=%x\n",rc);
+#endif
+}
+
 static void fail(int stage,const char *where) {
     fprintf(stderr,"XCOVER5 M40 FAIL stage=%d where=%s errno=%d\n",stage,where,errno);
     if(writer_role){
@@ -46,9 +94,11 @@ static void ack(int fd,char value) {
 static void expect_ack(int fd,char expected,int stage) {
     struct pollfd p={.fd=fd,.events=POLLIN};int n;
     do{n=poll(&p,1,15000);}while(n<0&&errno==EINTR);
-    if(n!=1)fail(stage,"parent_ack_timeout");
+    int poll_errno=n<0?errno:0;
+    if(n!=1){retain_wait(expected,n,poll_errno,(unsigned short)p.revents,2,0,0,1);errno=poll_errno;fail(stage,"parent_ack_timeout");}
     char value=0;ssize_t got;do{got=read(fd,&value,1);}while(got<0&&errno==EINTR);
-    if(got!=1 || value!=expected)fail(stage,"parent_ack_or_child_exit");
+    int read_errno=got<0?errno:0;
+    if(got!=1 || value!=expected){retain_wait(expected,n,poll_errno,(unsigned short)p.revents,(int)got,read_errno,(unsigned char)value,2);errno=read_errno;fail(stage,"parent_ack_or_child_exit");}
 }
 static void receive_phase(mach_port_t port,int token,CFStringRef expected,int stage) {
     int notified=0;
@@ -70,13 +120,21 @@ static void receive_phase(mach_port_t port,int token,CFStringRef expected,int st
     fail(stage,"cached_value_not_updated"); /* A refresh cannot convert failure to PASS. */
 }
 static int live_reader(int fd) {
-    alarm(35);
+    progress(2);alarm(35);
     int token=-1;mach_port_t port=MACH_PORT_NULL;
-    uint32_t rc=notify_register_mach_port(notice,&port,0,&token);
-    if(rc!=NOTIFY_STATUS_OK || !MACH_PORT_VALID(port)){fprintf(stderr,"M40 notify register rc=%u\n",rc);fail(164,"notify_register");}
-    if(!CFPreferencesAppSynchronize(domain) || !equals(CFSTR("A")))fail(165,"reader_initial_A");
+    progress(3);uint32_t rc=notify_register_mach_port(notice,&port,0,&token);
+    progress(4);if(rc!=NOTIFY_STATUS_OK || !MACH_PORT_VALID(port)){fprintf(stderr,"M40 notify register rc=%u\n",rc);fail(164,"notify_register");}
+    progress(5);Boolean synced=CFPreferencesAppSynchronize(domain);progress(6);
+    if(!synced)fail(165,"reader_initial_A");
+    progress(7);int initial=equals(CFSTR("A"));progress(8);
+    if(!initial)fail(165,"reader_initial_A");
     printf("XCOVER5 M40 READER READY pid=%d cached=A token=%d\n",getpid(),token);
-    ack(fd,'R');
+    progress(9);
+#ifdef M40_HOST_TEST
+    const char *fault=getenv("M48A_TEST_READY_FAULT");
+    if(fault){if(!strcmp(fault,"wrong"))ack(fd,'X');close(fd);_exit(61);}
+#endif
+    ack(fd,'R');progress(10);
     receive_phase(port,token,CFSTR("B"),173);
     puts("XCOVER5 M40 READER UPDATE: notify received, cached=B without explicit sync");
     ack(fd,'B');
@@ -90,10 +148,12 @@ static int live_reader(int fd) {
 int main(int argc,char **argv) {
     setvbuf(stdout,NULL,_IONBF,0);setvbuf(stderr,NULL,_IONBF,0);
     domain=CFSTR("org.xcover5.m39");live_key=CFSTR("live-proof");
-    if(argc==3 && !strcmp(argv[1],"--m40-reader")){
+    if(argc==4 && !strcmp(argv[1],"--m40-reader")){
         char *end=NULL;errno=0;long fd=strtol(argv[2],&end,10);
         if(errno || !end || *end || fd<0 || fd>INT_MAX)fail(160,"reader_fd_argument");
-        return live_reader((int)fd);
+        long diag=strtol(argv[3],&end,10);
+        if(errno || !end || *end || diag<0 || diag>INT_MAX)fail(160,"progress_fd_argument");
+        progress_fd=(int)diag;return live_reader((int)fd);
     }
     int baseline=m39_baseline_main(argc,argv);
     if(argc!=1 || baseline!=60)return baseline;
@@ -105,17 +165,22 @@ int main(int argc,char **argv) {
     puts("XCOVER5 M40 BEGIN: explicit notifyd wakeup + live reader cache coherence (RAM only)");
     set_value(CFSTR("A"),162);
     int pipefd[2];if(pipe(pipefd))fail(166,"pipe");
+    int diagnostic[2];if(pipe(diagnostic))fail(166,"progress_pipe");
+    int flags=fcntl(diagnostic[0],F_GETFL);
+    if(flags<0 || fcntl(diagnostic[0],F_SETFL,flags|O_NONBLOCK)<0)fail(166,"progress_nonblock");
+    progress_read=diagnostic[0];
     live_child=fork();if(live_child<0)fail(167,"fork");
     if(!live_child){
-        writer_role=0;close(pipefd[0]);char fd[24];snprintf(fd,sizeof(fd),"%d",pipefd[1]);
+        writer_role=0;close(pipefd[0]);close(diagnostic[0]);progress_fd=diagnostic[1];progress(1);
+        char fd[24],diag[24];snprintf(fd,sizeof(fd),"%d",pipefd[1]);snprintf(diag,sizeof(diag),"%d",diagnostic[1]);
 #ifdef M40_HOST_TEST
-        execl(argv[0],argv[0],"--m40-reader",fd,(char*)NULL);
+        execl(argv[0],argv[0],"--m40-reader",fd,diag,(char*)NULL);
 #else
-        execl("/sbin/m39-probe","m39-probe","--m40-reader",fd,(char*)NULL);
+        execl("/sbin/m39-probe","m39-probe","--m40-reader",fd,diag,(char*)NULL);
 #endif
         fail(168,"exec_live_reader");
     }
-    close(pipefd[1]);expect_ack(pipefd[0],'R',176);
+    close(diagnostic[1]);close(pipefd[1]);expect_ack(pipefd[0],'R',176);
     set_value(CFSTR("B"),177);
 #ifdef M40_HOST_TEST
     if(!getenv("M40_TEST_SKIP_POST"))
@@ -124,7 +189,7 @@ int main(int argc,char **argv) {
     expect_ack(pipefd[0],'B',179);
     set_value(NULL,180);
     if(notify_post(notice)!=NOTIFY_STATUS_OK)fail(181,"post_delete");
-    expect_ack(pipefd[0],'D',182);close(pipefd[0]);
+    expect_ack(pipefd[0],'D',182);close(pipefd[0]);close(progress_read);
     int status=0;pid_t got=0;
     for(unsigned attempt=0;attempt<100;attempt++){
         got=waitpid(live_child,&status,WNOHANG);

@@ -1,0 +1,50 @@
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -176,6 +176,22 @@
+     IOLog("XCOVER5 M46C READER parent=%llu child=%llu sid=%llu round=%llu mode=%llu\n",v[0],v[1],v[2],v[3],v[4]);
+     IOLog("XCOVER5 M46C LAST phase=%llu status=%llx flags=%llu FINAL\n",v[5],v[6],v[7]);
+ }
++/* M48A: bounded M40 readiness evidence, independent of submission state. */
++static uint64_t gM40Diag[13];
++static bool xcM40DiagValid(const uint64_t *v,uint32_t n) {
++    return v && n==12 && v[0]>0 && v[0]<=0x7fffffffULL && v[1]<=10 &&
++        (v[2]=='R' || v[2]=='B' || v[2]=='D') &&
++        (v[3]==0xffffffffULL || v[3]<=1) && v[4]<=1024 && v[5]<=0xffff &&
++        (v[6]==0xffffffffULL || v[6]<=2) && v[7]<=1024 && v[8]<=255 &&
++        (v[9]==1 || v[9]==2) && v[10]<=7 && v[11]==0;
++}
++static void xcM40DiagReport(void) {
++    uint64_t v[13];IOLockLock(gSurfaceLock);memcpy(v,gM40Diag,sizeof(v));IOLockUnlock(gSurfaceLock);
++    if(!v[0])return;
++    IOLog("XCOVER5 M48A WAIT parent=%llu child=%llu phase=%llu expected=%llu flags=%llu\n",v[0],v[1],v[2],v[3],v[11]);
++    IOLog("XCOVER5 M48A POLL rc=%llx errno=%llu revents=%llx\n",v[4],v[5],v[6]);
++    IOLog("XCOVER5 M48A READ rc=%llx errno=%llu got=%llu reason=%llu FINAL\n",v[7],v[8],v[9],v[10]);
++}
+ extern "C" void xcover5_surface_report(void);
+ extern "C" void xcover5_surface_report(void) {
+     if(gSurfaceLock==NULL || gSurfaceKeptLock==NULL) { IOLog("XCOVER5 M43 SURFACE unavailable\n"); return; }
+@@ -183,6 +199,7 @@
+     IOLockLock(gSurfaceKeptLock); uint64_t wired=gSurfaceWired; IOLockUnlock(gSurfaceKeptLock);
+     IOLog("XCOVER5 M43 SURFACE count=%u pixels=%llu wired=%llu budget=%llu\n",count,pixel,wired,XC_SURFACE_BUDGET);
+     xcReaderDiagReport();
++    xcM40DiagReport();
+ }
+ 
+ void
+@@ -1872,6 +1889,16 @@
+  IOReturn clientClose(void) APPLE_KEXT_OVERRIDE {if(!isInactive())terminate();return kIOReturnSuccess;}
+  void free(void) APPLE_KEXT_OVERRIDE {if(fLock)IOLockFree(fLock);IOUserClient::free();}
+  IOReturn externalMethod(uint32_t selector,IOExternalMethodArguments *a,IOExternalMethodDispatch *,OSObject *,void *) APPLE_KEXT_OVERRIDE {
++  if(selector==92) {
++   proc_t p=current_proc_EXTERNAL();char name[32];bzero(name,sizeof(name));proc_name(proc_pid(p),name,sizeof(name));
++   if(proc_getuid(p)!=0 || proc_ppid(p)!=1 || strcmp(name,"m39-probe"))return kIOReturnNotPrivileged;
++   if(!a || a->scalarOutputCount || a->structureInputSize || a->structureOutputSize ||
++      a->structureInputDescriptor || a->structureOutputDescriptor ||
++      !xcM40DiagValid(a->scalarInput,a->scalarInputCount))return kIOReturnBadArgument;
++   IOLockLock(gSurfaceLock);gM40Diag[0]=(uint32_t)proc_pid(p);
++   memcpy(gM40Diag+1,a->scalarInput,12*sizeof(uint64_t));IOLockUnlock(gSurfaceLock);
++   xcM40DiagReport();return kIOReturnSuccess;
++  }
+   if(selector==91) {
+    proc_t p=current_proc_EXTERNAL();char name[32];bzero(name,sizeof(name));proc_name(proc_pid(p),name,sizeof(name));
+    if(proc_getuid(p)!=0 || proc_ppid(p)!=1 || strcmp(name,"m39-probe"))return kIOReturnNotPrivileged;
