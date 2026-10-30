@@ -1,3 +1,22 @@
+2026-10-30 M60 hardware video205831: UI SERVICE LOOKUP BLOCKED
+
+215.81sec video SHA256
+de3ae4a44e05f53004b6eef2b1cfc1429303a6af4b8ecf5f3570b260f4efc040.
+Reviewed start/contact,88,93,96,100,150,213sec through ending.
+Prior libobjc-trampolines missing-file fatal not seen; SpringBoardPID6 now
+reaches display lookup and exits SIGTRAP. Exact denied159 names atframe93:
+com.apple.backboard.system-app-server(flags0x200), com.apple.CARenderServer
+(flags1). Do not claim resolving these alone guarantees backboard survival.
+BackboardPID8 CSOPS24000001/rc0/pb_after1, running/INIT0 frame88, SIGTRAP
+frame100; its first native fatal still not independently transcribed.
+Chrono nativeexec/INIT0 pass persists; BKDisplayServicesStart invalid
+ destination port10000003 and SIGTRAP recur through ChronoPID24 atframe213,
+nextxpcproxyPID25. Additional logd/notification_center lookup159 visible.
+No lockscreen. Next work: exact native UI/bootstrap service identity/query
+handling and backboard first fatal, comparing HackiOS without assuming all
+lookup failures are equivalent. Preserve audit-token PID-version validation.
+Local frames/contact/review retained ../artifacts/m60-objc/video-205831.
+
 2026-10-30 M60 original Objective-C trampoline PACKAGED / HARDWARE PENDING
 
 Revisited M59 camera frame94: SpringBoard OS_REASON_OBJC cannot dlopen
