@@ -78,6 +78,9 @@ sudo chmod 755 "$WORK/mnt/sbin/m34-probe"
 sudo python3 tools/stage_launchd.py "$WORK/mnt"
 if [[ "${XCOVER_UI_BOOT:-0}" == 1 ]]; then
   sudo python3 tools/stage_ui_boot.py "$WORK/mnt"
+  if [[ "${XCOVER_OBJC_BOOT:-0}" == 1 ]]; then
+    sudo python3 tools/stage_objc_boot.py "$WORK/mnt"
+  fi
   if [[ "${XCOVER_CHRONO_BOOT:-0}" == 1 ]]; then
     sudo python3 tools/stage_chrono_boot.py "$WORK/mnt"
   fi
