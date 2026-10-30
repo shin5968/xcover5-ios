@@ -1,3 +1,27 @@
+2026-10-30 M50A photo153229: parent72/4800 hardware PASS on reboot; boot intermittent
+
+Photo confirms PID6 kernel rv4800, AUTO TEST_END wait_status4800, launchd
+exit(72), final surface count0 pixels0 wired0. Verified source72 gates require
+original M49, orphan actual SIGKILL/EOF, new restore generation/owner match/
+clientDied reason4/frames1,last3,restore0/surface absent and fresh repeated M49
+recovery session. These are source-gated inferences; individual death/recovery
+visuals and raw reason4 line not separately captured in this still. One runtime
+PASS does not prove root cause of earlier SIGPIPE or startup stall fixed.
+User explicitly reports successful reboot after intermittent failure. Previous
+143645 clip was the completed stalled attempt per user correction, not a request
+to simply film longer. Boot startup intermittency is now the remaining issue;
+do not label this deterministic M50A regression without evidence.
+Photo hash/review ../artifacts/m50a-transport/photo-153229/.
+Preserve M50A passing package. M50B boot monitor patch/test exist UNCOMMITTED,
+no kernel build/package/flash yet. Local monitor unit test PASS, full downstream
+hook replay not complete due local source already containing mixed prior board
+patches; real build replay still required before any package claim. New successful
+photo changes diagnosis: M50 added death/recovery path is demonstrably reachable
+and passes, while initial launchd progress remains intermittent. No new package
+or device writes during this review.
+
+Previous records follow:
+
 2026-10-30 M50A video143645: startup-only48.62s; diagnostic outcome pending
 
 M34 cross-process Mach/peer cleanup and RAM-root/Apple launchd handoff visible.
