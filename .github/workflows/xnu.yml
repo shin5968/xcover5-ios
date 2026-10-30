@@ -115,6 +115,7 @@ jobs:
           python3 tools/test_m49_userspace.py
           python3 tools/test_m50_death.py
           python3 tools/test_m50a_transport.py
+          python3 tools/test_m50b_bootdiag.py
 
       - name: Fetch build script
         run: |
@@ -238,6 +239,13 @@ jobs:
         run: |
           python3 tools/test_m45_submit.py dxb/xnu
           python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M45 SUBMIT_PASS" in k.read_bytes() for k in ks)'
+
+      - name: Verify launchd startup monitor
+        run: |
+          if test -d dxb/xnu; then
+            python3 tools/test_m50b_bootdiag.py dxb/xnu
+          fi
+          python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M50B BOOT" in k.read_bytes() and b"no_user_memory_read" in k.read_bytes() for k in ks)'
 
       - name: Verify standard framebuffer subset
         run: |

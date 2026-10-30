@@ -1,0 +1,137 @@
+--- a/osfmk/arm64/sleh.c
++++ b/osfmk/arm64/sleh.c
+@@ -1636,6 +1636,9 @@
+ }
+ 
+ extern void syscall_trace(struct arm_saved_state * regs);
++#if defined(XCOVER5)
++extern void xcover5_bootdiag_svc(arm_saved_state_t *,unsigned);
++#endif
+ 
+ static void
+ handle_svc(arm_saved_state_t *state)
+@@ -1653,6 +1656,9 @@
+ 
+ 	thread->iotier_override = THROTTLE_LEVEL_NONE; /* Reset IO tier override before handling SVC from userspace */
+ 
++#if defined(XCOVER5)
++	if(trap_no!=MACH_ARM_TRAP_ABSTIME && trap_no!=MACH_ARM_TRAP_CONTTIME)xcover5_bootdiag_svc(state,1);
++#endif
+ 	if (trap_no == (int)PLATFORM_SYSCALL_TRAP_NO) {
+ 		platform_syscall(state);
+ 		panic("Returned from platform_syscall()?");
+@@ -1682,6 +1688,9 @@
+ 
+ 		unix_syscall(state, thread, p);
+ 	}
++#if defined(XCOVER5)
++	xcover5_bootdiag_svc(state,2);
++#endif
+ }
+ 
+ static void
+@@ -2076,6 +2085,9 @@
+ 		mach_syscall_trace_exit(error, (-1) * get_saved_state_svc_number(state));
+ 	}
+ 
++#if defined(XCOVER5)
++	xcover5_bootdiag_svc(state,2);
++#endif
+ 	thread_exception_return();
+ }
+ 
+--- a/bsd/dev/arm/systemcalls.c
++++ b/bsd/dev/arm/systemcalls.c
+@@ -284,6 +284,10 @@
+ 		    error, uthread->uu_rval[0], uthread->uu_rval[1], proc_getpid(proc));
+ 	}
+ 
++#if defined(XCOVER5)
++	extern void xcover5_bootdiag_svc(arm_saved_state_t *,unsigned);
++	xcover5_bootdiag_svc(regs,2);
++#endif
+ 	thread_exception_return();
+ 	/* NOTREACHED */
+ }
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -1,4 +1,6 @@
+ #if defined(XCOVER5)
++	extern void xcover5_bootdiag_init(void);
++	xcover5_bootdiag_init();
+ 	extern void xcover5_autolog_init(void);
+ 	xcover5_autolog_init();
+ #endif
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -1 +1,2 @@
+ bsd/dev/xcover5_autolog.c		standard
++bsd/kern/xcover5_bootdiag.c		standard
+--- /dev/null
++++ b/bsd/kern/xcover5_bootdiag.c
+@@ -0,0 +1,65 @@
++/* M50B: bounded launchd startup observation, no syscall/result changes. */
++#include <pexpert/arm64/board_config.h>
++#if defined(XCOVER5)
++#include <sys/proc_internal.h>
++#include <sys/systm.h>
++#include <kern/task.h>
++#include <kern/thread.h>
++#include <kern/thread_call.h>
++#include <kern/clock.h>
++#include <kern/locks.h>
++#include <arm/thread.h>
++#define XC_BOOT_EVENTS 8U
++struct xc_boot_event {uint64_t seq,tid,at,pc,lr,sp,args[6];int trap;unsigned phase;};
++struct xc_boot_state {uint64_t total;unsigned next,count,ticks,armed,probe;struct xc_boot_event events[XC_BOOT_EVENTS];};
++static struct xc_boot_state xc_boot;
++static thread_call_t xc_boot_call;
++static LCK_GRP_DECLARE(xc_boot_group,"xcover5_bootdiag");
++static LCK_SPIN_DECLARE(xc_boot_lock,&xc_boot_group);
++void xcover5_bootdiag_init(void);
++void xcover5_bootdiag_svc(arm_saved_state_t *,unsigned);
++static void xc_boot_tick(thread_call_param_t unused0,thread_call_param_t unused1) {
++ (void)unused0;(void)unused1;struct xc_boot_state copy;unsigned tick;
++ lck_spin_lock(&xc_boot_lock);
++ if(xc_boot.probe || xc_boot.ticks>=3){lck_spin_unlock(&xc_boot_lock);return;}
++ tick=++xc_boot.ticks;copy=xc_boot;lck_spin_unlock(&xc_boot_lock);
++ printf("XCOVER5 M50B BOOT tick=%u events=%llu stored=%u probe_started=0\n",tick,copy.total,copy.count);
++ for(unsigned i=0;i<copy.count;i++) {
++  const struct xc_boot_event *e=&copy.events[(copy.next+XC_BOOT_EVENTS-copy.count+i)%XC_BOOT_EVENTS];
++  printf("M50B CALL seq=%llu tid=%llu phase=%u trap=%d pc=%llx lr=%llx\n",e->seq,e->tid,e->phase,e->trap,e->pc,e->lr);
++  printf("M50B REGS seq=%llu sp=%llx a0=%llx a1=%llx a2=%llx\n",e->seq,e->sp,e->args[0],e->args[1],e->args[2]);
++  printf("M50B MORE seq=%llu a3=%llx a4=%llx a5=%llx at=%llx\n",e->seq,e->args[3],e->args[4],e->args[5],e->at);
++ }
++ printf("XCOVER5 M50B BOOT_END tick=%u phase1=entry phase2=return no_user_memory_read\n",tick);
++ if(tick<3){uint64_t deadline;clock_interval_to_deadline(5,NSEC_PER_SEC,&deadline);(void)thread_call_enter_delayed(xc_boot_call,deadline);}
++}
++void xcover5_bootdiag_init(void) {
++ xc_boot_call=thread_call_allocate_with_priority(xc_boot_tick,NULL,THREAD_CALL_PRIORITY_KERNEL);
++ printf("XCOVER5 M50B BOOT_DIAG %s interval=5s limit=3\n",xc_boot_call?"ready":"unavailable");
++}
++void xcover5_bootdiag_svc(arm_saved_state_t *regs,unsigned phase) {
++ if(!regs || !is_saved_state64(regs) || (phase!=1 && phase!=2))return;
++ thread_t thread=current_thread();proc_t p=(proc_t)get_bsdthreadtask_info(thread);
++ if(!p || proc_getuid(p)!=0)return;
++ if(proc_getpid(p)!=1) {
++  if(proc_ppid(p)==1 && !strcmp(p->p_comm,"m39-probe")) {
++   lck_spin_lock(&xc_boot_lock);xc_boot.probe=1;lck_spin_unlock(&xc_boot_lock);
++  }
++  return;
++ }
++ if(strcmp(p->p_comm,"launchd.ios") && strcmp(p->p_comm,"launchd"))return;
++ struct xc_boot_event e={0};e.tid=thread_tid(thread);e.at=mach_absolute_time();
++ e.phase=phase;e.trap=get_saved_state_svc_number(regs);e.pc=get_saved_state_pc(regs);
++ e.lr=get_saved_state_lr(regs);e.sp=get_saved_state_sp(regs);
++ for(unsigned i=0;i<6;i++)e.args[i]=get_saved_state_reg(regs,i);
++ unsigned arm=0;
++ lck_spin_lock(&xc_boot_lock);
++ if(!xc_boot.probe) {
++  e.seq=++xc_boot.total;xc_boot.events[xc_boot.next]=e;xc_boot.next=(xc_boot.next+1)%XC_BOOT_EVENTS;
++  if(xc_boot.count<XC_BOOT_EVENTS)xc_boot.count++;
++  if(!xc_boot.armed && xc_boot_call){xc_boot.armed=1;arm=1;}
++ }
++ lck_spin_unlock(&xc_boot_lock);
++ if(arm){uint64_t deadline;clock_interval_to_deadline(5,NSEC_PER_SEC,&deadline);(void)thread_call_enter_delayed(xc_boot_call,deadline);}
++}
++#endif
