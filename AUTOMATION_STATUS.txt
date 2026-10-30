@@ -1,3 +1,21 @@
+2026-10-30 M61 camera212854: CHRONO DISPLAY LOOKUP PASS / SB DISPLAY PAIR MISSING
+
+245.18sec video SHA256
+a3de98d47bda3011b72f206b2fec1591104834d3d203b26764dd3fb514b648ca.
+Frame105 actual M61UI_QUERY PID18 v44 filter6 flags40000000 opmach-lookup,
+backboard.display.services then UI_LOOKUPallowed identity2. Native Chrono
+continues to RunningBoard sandbox/connection assertion errors. Do not equate
+permission success to live rendered UI or all3 M61 pair hardware passes.
+Frame92 SBPID6 v11 also requests backboard.display.services. M61 querylogs,
+no allow because expectedidentity2 only; denied159, BKDisplayServicesStart
+invalid destination10000003 and SIGTRAP. This additional native SB pair was
+not in M61 matrix. Next: exact original SpringBoard -> display.services in
+addition to Chrono; retain live audit PIDversion/code identity constraints.
+BackboardPID19 native load/signatures/INIT0 running frame110; repeated
+activation/throttling. Its first native fatal not yet established. No lockscreen.
+Frames200/242 too defocused for dependable new text; contact covers duration.
+Saved frames/hash/review ../artifacts/m61-ui-lookup/video-212854.
+
 M61 final source b32fd24830271be370200a37cd040a71e1ee9326,
 CI41053780939 all jobs SUCCESS including actual applied helper/dispatcher.
 Local git apply against prior dispatcher and new source equality PASS.
