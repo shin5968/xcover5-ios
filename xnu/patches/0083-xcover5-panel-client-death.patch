@@ -1,0 +1,63 @@
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -1917,6 +1917,15 @@
+  if(s)MiniIOSurfaceDrop(s);return result;
+ }
+ 
++/* Only the explicitly registered M50 orphan SIGKILL is an intermediate exit. */
++static uint64_t gExpectedPanelPID,gExpectedPanelUnique;
++extern "C" int xcover5_expected_panel_death(proc_t p);
++extern "C" int xcover5_expected_panel_death(proc_t p) {
++ if(!gSurfaceLock)return 0;
++ IOLockLock(gSurfaceLock);int expected=gExpectedPanelPID==(uint32_t)proc_pid(p) &&
++  gExpectedPanelUnique && gExpectedPanelUnique==proc_uniqueid(p);IOLockUnlock(gSurfaceLock);return expected;
++}
++
+ class IOMobileFramebuffer : public IOService {
+  OSDeclareDefaultStructors(IOMobileFramebuffer);
+ public:
+@@ -1939,6 +1948,13 @@
+   bzero(&fPersistent,sizeof(fPersistent));fOwner=(uint32_t)proc_pid(p);
+   fLock=IOLockAlloc();fIssued=fCompleted=0;return fLock!=NULL;
+  }
++ /* M50: retain proof that task/last-sender death performed the restore.
++  * Base clientDied still owns its normal closed-once guard and termination. */
++ IOReturn clientDied(void) APPLE_KEXT_OVERRIDE {
++  IOReturn restored=kIOReturnSuccess;
++  if(fLock){IOLockLock(fLock);restored=xcPersistentFinish(&fPersistent,fOwner,4);IOLockUnlock(fLock);}
++  IOReturn rc=IOUserClient::clientDied();return restored==kIOReturnSuccess?rc:restored;
++ }
+  IOReturn clientClose(void) APPLE_KEXT_OVERRIDE {
+   IOReturn rc=kIOReturnSuccess;if(fLock){IOLockLock(fLock);rc=xcPersistentFinish(&fPersistent,fOwner,1);IOLockUnlock(fLock);}
+   if(!isInactive())terminate();return rc;
+@@ -1948,6 +1964,15 @@
+   IOUserClient::free();
+  }
+  IOReturn externalMethod(uint32_t selector,IOExternalMethodArguments *a,IOExternalMethodDispatch *,OSObject *,void *) APPLE_KEXT_OVERRIDE {
++  if(selector==94) {
++   proc_t p=current_proc_EXTERNAL();char name[32];bzero(name,sizeof(name));proc_name(proc_pid(p),name,sizeof(name));
++   if(proc_getuid(p)!=0 || proc_ppid(p)!=1 || strcmp(name,"m39-probe"))return kIOReturnNotPrivileged;
++   if(!a || a->scalarInputCount || a->scalarOutputCount || a->structureInputSize || a->structureOutputSize ||
++      a->structureInputDescriptor || a->structureOutputDescriptor)return kIOReturnBadArgument;
++   IOLockLock(gSurfaceLock);bool allowed=!gExpectedPanelUnique;
++   if(allowed){gExpectedPanelPID=(uint32_t)proc_pid(p);gExpectedPanelUnique=proc_uniqueid(p);}
++   IOLockUnlock(gSurfaceLock);return allowed?kIOReturnSuccess:kIOReturnBadArgument;
++  }
+   if(selector==93) {
+    if(!a || a->scalarInputCount || a->scalarOutputCount!=7 || !a->scalarOutput || a->structureInputSize ||
+       a->structureOutputSize || a->structureInputDescriptor || a->structureOutputDescriptor)return kIOReturnBadArgument;
+--- a/bsd/dev/xcover5_autolog.c
++++ b/bsd/dev/xcover5_autolog.c
+@@ -34,8 +34,12 @@
+ void xcover5_autolog_init(void);
+ void xcover5_test_finish(proc_t p,int rv);
+ void xcover5_log_byte(uint8_t c) {xc_capture(c);}
++extern int xcover5_expected_panel_death(proc_t);
+ void xcover5_test_finish(proc_t p,int rv) {
+     if(proc_getuid(p)!=0 || proc_ppid(p)!=1 || strcmp(p->p_comm,"m39-probe"))return;
++    if(rv==9 && xcover5_expected_panel_death(p)) {
++        printf("XCOVER5 M50 CHILD_END pid=%d wait_status=%x expected_SIGKILL=1\n",proc_getpid(p),rv);return;
++    }
+     printf("XCOVER5 AUTO TEST_END pid=%d wait_status=%x\n",proc_getpid(p),rv);
+     xc_finish(mach_absolute_time(),(uint32_t)rv);
+     printf("XCOVER5 AUTO SNAPSHOT bytes=%u crc=%08x dropped=%u; awaiting PC ACK\n",
