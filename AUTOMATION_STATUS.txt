@@ -1,3 +1,21 @@
+2026-10-30 M54 CoreText automatic paragraph layout IN PROGRESS
+
+Next after hardware M53 native75. Initial boot intermittency stays deferred.
+Actual CTFramesetterCreateWithAttributedString/CreateFrame, CTFrameDraw after
+M53 baseline. Owned embedded font unchanged. Exported CFStringRef attribute
+variables resolved by dereferencing dlsym storage; SDK-typed native functions.
+Same full paragraph, width360/410/460/510 cycles, native automatic word wrapping.
+Require entire visible range, bounded increasing line order/width minus trailing
+whitespace, every glyph run exact owned font identity and nonzero glyphs, >=4
+lines and >=1000 new white pixels. Existing16 standard framebuffer submit/hash/
+hold/close restore/surface-release gates unchanged. Native76/wait4c00 only after75.
+Host real CoreText tests narrow/wide line counts, clipped frame rejection and
+invalid inputs, guard memory and negative submit/restore tests; preview planned.
+Kernel/Apple files unchanged. No general Unicode/shaping/system fonts/UIkit/
+CoreAnimation/SpringBoard/GPU/input/vsync claim. Build/package/device pending.
+
+Previous records follow:
+
 2026-10-30 M53 video170030 HARDWARE PASS (one run)
 
 Video161.31s, final159s: PID6 kernel rv4b00/AUTO wait_status4b00/launchd exit75;
