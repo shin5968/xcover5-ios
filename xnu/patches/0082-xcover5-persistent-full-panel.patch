@@ -1,0 +1,122 @@
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -1865,6 +1865,58 @@
+  return result;
+ }
+ 
++/* M49: full-panel IDs3..16 retain console until connection close. */
++struct XCPersistentPanel {uint32_t *saved;uint32_t frames,last;bool active,failed;};
++/* generation, active, owner PID, copied frames, restore reason, restore rc, last ID */
++static uint64_t gPersistentStats[7];
++extern "C" int xcover5_full_present_update(const uint32_t *);
++static IOReturn xcPersistentFinish(XCPersistentPanel *p,uint32_t owner,unsigned reason) {
++ if(!p->active)return kIOReturnSuccess;
++ IOLockLock(gSurfaceLock);int rc=xcover5_full_present_end(p->saved);
++ IOFree(p->saved,XC_FULL_BYTES);p->saved=NULL;p->active=false;
++ gPersistentStats[0]++;gPersistentStats[1]=0;
++ gPersistentStats[2]=owner;gPersistentStats[3]=p->frames;gPersistentStats[4]=reason;
++ gPersistentStats[5]=(uint32_t)rc;gPersistentStats[6]=p->last;IOLockUnlock(gSurfaceLock);
++ IOLog("XCOVER5 M49 RESTORE owner=%u frames=%u last=%u reason=%u rc=%d saved_freed=1\n",owner,p->frames,p->last,reason,rc);
++ return rc?kIOReturnError:kIOReturnSuccess;
++}
++static bool xcPersistentSwapValid(const uint8_t *b,size_t n) {
++ if(!b || n!=0x46c)return false;
++ uint32_t id=xc_fb_word(b,0x50),sid=xc_fb_word(b,0x54);
++ if(id<3 || id>16 || !sid || sid>=256)return false;
++ for(unsigned i=1;i<4;i++)if(xc_fb_word(b,0x54+4*i))return false;
++ if(xc_fb_word(b,0x104)!=1 || xc_fb_word(b,0x108))return false;
++ const uint32_t rect[4]={0,0,720,1480};
++ for(unsigned i=0;i<4;i++)if(xc_fb_word(b,0x64+4*i)!=rect[i] || xc_fb_word(b,0xc4+4*i)!=rect[i])return false;
++ return true;
++}
++static IOReturn xcPersistentSubmit(XCPersistentPanel *p,uint32_t owner,uint32_t sid,uint32_t issued) {
++ if(p->failed || issued<3 || issued>16 || (p->active?issued!=p->last+1:issued!=3))return kIOReturnBadArgument;
++ MiniIOSurface *s=MiniIOSurfaceCopy(sid);IOReturn result=kIOReturnBadArgument;
++ if(s && s->info.width==720 && s->info.height==1480 && s->info.bytesPerRow==2880 &&
++    s->info.pixelFormat=='BGRA' && s->info.allocSize>=XC_FULL_BYTES && s->info.allocSize<=(8U<<20) && s->kpixels && !s->client) {
++  uint32_t *pixels=(uint32_t *)IOMalloc(XC_FULL_BYTES);
++  uint32_t *saved=p->active?NULL:(uint32_t *)IOMalloc(XC_FULL_BYTES);
++  result=kIOReturnNoMemory;
++  if(pixels && (p->active || saved)) {
++   memcpy(pixels,s->kpixels,XC_FULL_BYTES);uint64_t hash=14695981039346656037ULL;
++   for(unsigned i=0;i<XC_FULL_BYTES;i++)hash=(hash^((uint8_t *)pixels)[i])*1099511628211ULL;
++   int rc=0;
++   if(!p->active) {
++    IOLockLock(gSurfaceLock);rc=xcover5_full_present_begin(pixels,saved);
++    if(!rc){p->saved=saved;saved=NULL;p->active=true;p->frames=0;p->last=2;gPersistentStats[1]=1;}
++    IOLockUnlock(gSurfaceLock);
++   }
++   if(!rc)rc=xcover5_full_present_update(pixels);
++   result=rc?kIOReturnError:kIOReturnSuccess;
++   if(!rc){p->frames++;p->last=issued;IOLog("XCOVER5 M49 COPY id=%u sid=%u hash=%llx readback=0 persistent=1\n",issued,sid,hash);}
++   else if(p->active){p->failed=true;(void)xcPersistentFinish(p,owner,3);}
++  }
++  if(saved)IOFree(saved,XC_FULL_BYTES);if(pixels)IOFree(pixels,XC_FULL_BYTES);
++ }
++ if(s)MiniIOSurfaceDrop(s);return result;
++}
++
+ class IOMobileFramebuffer : public IOService {
+  OSDeclareDefaultStructors(IOMobileFramebuffer);
+ public:
+@@ -1878,17 +1930,39 @@
+ OSDefineMetaClassAndStructors(IOMobileFramebuffer,IOService);
+ class IOMobileFramebufferUserClient : public IOUserClient {
+  OSDeclareDefaultStructors(IOMobileFramebufferUserClient);
+- IOLock *fLock;uint32_t fIssued,fCompleted;
++ IOLock *fLock;uint32_t fIssued,fCompleted,fOwner;XCPersistentPanel fPersistent;
+ public:
+  bool initWithTask(task_t task,void *security,UInt32 type,OSDictionary *properties) APPLE_KEXT_OVERRIDE {
+   proc_t p=current_proc_EXTERNAL();char name[32];bzero(name,sizeof(name));proc_name(proc_pid(p),name,sizeof(name));
+   if(proc_getuid(p)!=0 || proc_ppid(p)!=1 || strcmp(name,"m39-probe"))return false;
+   if(!IOUserClient::initWithTask(task,security,type,properties))return false;
++  bzero(&fPersistent,sizeof(fPersistent));fOwner=(uint32_t)proc_pid(p);
+   fLock=IOLockAlloc();fIssued=fCompleted=0;return fLock!=NULL;
+  }
+- IOReturn clientClose(void) APPLE_KEXT_OVERRIDE {if(!isInactive())terminate();return kIOReturnSuccess;}
+- void free(void) APPLE_KEXT_OVERRIDE {if(fLock)IOLockFree(fLock);IOUserClient::free();}
++ IOReturn clientClose(void) APPLE_KEXT_OVERRIDE {
++  IOReturn rc=kIOReturnSuccess;if(fLock){IOLockLock(fLock);rc=xcPersistentFinish(&fPersistent,fOwner,1);IOLockUnlock(fLock);}
++  if(!isInactive())terminate();return rc;
++ }
++ void free(void) APPLE_KEXT_OVERRIDE {
++  if(fLock){IOLockLock(fLock);(void)xcPersistentFinish(&fPersistent,fOwner,2);IOLockUnlock(fLock);IOLockFree(fLock);}
++  IOUserClient::free();
++ }
+  IOReturn externalMethod(uint32_t selector,IOExternalMethodArguments *a,IOExternalMethodDispatch *,OSObject *,void *) APPLE_KEXT_OVERRIDE {
++  if(selector==93) {
++   if(!a || a->scalarInputCount || a->scalarOutputCount!=7 || !a->scalarOutput || a->structureInputSize ||
++      a->structureOutputSize || a->structureInputDescriptor || a->structureOutputDescriptor)return kIOReturnBadArgument;
++   IOLockLock(gSurfaceLock);memcpy(a->scalarOutput,gPersistentStats,sizeof(gPersistentStats));IOLockUnlock(gSurfaceLock);
++   return kIOReturnSuccess;
++  }
++  if(selector==5 && a && xcPersistentSwapValid((const uint8_t *)a->structureInput,a->structureInputSize)) {
++   IOLockLock(fLock);IOReturn full=kIOReturnBadArgument;
++   if(!a->scalarInputCount && !a->scalarOutputCount && !a->structureInputDescriptor && !a->structureOutputDescriptor &&
++      !a->structureOutputSize && fIssued>fCompleted && xc_fb_word((const uint8_t *)a->structureInput,0x50)==fIssued) {
++    full=xcPersistentSubmit(&fPersistent,fOwner,xc_fb_word((const uint8_t *)a->structureInput,0x54),fIssued);
++    if(full==kIOReturnSuccess)fCompleted=fIssued;
++   }
++   IOLockUnlock(fLock);return full;
++  }
+   if(selector==92) {
+    proc_t p=current_proc_EXTERNAL();char name[32];bzero(name,sizeof(name));proc_name(proc_pid(p),name,sizeof(name));
+    if(proc_getuid(p)!=0 || proc_ppid(p)!=1 || strcmp(name,"m39-probe"))return kIOReturnNotPrivileged;
+--- a/pexpert/arm/pe_serial.c
++++ b/pexpert/arm/pe_serial.c
+@@ -1510,4 +1510,15 @@
+  __sync_synchronize();xc_fb_full_presenting=xc_fb_presenting=0;
+  xc_fb_unlock(enabled);return mismatch?3:0;
+ }
++/* M49: synchronous full copy/readback while original console stays saved. */
++int xcover5_full_present_update(const uint32_t *pixels) {
++ if(!pixels || xc_fb_stage!=4 || !fbcon_base || !xc_fb_layout_valid(&xc_fb) ||
++    xc_fb.width!=720 || xc_fb.height!=1480 || xc_fb.stride!=2880 || xc_fb.used!=4262400ULL)return 1;
++ boolean_t enabled=xc_fb_lock();
++ if(!xc_fb_presenting || !xc_fb_full_presenting){xc_fb_unlock(enabled);return 2;}
++ for(unsigned i=0;i<1065600;i++)fbcon_base[i]=pixels[i];
++ __sync_synchronize();unsigned mismatch=0;
++ for(unsigned i=0;i<1065600;i++)mismatch|=fbcon_base[i]!=pixels[i];
++ xc_fb_unlock(enabled);return mismatch?3:0;
++}
+ #endif

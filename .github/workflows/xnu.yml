@@ -111,6 +111,8 @@ jobs:
           python3 tools/test_m48a_diag.py
             python3 tools/test_m48_fullpanel.py
           python3 tools/test_m48_userspace.py
+          python3 tools/test_m49_persistent.py
+          python3 tools/test_m49_userspace.py
 
       - name: Fetch build script
         run: |
@@ -239,6 +241,7 @@ jobs:
         run: |
           python3 tools/test_m46c_diag.py dxb/xnu
             python3 tools/test_m48a_diag.py dxb/xnu
+            python3 tools/test_m49_persistent.py dxb/xnu
           python3 tools/test_m48_fullpanel.py dxb/xnu
           python3 tools/test_m46_framebuffer.py dxb/xnu
           python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M46 FB SERVICE registered" in k.read_bytes() and b"XCOVER5 M46 WAIT_PASS" in k.read_bytes() for k in ks)'
