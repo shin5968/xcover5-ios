@@ -1,3 +1,37 @@
+2026-10-31 M63 LIFECYCLE RESOURCES/NATIVE VAR PACKAGED / HARDWARE PENDING
+
+M62 camera224701 missing FrontBoard LifecyclePolicy, installd/analyticsd home
+and writable-root space addressed using pinned original resource/data recipe.
+Source e1600ae5a821b32ffa6bc7430f67e25861d33f0e; dedicated userspace
+CI41076215292 all jobs SUCCESS. Exact successful M62 kernelCI41063855862
+retained (b0904c551bfb33d814c17f3d76e71d9c0b50ae2de4e3811d935788efbb21760b),
+PID1/two renderer dylibs byte-identical M62; shim/DTB/cmdline unchanged.
+Original79 resources74951bytes (LifecyclePolicy/RunningBoard/featureflag/UTC)
+injected locally by size/SHA256; no original resource bytes uploaded.
+Native var recipe111dirs+2 timezone links+8 public preference seeds+3 fresh
+log migration markers; exact mixed uid/gid/modes after blanket chown.
+24MiB root, initial15659008 freebytes; supportjob DT console logging focused
+to backboardd/SpringBoard. Markers/verbosity are not a hard storage quota.
+M63 observer stats actual file metadata/free space at0/30/60/90seconds.
+Native77 freezes diagnostic snapshot only; UIjobs/console continue afterwards.
+
+Independent rawHFS345 records:194 entries added,20 existing files changed
+(19 job logging profiles+observer),12 existing metadata changes; all checked.
+79 original hashes and23 full CodeDirectory inventories PASS. Other M62
+native bytes retained. RootSHA256 0d0c0b17cb755bdfd79461a058881bcfaf6a5994af456ed6db4a3ffe32b58f50.
+RAMDisk0xa21c0000..0xa39c0000,255MiB window unchanged; boot41973760B,
+44MiB partition headroom4163584B. boot.img-only tar/MD5 PASS.
+AP ../artifacts/m63-resources/AP_M63_RESOURCES.tar.md5
+SHA256 f90710d0ebfc1934e0ffb54436c57fa982a17a07f8ef4862b994bccee359af80
+Local provenance/CIstatuses/verifiers/README/SHA256SUMS preserved. No flashing.
+Real lockscreen remains HARDWARE PENDING; prerequisites restored, not a proven
+sole cause of earlier containermanagerd SIGSEGV. Check actual M63 RESOURCE/
+SPACE, first nativefatal and any real UI presentation on next hardware video.
+Unrelated automatic kernelCI41076191145 failed cached-source font-path check
+(missing dxb/xnu/pexpert/arm/pe_serial.c). Never downloaded/used its artifacts;
+final uses only successful M62 kernel + successful dedicated M63 userspace.
+Unrelated modified tools/sweet-bootstrap-exec.S untouched.
+
 2026-10-30 M62 camera224701: POLICY/GRAPH/LIBRARY STARTUP CONFIRMED, RESOURCE/VAR GAPS
 
 Reattached source preserved locally source.mp41208444410bytes/300.82sec,
