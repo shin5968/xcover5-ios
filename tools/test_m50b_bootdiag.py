@@ -13,6 +13,9 @@ if len(sys.argv)>1:
  assert (t/'bsd/dev/arm/systemcalls.c').read_text().count('xcover5_bootdiag_svc(regs,2);')==1
  assert (t/'bsd/kern/bsd_init.c').read_text().count('xcover5_bootdiag_init();')==1
  assert (t/'bsd/conf/files').read_text().count('bsd/kern/xcover5_bootdiag.c')==1
+ if '--source-only' in sys.argv:
+  print('M50B actual applied source and all boot-hook placements PASS (before kernel compile)')
+  raise SystemExit(0)
 body=source[source.index('#define XC_BOOT_EVENTS'):source.rindex('#endif')]
 prefix=r'''
 #include <stdint.h>

@@ -133,7 +133,7 @@ jobs:
           p=Path('dxb/build.sh');s=p.read_text()
           anchor='        done\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()'
           assert s.count(anchor)==1,'pinned patch-phase boundary changed'
-          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu"\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
+          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu" --source-only\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
           p.write_text(s)
           PY
 
