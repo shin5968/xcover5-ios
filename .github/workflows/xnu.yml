@@ -128,6 +128,14 @@ jobs:
           sed -i '' 's/ARCHS="x86_64 arm64e" VALID_ARCHS="x86_64 arm64e"/ARCHS="x86_64 arm64e arm64" VALID_ARCHS="x86_64 arm64e arm64"/' dxb/build.sh
           grep -c 'VALID_ARCHS="x86_64 arm64e arm64"' dxb/build.sh
           ls dxb/patches
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('dxb/build.sh');s=p.read_text()
+          anchor='        done\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()'
+          assert s.count(anchor)==1,'pinned patch-phase boundary changed'
+          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu"\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
+          p.write_text(s)
+          PY
 
       - name: Deps
         run: |

@@ -55,7 +55,9 @@
  }
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -1,4 +1,6 @@
+@@ -982,6 +982,8 @@
+ 	extern void xcover5_mmc_dev_init(void);
+ 	xcover5_mmc_dev_init();
  #if defined(XCOVER5)
 +	extern void xcover5_bootdiag_init(void);
 +	xcover5_bootdiag_init();
@@ -64,9 +66,14 @@
  #endif
 --- a/bsd/conf/files
 +++ b/bsd/conf/files
-@@ -1 +1,2 @@
+@@ -7,6 +7,7 @@
+ 
+ bsd/dev/xcmmc.c			standard
  bsd/dev/xcover5_autolog.c		standard
 +bsd/kern/xcover5_bootdiag.c		standard
+ 
+ OPTIONS/config_macf			optional config_macf
+ OPTIONS/mach_assert			optional mach_assert
 --- /dev/null
 +++ b/bsd/kern/xcover5_bootdiag.c
 @@ -0,0 +1,65 @@
