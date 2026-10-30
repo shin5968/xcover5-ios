@@ -784,10 +784,11 @@
 +#endif /* XCOVER5 */
 --- a/bsd/conf/files
 +++ b/bsd/conf/files
-@@ -385,2 +385,3 @@
- bsd/kern/sweet_amfi.c			standard
+@@ -9,3 +9,4 @@
+ bsd/kern/xcover5_bootdiag.c		standard
 +bsd/kern/kern_minimac.c			optional config_macf
- bsd/kern/kern_csr.c			optional config_csr
+ 
+ OPTIONS/config_macf			optional config_macf
 --- a/libkern/conf/files
 +++ b/libkern/conf/files
 @@ -124,6 +124,8 @@
