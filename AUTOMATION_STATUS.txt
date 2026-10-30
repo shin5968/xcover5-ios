@@ -1,3 +1,30 @@
+2026-10-30 M51 CPU-composed scene PACKAGE VERIFIED; device PENDING
+
+Initial boot intermittency explicitly deferred by user; no reliability fix claim.
+M51 userspace source0aba912faa573ad60b1bbfa596f76d5f4191ec4e.
+CI41019447588 attempt2 SUCCESS. Attempt1 stopped in unchanged M43 host injected
+pre-exec hold: expected216 gotSIGALRM14; new scene compile not reached. Same
+source rerun passed real-host CFnotify/IOSurface sharing+injected failures,
+all kernel-parser/user-orchestration regressions and actual new renderer test.
+Target iOS arm64 strict compile and signature verification PASS.
+Kernel exact M50B649df6bd... copied from successfulCI41016867150, no new kernel.
+Independent HFS inventory78 entries: only /sbin/m39-probe bytes changed;
+all original Apple files/ownership/modes identical; M39/M40/M41 object bytes
+identical M50A; actual new probe all CodeDirectory SHA256 pages verified.
+New full root7bb53fa7640825c9ece80888d02fc15d370abcb02bc310f6c23d8263d94735e4.
+Boot33566720/AP33577011; old shim/DTB/commandline/RAM255MiB unchanged,
+ADT RAMDisk a21b8000, tar boot.img only, MD5footer and44MiB fit PASS.
+AP ../artifacts/m51-scene/AP_M51_SCENE.tar.md5
+SHA2564184465214f4be94fa00f7c6ec7a3009dcffd7f34b871afc4eceda7b7f43af9a
+Expected original full M50 death/recovery first, then CPU desktop/window/chart
+animation16frames, console restoration, exit73/AUTO wait4900 and counters0.
+Only first2frames use old temporary restore; IDs3..16 persist until close.
+No SpringBoard, real app windows, touch, GPU, vsync/tear-free or devicePASS claim.
+M50A/M50B known-good AP hashes rechecked unchanged. No agent flash.
+All evidence/build logs/preview/checks at ../artifacts/m51-scene/.
+
+Previous records follow:
+
 2026-10-30 M51 CPU scene in progress; startup intermittency explicitly DEFERRED
 
 User asks to skip intermittent startup diagnosis and advance graphics work.

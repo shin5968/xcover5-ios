@@ -51,4 +51,3 @@ with tempfile.TemporaryDirectory() as tmp:
   if fault:assert where in p.stderr and 'M51 PASS:' not in p.stdout
   else:assert 'M51 PASS:16 composed frames/14 persistent copies;' in p.stdout
 print('M51 actual renderer and submit code: clipping/extreme coordinates/canaries/z-order/16 distinct scenes, two surfaces, hash integrity, premature completion and failed restore rejection PASS; framework mocked, no device claim')
-
