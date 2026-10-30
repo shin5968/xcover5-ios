@@ -1,3 +1,25 @@
+2026-10-30 M53 explicit-font CoreText text IN PROGRESS
+
+Next after hardware M52 native74; boot intermittency explicitly deferred.
+M53 owned7,996byte outline TrueType embedded in executable (generated5x7 Latin
+uppercase/digits/space/slash/hyphen, no Apple font copy/root additions). SHA256
+f8d62b9785b1192112d0a56384a2d5171861d4db803b942ba9caebcef81bbdac.
+Generator tools/make_panel_font.py requires fonttools only for regeneration;
+scoped local dependency ../research/m53-text/python-deps, no global install.
+Actual SDK-typed CoreText11functions via dlopen after M52 baseline74: provider/
+CGFont/CTFontCreateWithGraphicsFont, exact font PostScript name check, native
+UTF16 character-to-glyph map and advances and CTFontDrawGlyphs. Explicit custom
+font avoids reliance on system font lookup, but no claim all daemon use absent.
+Labels CORETEXT M53 / XCOVER5 IOS / FRAME NN / 16 / 720 X 1480 BGRA / SURFACE READY.
+Must reject missing glyph/nonASCII/too-long/out-of-bounds text. Count at least500
+actual white text pixels after base scene had0, preserve BGRA rails/opaque alpha.
+Then original16 standard submits and hash/hold/restore/released-ID gates.
+Success75/wait4b00 only after M52 baseline74. Failure195setup/196submit/197text.
+No new kernel/Apple root files, no shaping/Unicode fallback/CoreAnimation/GPU/
+SpringBoard/input/vsync claim. Host macOS real CoreText tests/target build pending.
+
+Previous records follow:
+
 2026-10-30 M52 video164506 HARDWARE PASS (one run)
 
 Video136.54s, final135s: PID6 rv4a00/AUTO wait_status4a00/launchd exit74;
