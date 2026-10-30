@@ -1,3 +1,26 @@
+2026-10-30 M56 video181712 + photo182206: platform gate PASS; UI not ready
+
+Video124.56s frame72/78 directly shows CSOPS seq2 target6 SpringBoard
+status24000001 rc0 pb_after1, then launchd running/INIT/successfully spawned
+SpringBoard[6] and exec source created. Previous M55 non-platform panic absent
+through capture, PID1 continues. Direct PINNED_UI print not separately captured;
+platform state itself proven by CSOPS. This confirms process start, not UI ready.
+Photo182206 confirms observerPID7 exit77/AUTO wait4d00; capture endpoint only.
+Photo shows cfprefsd setting io policy EPERM, not established fatal. Video90s
+launchd denies com.apple.chronoservices lookup from SpringBoard[6], flags0x200,
+error159 Sandbox restriction. This is new observed service/bootstrap problem;
+not proof it is fatal or sole blocker. Current staging includes no chronod/job.
+Original rootfs has com.apple.chronod.plist and ChronoCore.framework/Support/
+chronod, so inspect actual job/service dependencies and registration plus scoped
+lookup authorization next; do not globally allow sandbox or fake service success.
+Backboard job scheduled/xpcproxyPID8/source attached, native exec/readiness not
+confirmed in sampled evidence. No lockscreen/panel UI/CoreAnimation readiness.
+Review/video+photo hashes/native frames72/78/90/102/end/contact at
+../artifacts/m56-ui-platform/video-181712/. No new kernel/package/flash in review.
+Actual boot/lockscreen priority retained; boot intermittency still deferred.
+
+Previous records follow:
+
 2026-10-30 M56 exact UI identity classification PACKAGE VERIFIED; hardware PENDING
 
 Final kernel source6ac49f631531008bb90108c31ccd54d955fe1b48 CI41030502759 SUCCESS.
