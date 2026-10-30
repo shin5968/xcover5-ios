@@ -1,0 +1,318 @@
+{
+  "System/Library/FeatureFlags/Domain/RunningBoard.plist": [
+    657,
+    "c7326e63230924a0bc23113d2f767cac52bcacf5daeb5c23aaf43de26c5f376b"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.Accessibility.plist": [
+    1141,
+    "d595ffc55845a891b3e01d03e0d604b002150f00ea0f226d79821b9ebc2a51a2"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.AccessibilityUIServer.plist": [
+    792,
+    "a00a642995082c6a015acbb888d3986b3043e3c2c49af33c6f28f94e9711399c"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.accessoryd.plist": [
+    599,
+    "28e2096407a4b495a8dc17eb7dbcf78a47395f214d74c9f065f10ec735e5ba02"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.airplayreceiver.plist": [
+    860,
+    "5e5585652889e9173f9690722e1ff2c096cbfc7469d1b13d631c92b0a8c5e72b"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.appleevents.plist": [
+    539,
+    "3984b1fd16dd665da325ac55e529ea651c9f9f13270bd9e6644fb9c2cf6f3b75"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.AppStoreComponents.plist": [
+    709,
+    "f6281cc37dcc86eaeb7f29be838fdbcc2529d388aa49a749dde10334575c8058"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.AVAudioDeviceTestService.plist": [
+    799,
+    "5d5707b6fac40568854d91164886a3bc822c46b1b9b5f6a2798a9f0ae2e6de91"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.backlightservices.plist": [
+    998,
+    "ca55ee13aef943ca8074f5baaec44c0b0a50daf1aea389ff04e4ea1f77a02f5c"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.callservicesd.plist": [
+    1007,
+    "4b4877ff02d4fd3a66f4c932edb65986d834857ef06a760d316973fc3b1db199"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.cameracapture.plist": [
+    831,
+    "b73f3a98a390e4f7ddb61d76e8e17a6d6c4df3b946bea1bb664a8d99c09984d3"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.CaptiveNetworkSupport.plist": [
+    976,
+    "d898220e8148c3087b311966d00daa9b04f77b30b583783f47cfeccdf77b71a7"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.cfnetwork.plist": [
+    806,
+    "37d21e94032e30ebffbdf88679f6ef8db6abece9296ada9cf9e4dbdf2c5773ea"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.chronod.plist": [
+    1076,
+    "7ce32befda08e3998e1758aa2c9377185c498086b5376a155c75e02f0babb8e6"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.common.plist": [
+    2107,
+    "866bc62be25795529e848ddbcb34bb2f71d21066da52d112f9240c45c1abe57f"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.compass.plist": [
+    672,
+    "8ce169c763ff63f51a903ab0d19dca49eac7a23d5d2b4731d83064285d13e65e"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.coremedia.plist": [
+    809,
+    "051e8a034b2cfc400c1044e82b935a875bf983a6b0a68ada2911a11251196ab2"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.coreos.plist": [
+    709,
+    "7d2b1eb2201e9c461a9bc0794dba64fff75992700168a1b9ffcf169cbc209b22"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.coreservices.useractivityd.plist": [
+    538,
+    "7a14b55de16563304b36d4d6c4abf8d14aae24fab12e2fd422d342cd7019fb90"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.dasd.plist": [
+    1840,
+    "d4a0d920a5e8202f09cebf4ddc7e931d8f13cf39953eaf83c1eabbe36add4dec"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.DesktopServicesHelper.plist": [
+    667,
+    "30b07e7a2fa66c469032dc4988f67af349d8d6af38d2c395d07f312fd72ba944"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.displayarchive.plist": [
+    464,
+    "b93e01001c743b7fe32d6258041c202a2244f1ee2b541fdaa358d5d09716bd6d"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.DragUI.plist": [
+    758,
+    "994aac869dac6638be1d662ec8be4e926bfb39d24209f5e748b09371e8d596ad"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.dt.xctest.plist": [
+    1073,
+    "c882314aef44655279317073f34aebf6b6f94227b27fe0acc31022979b00f662"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.DTServiceHub.plist": [
+    242,
+    "95e9f1c364e3c559486bea5b6d96053675b9aa744c7e2b6b0da97e3beb2f6594"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.email.plist": [
+    693,
+    "07d60b8d78e9d6de472ee7bb176e6df9b9a2996ad37d6e9770dae9e23457f1d0"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.extensionkit.plist": [
+    846,
+    "e3789072c4eef402d0003e203fa2b6ac6a68ff39a3b6d2444529711b48068a49"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.FileProvider.plist": [
+    1083,
+    "f67d417064ea29f0bc6f42e13a520068de5a13c33db8d7ac50f98d21c2ba147d"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.frontboard.plist": [
+    7229,
+    "bd4d62049fd33f72c64f867a73bd1b8120bbd8751e7b6c2fa008d2ee3d08b897"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.fuseboard.plist": [
+    1385,
+    "d8d52ffd2a99e631be78fc7e47c9f7b70f46257abedf0f92eb9be0a757602dd2"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.GameKit.plist": [
+    619,
+    "d65db6833846133859dd307b2941619cb99772e6a6ec51284ad699018d0fa847"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.iapd.plist": [
+    826,
+    "ec2ac0645b34c249c1cece0c494ec7d7e55a22208154f9e807cf31a2e7c27bb9"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.internal.suiuntool.plist": [
+    565,
+    "fec47e755a48570b8346150c53f07d6c84a2054200c1b6f6454ea2dc44d4e3cd"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.launchservicesd.plist": [
+    42,
+    "9261ecceda608ef174256e5fdc774c1e6e3dcf533409c1bc393d490d01c713f1"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.location.testapps.plist": [
+    890,
+    "4a103f54b57e53512d971c0ba1af12defc4c3022d897393d327741b1e62b92d6"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.locationd.plist": [
+    950,
+    "a2d58e25b42d0674d58ae7c82d6590e551e4c85148c8ed734134b7a4f2ec760f"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.maps.plist": [
+    804,
+    "d750dfe27a203a30cffc26159f739bb1b23cb8b5e76e7c6ebc53eec05263b7de"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.mediaexperience.plist": [
+    1221,
+    "742202d95ee677bc5bdf7ef26f779f8c75149565b5203651f702e19eee30d3ee"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.MediaPlayer.RemotePlayerService.plist": [
+    790,
+    "2800da483568a7d12fc00f0df2726ac6ed4b27e3eed7cb3b24d9a34339a6f458"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.mediaremote.plist": [
+    624,
+    "196806640c2d34c3571c127f754638a413239a16470edc1780ad0008a755089e"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.MGAgent.plist": [
+    664,
+    "4b4f91d7a91aea81a800295ba15d73f0a10f7d655a372a322785ac9e5e7a05e8"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.mscertificationassistant.watchkitapp.plist": [
+    770,
+    "f98f27a38a8407c97e0e427044e3fb5ab9d02639a42659810bfbf71461b80ce6"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.music.plist": [
+    528,
+    "daa89b1c5b07d70fb71de5f173ab201707ab026c150384a44656c1085902a064"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.NearbyInteraction.plist": [
+    879,
+    "fcdb81078a414fe36e10df9c65e6c0f4a1800ad378ae5a8d307139b8221fd5c5"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.NLPLearner.plist": [
+    858,
+    "41962e47a1840f61ce8d292200a5cf4478b932d4bffb1ca5fe3214f6a8d13970"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.PassbookUIService.plist": [
+    1132,
+    "340be11d1e5da6c2136dcc2870b16b596c4244e65d00f094c89a43ee2d8f03bb"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.photos.plist": [
+    919,
+    "a0b98f965aaa3e9e8d3f1968ff310cc542ccc21b549ce5a4722a34e5eceb97c8"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.pictureinpicture.plist": [
+    1253,
+    "f6ad1ef2cbddf634699a1c8b4f908937c3255594307bf5e3399a8251cd65df31"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.playgrounds.plist": [
+    405,
+    "20d96e510faae6c3d9662ead2b61474ef6ceb65be1f147205eff7ab1e65448f8"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.pluginkit.plist": [
+    604,
+    "20fe68dcdfe7df1d5e70b5c860780a8a024e5360520d014ae31af0e699e890e0"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.PosterKit.plist": [
+    872,
+    "2cf4bbe86d9bcd4b155b39430ec479542d29c4e32b8eb75e3331e6cf0823743f"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.posterkit.provider.plist": [
+    1610,
+    "773317ff14bbf6574d601c9fd8f1d808fef05d288bf352533b78359bc51ba85b"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.purplebuddy.plist": [
+    780,
+    "0f630ac1710b518f5fa172dcf717c8798b2c9ccb55f84519c29daca90b446520"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.SafetyKit.plist": [
+    1011,
+    "ecda76de2d076dff7c4661d918faab310cfc3874697ea8bdae1e20cbcb0c5548"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.sensorkit.plist": [
+    625,
+    "c3f290d56aa79f57b5732401362ede8aed11c172f46bb1c2ff4363d7fe6b7e62"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.seserviced.plist": [
+    960,
+    "8bf35018e1c6b9d06ca5c992db931b669abcf023f41ca4f86616920b224d3b7b"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.sessionkitd.plist": [
+    735,
+    "aaebf9406900ffa4612aba90fa88927d7c0f336ad14fc1aeea5b7487c555a663"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.shortcuts.plist": [
+    449,
+    "1b4db745112779e754eb52e2fd0692508e34d035b407f886ccc8f1241e4775f1"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.siri.plist": [
+    1574,
+    "6d4189430be7ae0b61dd55092ce59f60daf0f6a29eb50bb7728ec9139104b7c1"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.sociallayer.plist": [
+    1068,
+    "324cc1da1b7604395bf95f02f553ea7ec59b85fec727060370523d0a27921e22"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.SOSBuddy.plist": [
+    579,
+    "51d3fe2592297a25e84d579d8058cef3ce50d2b6dfb7199d3231638a944b6fd8"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.speed.plist": [
+    958,
+    "68b77687e7001f08149203569ce918d903efeb8e6745c6eb39b977a88d96f161"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.sports.plist": [
+    659,
+    "31c595d289d5121d4c8d0c321ee4d90ffe7c56fe54b2e5f075390ab797ec2d4c"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.spotlight.plist": [
+    1073,
+    "933dafb9d6cce13bfc1a975886aef55a5fb1afb35090944868c1cd70e658156f"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.stocks.plist": [
+    811,
+    "d38c892f86bf05f55e59e1f62d8cb67d95a434792500e885726f09fad99d870c"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.swiftuitracingsupport.plist": [
+    972,
+    "2e2b68317ebb238e83baeba809768cf06ad4ef8061aba0431471ad7009f0057c"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.taptoradar.plist": [
+    726,
+    "6fa4a2cce44f18d445f7c21aa3b87e18ec34b2197557506008d3408804b574ef"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.testing.plist": [
+    767,
+    "1615dfc39d75487e7b160dac29684462655bc0b5063e9103d2f6165aab88aca1"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.uikit.plist": [
+    601,
+    "d10ff1e50f29c059ebd3c14980245bd16a44e86ccfbf87422df18fed9d9647bd"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.underlying.plist": [
+    1193,
+    "e5be0241d9d8312fcd5f0de5d6c4df0da9f34f8cc64d6929b0aebb492cb3dbd1"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.viewbridge.plist": [
+    607,
+    "83654cf23d30ce117d64ac482882607814283732d92f6e751eee6977e36f7f62"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.wallpaperkit.plist": [
+    400,
+    "c2ac2d9ab256bb10cfb7895fc344513d3b926a951d614628017d2b33dba5746b"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.watchconnectivity.plist": [
+    759,
+    "b46dba3fbcfed65b09a0ff5aac2f9b97832bbab74f1c6e545ea0583b82725d79"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.webkit.plist": [
+    1917,
+    "4b704232e5c00cd02480c57a2464f205c5b611ef1622931fdc3b4ed856670b32"
+  ],
+  "System/Library/LifecyclePolicy/DomainAttributes/com.apple.xcodepreviews.plist": [
+    631,
+    "a599a660268e8f3c580a3b50f84b9e2a596d66f3615353421667b6c057814222"
+  ],
+  "System/Library/LifecyclePolicy/domains.plist": [
+    3045,
+    "187030b650254af4c24262eec8e2d735b3e4ca2ad6c830e205ecf01f8bed86b2"
+  ],
+  "System/Library/RunningBoard/runningboardEntitlementsConfiguration.plist": [
+    1085,
+    "3d9237f61207c8df61c0195d777b6f85a93b753a1c8e1af0b0e60eada6ac717d"
+  ],
+  "usr/share/zoneinfo.default/Etc/UTC": [
+    118,
+    "ab1ddb33c7187e56408033a8165ea3b1432e024710e7ab2aafec036a8bd7f09a"
+  ],
+  "usr/share/zoneinfo.default/UTC": [
+    118,
+    "ab1ddb33c7187e56408033a8165ea3b1432e024710e7ab2aafec036a8bd7f09a"
+  ]
+}

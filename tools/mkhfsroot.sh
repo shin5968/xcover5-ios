@@ -31,7 +31,9 @@ PREFSPROBE=${27:?PREFSPROBE required}
 WORK=$(mktemp -d)
 cleanup() { hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
-hdiutil create -size 16m -layout NONE -fs 'Case-sensitive HFS+' -volname XCOVER5TEST "$WORK/root.dmg" >/dev/null
+ROOT_MIB=16
+if [[ "${XCOVER_M63_BOOT:-0}" == 1 ]]; then ROOT_MIB=24; fi
+hdiutil create -size "${ROOT_MIB}m" -layout NONE -fs 'Case-sensitive HFS+' -volname XCOVER5TEST "$WORK/root.dmg" >/dev/null
 hdiutil attach -owners on -nobrowse -mountpoint "$WORK/mnt" "$WORK/root.dmg" >/dev/null
 sudo mkdir -p "$WORK/mnt/sbin" "$WORK/mnt/dev" "$WORK/mnt/private/var" "$WORK/mnt/emmc"
 sudo cp "$INIT" "$WORK/mnt/sbin/launchd"
@@ -89,6 +91,9 @@ if [[ "${XCOVER_HACKIOS_BOOT:-0}" == 1 ]]; then
   sudo python3 tools/stage_hackios_boot.py "$WORK/mnt"
   sudo cp "$(dirname "$INIT")/libxcover-hackios.dylib" "$(dirname "$INIT")/libxcover-hackios-sb.dylib" "$WORK/mnt/usr/lib/"
   sudo chmod 755 "$WORK/mnt/usr/lib/libxcover-hackios.dylib" "$WORK/mnt/usr/lib/libxcover-hackios-sb.dylib"
+  if [[ "${XCOVER_M63_BOOT:-0}" == 1 ]]; then
+    sudo python3 tools/stage_m63_resources.py "$WORK/mnt"
+  fi
 fi
 sudo cp "$LAUNCHDPROOF" "$WORK/mnt/sbin/m35-proof"
 sudo chmod 755 "$WORK/mnt/sbin/m35-proof"
@@ -108,17 +113,20 @@ if [[ "${XCOVER_UI_BOOT:-0}" == 1 ]]; then
   sudo chown -R 501:501 "$WORK/mnt/private/var/mobile/Library"
 fi
 sudo chmod 644 "$WORK/mnt/System/Library/LaunchDaemons/org.xcover5.m35.proof.plist"
+if [[ "${XCOVER_M63_BOOT:-0}" == 1 ]]; then
+  sudo python3 tools/stage_m63_resources.py "$WORK/mnt" --apply-var
+fi
 sync
 hdiutil detach "$WORK/mnt" >/dev/null
 hdiutil convert "$WORK/root.dmg" -format UDTO -o "$WORK/raw" >/dev/null
 cp "$WORK/raw.cdr" "$OUT"
-python3 - "$OUT" <<'PY'
+python3 - "$OUT" "$ROOT_MIB" <<'PY'
 import sys,struct
 with open(sys.argv[1],'rb') as f:
  f.seek(1024);h=f.read(48)
 assert h[:2] in (b'H+',b'HX'), 'not raw HFS+ at offset1024'
 block,count=struct.unpack_from('>II',h,40)
-assert block*count<=16*1024*1024
+assert block*count==int(sys.argv[2])*1024*1024
 print('Raw HFS root verified:',sys.argv[1],block,count)
 PY
 

@@ -1,0 +1,11 @@
+{
+  "upstream": "hackios-xnu-userland",
+  "commit": "a79ff0772a3454fd1ef127e181e5b3bce6c9ce18",
+  "algorithm": "ios165/mkvarskel.py + build.sh timezone/mobile-tmp/seed recipes + init.c fresh-log migration markers",
+  "source_metadata_sha256": "d3246db1aa1a469d8a005c7e84c5e3be89d55855181e230c2a19bb96e488e1f6",
+  "original_skeleton_sha256": "cbcc5a6f9787ca250612cd3ce08c2b02e7dbafe9a332d4659d0aad0854f85ed2",
+  "resource_files": 79,
+  "resource_bytes": 74951,
+  "timezone": "UTC baseline; links match actual staged zoneinfo.default data",
+  "migrated_markers": "empty0644 uid272 gid272, native fresh-store recipe; not a byte cap"
+}
