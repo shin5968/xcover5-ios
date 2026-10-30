@@ -1,3 +1,26 @@
+2026-10-30 M55 video174545: actual UI launch reaches platform classification PANIC
+
+Video53.96s, final52s clear panic: userspace panic unexpected exec of non-platform
+binary /System/Library/CoreServices/SpringBoard.app/SpringBoard: com.apple.SpringBoard[6].
+Panicked task PID1 launchd.ios. CSOPS target6 SpringBoard status00000001 rc0
+pb_after0: signature-status query succeeds, platform classification absent.
+Also prints handshake structure not initialized; independent causal relation
+not established. Persona errno3 warnings followed by speculative launch, not
+shown fatal. At39s launchd scheduled backboardd and xpcproxy spawnedPID8; actual
+backboardd exec/readiness not confirmed. No observer77/lockscreen success.
+This is actual UI launch classification failure before rendering, not M54 draw
+regression. Existing0052/0055 notifyd and0058 cfprefsd pin iOS2 exact CDHash after
+successful signature checks. No equivalent UI pins currently present. Next
+implementation target: original verified UI signed-platform classification with
+exact identities/negative tests; preserve parser/page checks and no blanket
+name/path/AMFI bypass. Native code-directory identities extracted into evidence
+for review, kernel NOT modified or rebuilt during this media-review turn.
+Review/original hash/native frame52/39/contact/code identities at
+../artifacts/m55-ui-boot/video-174545/. Existing M55 and graphics AP unchanged.
+Actual boot/lockscreen remains priority; boot intermittency still deferred.
+
+Previous records follow:
+
 2026-10-30 M55 REAL UI START observation PACKAGE VERIFIED; hardware PENDING
 
 Direction is actual iOS boot and lockscreen, no further synthetic graphics steps.
