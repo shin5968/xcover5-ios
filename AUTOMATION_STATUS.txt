@@ -1,3 +1,48 @@
+2026-10-30 M49 persistent full-panel PACKAGE VERIFIED; device PENDING
+
+Complete M48A hardware-passing baseline retained. New fresh standard framework
+connection submits16 exact720x1480BGRA frames across two alternating surfaces.
+IDs1/2 retain old2s display/restore; IDs3..16 keep original console saved and
+copy/readback entire panel before advancing actual completion.250ms user holds
+between14 persistent frames; no timing/vsync promise. Moving red/green vertical
+bar, dark blue background and white perimeter. Source hashes checked each swap;
+premature completion and17th Begin rejected. Framebuffer mapping unchanged.
+CFRelease closes display, restores/readbacks original console, frees saved
+4262400-byte block once; free fallback also restores. Pinned XNU source
+IOUserClient::clientDied invokes clientClose; physical signal/death cleanup NOT
+yet verified. One temporary frozen-pixel block per call, one saved block while
+active; no scanout surface reference retained after CPU copy. Read-only custom
+selector93 is diagnostic; actual submissions still standard4/5/6. Snapshot
+requires generation+1, active0, ownerPID match,14 copies,last16,restore0;
+both IDs gone before final71 / wait4700. Fail187..189 needs exact m49_* marker.
+M39/M40/M41 objects byte-identical M48A; logical root files/ownership unchanged
+except probe. Signature pages, manifests/kernel equality, old shim/DTB/cmdline,
+255MiB memory/ADT layout, boot-only OdinMD5/partition fit all PASS.
+Actual guarded full copy14 updates/all-pixel readback/original snapshot/edge
+canaries, actual parser/helper/dispatch/close tests including allocation/copy/
+restore failures/replay/single free/fallback, actual user orchestration and
+corrupt source/bad restore/premature wait rejection PASS. Framework mocked in
+user orchestration; host test result is not device proof. Existing regressions
+and real macOS CF/notify/IOSurface tests PASS.
+Initial user CI41003282289 hit existing host M43 fault outer30s deadline; no
+package produced. Changed host collection only to45s with partial-output capture
+(native alarm30s and required216 unchanged); corrected test to avoid calling
+mock object after free. Re-run passed both distinct phase faults. Exact cause
+of initial host overrun not established; no target stability/fix claim.
+Kernel source7c778ce7496b35cf6017e968268aa1a591674683 CI41003224089 SUCCESS;
+user source6e22a1b779bb0dadf225a11a9e4279ff1efb2f2e CI41003569169 SUCCESS.
+Only two host-test files differ; target source/patches unchanged between these.
+AP ../artifacts/m49-persistent/AP_M49_PERSISTENT.tar.md5
+SHA256 d317929489563ddad1e9116c45c2025962bb3df447dc62c9bab68f329bc5df38
+Kernel7971f37bfa24bd226b6d5f6352f35a88b6e3da88a0a6edd1e3cc8366267b37bb
+M48A known-good hash rechecked unchanged. No agent flash. Need device moving
+full-panel bars without console between IDs3..16, then console restored with
+M49 RESTORE frames14 last16 reason1/2 rc0 and final71/4700 plus zero surface
+counters. Earlier intermittent M39/M40/M43 failures remain unresolved; no
+compositor/GPU/vsync/touch claim. Repeated cold boots remain device work.
+
+Previous records follow:
+
 2026-10-30 M48A video131846: full-panel hardware PASS (one run)
 
 71s entire panel eight color bars with white perimeter;73s full8x8 checkerboard;
