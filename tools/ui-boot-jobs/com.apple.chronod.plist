@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.apple.chronod</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/System/Library/PrivateFrameworks/ChronoCore.framework/Support/chronod</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>MallocStackLoggingDirectory</key>
+		<string>/private/var/tmp/com.apple.chrono</string>
+	</dict>
+	<key>MachServices</key>
+	<dict>
+		<key>com.apple.chrono.widgetcenterconnection</key>
+		<true/>
+		<key>com.apple.chronoservices</key>
+		<true/>
+	</dict>
+	<key>POSIXSpawnType</key>
+	<string>Interactive</string>
+	<key>KeepAlive</key>
+	<dict>
+		<key>Crashed</key>
+		<true/>
+	</dict>
+	<key>LaunchEvents</key>
+    <dict>
+        <key>com.apple.distnoted.matching</key>
+        <dict>
+            <!-- Required: Modifies potential descriptor availability for the add-sheet, as well as content for configured widgets on updates -->
+            <key>application-installed</key>
+            <dict>
+                <key>Name</key>
+                <string>com.apple.LaunchServices.applicationRegistered</string>
+            </dict>
+            <!-- Required: Restrictions can modify descriptor availability -->
+            <key>application-restriction-changes</key>
+            <dict>
+                <key>Name</key>
+                <string>com.apple.LaunchServices.applicationStateChanged</string>
+            </dict>
+            <!-- Required: Modifies descriptor availability for the add-sheet -->
+            <key>application-uninstalled</key>
+            <dict>
+                <key>Name</key>
+                <string>com.apple.LaunchServices.applicationUnregistered</string>
+            </dict>
+        </dict>
+        <key>com.apple.notifyd.matching</key>
+        <dict>
+            <!-- WIDGET CONTENT CHANGES -->
+            <!-- Widget content staleness -->
+            <key>significant-time-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>SignificantTimeChangeNotification</string>
+            </dict>
+            <!-- Impacts plugin content needing to be redacted/unredacted -->
+            <key>keybag-status-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>com.apple.mobile.keybagd.lock_status</string>
+            </dict>
+            
+            <!-- WIDGET ENVIRONMENT CHANGES -->
+            <!-- Widget environment: Bold Text -->
+            <key>environment-accessibility-bold-text-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>com.apple.accessibility.cache.enhance.text.legibility</string>
+            </dict>
+            <!-- Widget environment: Invert Colors -->
+            <key>environment-accessibility-invert-colors-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>com.apple.accessibility.cache.invert.colors</string>
+            </dict>
+            <!-- Widget environment: Reduce motion -->
+            <key>environment-accessibility-reduce-motion-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>com.apple.accessibility.cache.reduce.motion</string>
+            </dict>
+            <!-- Widget environment: Differentiate without color -->
+            <key>environment-accessibility-differentiate-without-color-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>com.apple.accessibility.cache.differentiate.without.color</string>
+            </dict>
+            <!-- Widget environment: Increased Contrast -->
+            <key>environment-accessibility-increased-contrast-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>com.apple.accessibility.cache.darken.system.colors.enabled</string>
+            </dict>
+            <!-- Widget environment: Reduce transparency -->
+            <key>environment-accessibility-reduce-transparency-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>com.apple.accessibility.cache.enhance.background.contrast</string>
+            </dict>
+            <!-- Widget environment: Preferred Content Size -->
+            <key>environment-accessibility-preferred-content-size-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>ApplePreferredContentSizeCategoryChangedNotification</string>
+            </dict>
+            <!-- Widget environment: Locale - Language -->
+            <key>environment-accessibility-language-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>AppleLanguagePreferencesChangedNotification</string>
+            </dict>
+            <!-- Widget environment: Locale - Region -->
+            <key>environment-accessibility-region-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>AppleNumberPreferencesChangedNotification</string>
+            </dict>
+            <!-- Widget environment: Locale - Calendar 1 -->
+            <key>environment-accessibility-region-date-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>AppleDatePreferencesChangedNotification</string>
+            </dict>
+            <!-- Widget environment: Locale - Calendar 2 -->
+            <key>environment-accessibility-region-time-changed</key>
+            <dict>
+                <key>Notification</key>
+                <string>AppleTimePreferencesChangedNotification</string>
+            </dict>
+        </dict>
+	</dict>
+	<key>UserName</key>
+	<string>mobile</string>
+	<key>ThrottleInterval</key>
+	<string>3</string>
+	<key>EnablePressuredExit</key>
+	<true/>
+	<key>RunAtLoad</key>
+	<false/>
+</dict>
+</plist>

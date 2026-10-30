@@ -117,6 +117,7 @@ jobs:
           python3 tools/test_m50a_transport.py
           python3 tools/test_m50b_bootdiag.py
           python3 tools/test_m56_ui_platform.py
+          python3 tools/test_m57_chrono.py
 
       - name: Fetch build script
         run: |
@@ -134,7 +135,7 @@ jobs:
           p=Path('dxb/build.sh');s=p.read_text()
           anchor='        done\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()'
           assert s.count(anchor)==1,'pinned patch-phase boundary changed'
-          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m56_ui_platform.py" "${WORK_DIR}/xnu" --source-only\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
+          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m56_ui_platform.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m57_chrono.py" "${WORK_DIR}/xnu" --source-only\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
           p.write_text(s)
           PY
 
@@ -248,6 +249,13 @@ jobs:
         run: |
           python3 tools/test_m45_submit.py dxb/xnu
           python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M45 SUBMIT_PASS" in k.read_bytes() for k in ks)'
+
+      - name: Verify exact Chrono service lookup
+        run: |
+          if test -d dxb/xnu; then
+            python3 tools/test_m57_chrono.py dxb/xnu
+          fi
+          python3 -c 'from pathlib import Path; ks=[k for k in Path("dxb/fakeroot/System/Library/Kernels").glob("kernel.*") if k.is_file()]; assert ks and all(b"XCOVER5 M57 CHRONO_LOOKUP" in k.read_bytes() and b"XCOVER5 M57 CHRONO_PLATFORM" in k.read_bytes() for k in ks)'
 
       - name: Verify exact UI signature classification
         run: |

@@ -1,3 +1,30 @@
+2026-10-30 M57 actual Chrono registration + exact SpringBoard lookup IN PROGRESS
+
+M56 platform gate passed; observed com.apple.chronoservices lookup159.
+Original iOS16.5 chronod65184 SHA361abe1f... and original frameworkInfo782
+SHAa63db088... extracted locally. Original chronod job supplies chronoservices
+and widgetcenterconnection, mobile501, demand activation. M57 stages actual
+native bytes locally after CI placeholders, preserves original service names/
+identity/args; RunAtLoadfalse KeepAlivefalse, console logs, no fake replies.
+Chronod original CD95f7eeff86d8dad615c7b578dae53f6154351c8d classified only
+platform2/adhoc2 after successful MACF validation, alongside existing UI pins.
+Lookup fallback only when no registered Sandbox handler accepted call2:
+real initproc/root64 caller, exact mach-lookup/filter6/flags40000000, exact
+chronoservices. Client must UID501/ppid1/64bit/audit PIDversion match and valid+
+signed+platform flags; proc_getcdhash copied identity must equal original
+SpringBoard453ae2... . Recheck version/credentials/flags after hash copy to
+reject concurrent exec (source confirms exec increments proc_pidversion).
+Other services/clients/cross-domain operations remain denied. No file-read or
+other sandbox grant. Real service may expose further runtime dependencies.
+Actual policy UBSan includes denied UID/ancestry/flags/hash/copy/output faults,
+stale audit token/exec race, ref balance. Demand staging/injection tests PASS.
+Replayed all prior mac_base patches and postM56 ubc source, git apply and early
+source-only checks PASS. New0087/public identity/security helper, builds pending.
+Existing M55 observer77/capture45s unchanged; never lockscreen-ready claim.
+Actual boot/lockscreen remains priority; boot intermittency remains deferred.
+
+Previous records follow:
+
 2026-10-30 M56 video181712 + photo182206: platform gate PASS; UI not ready
 
 Video124.56s frame72/78 directly shows CSOPS seq2 target6 SpringBoard

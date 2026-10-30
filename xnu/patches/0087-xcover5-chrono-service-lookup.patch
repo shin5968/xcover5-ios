@@ -1,0 +1,85 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -1669,6 +1669,7 @@
+ #include "xcover5_prefs_write.h"
+ #include "xcover5_prefs_self_lookup.h"
+ #include "xcover5_prefs_remote_read.h"
++#include "xcover5_chrono_lookup.h"
+ #endif
+ 
+ int
+@@ -1735,6 +1736,7 @@
+         if (error == ENOPOLICY) error = xcover5_preferences_write(p,uap->arg);
+         if (error == ENOPOLICY) error = xcover5_preferences_self_lookup(p,uap->arg);
+         if (error == ENOPOLICY) error = xcover5_preferences_remote_read(p,uap->arg);
++        if (error == ENOPOLICY) error = xcover5_chrono_lookup(p,uap->arg);
+     } else if (uap->call == 4 && strcmp(target, "Sandbox") == 0) {
+         error = xcover5_prefs_container_path(p, uap->arg);
+     } else if (uap->call == 12 && strcmp(target, "Sandbox") == 0) {
+--- a/bsd/kern/ubc_subr.c
++++ b/bsd/kern/ubc_subr.c
+@@ -42,6 +42,7 @@
+ #if defined(XCOVER5)
+ #include "xcover5_notify_platform.h"
+ #include "xcover5_ui_platform.h"
++#include <sys/xcover5_chrono_identity.h>
+ #endif
+ #include <sys/types.h>
+ #include "xcover5_m38c.h"
+@@ -4770,6 +4771,9 @@
+ #endif
+ #if defined(XCOVER5)
+     unsigned int ui_identity=xcover5_ui_platform(tmp_blob.csb_cdhash,cs_flags,platform);
++    if(!ui_identity && platform==2 && (cs_flags&2) && xcover5_chrono_identity(tmp_blob.csb_cdhash)==2) {
++        ui_identity=3;printf("XCOVER5 M57 CHRONO_PLATFORM validated_signature=1\n");
++    }
+     if(ui_identity) {
+         cs_flags |= CS_PLATFORM_BINARY | CS_SIGNED;
+         printf("XCOVER5 M56 PINNED_UI kind=%u validated_signature=1\n",ui_identity);
+--- /dev/null
++++ b/bsd/sys/xcover5_chrono_identity.h
+@@ -0,0 +1,12 @@
++/* Exact original iOS16.5 code identities; classification and lookup callers apply their own guards. */
++#ifndef XC_CHRONO_IDENTITY_H
++#define XC_CHRONO_IDENTITY_H
++static inline unsigned int xcover5_chrono_identity(const unsigned char *hash) {
++ static const unsigned char pins[2][20]={
++ {0x45,0x3a,0xe2,0xe6,0x05,0x7a,0xcb,0x2d,0xea,0x0c,0x5a,0xe8,0xba,0x09,0x73,0x07,0x7e,0xa3,0xea,0xb1},
++ {0x95,0xf7,0xee,0xff,0x86,0xd8,0xda,0xd6,0x15,0xc7,0xb5,0x78,0xda,0xe5,0x3f,0x61,0x54,0x35,0x1c,0x8d}};
++ if(!hash)return 0;
++ for(unsigned row=0;row<2;row++){unsigned difference=0;for(unsigned i=0;i<20;i++)difference|=hash[i]^pins[row][i];if(!difference)return row+1;}
++ return 0;
++}
++#endif
+--- /dev/null
++++ b/security/xcover5_chrono_lookup.h
+@@ -0,0 +1,29 @@
++/* M57 exact launchd audit-token lookup: original mobile SpringBoard -> real chronod service only. */
++#ifndef XC_CHRONO_LOOKUP_H
++#define XC_CHRONO_LOOKUP_H
++#include <sys/codesign.h>
++#include <sys/xcover5_chrono_identity.h>
++static int xcover5_chrono_lookup(proc_t caller,user_addr_t address) {
++ struct {uint64_t result,pid,operation,filter_type,filter,flags,pidversion;} a;
++ char operation[32],service[64];size_t length;int error;uint64_t decision=0;
++ proc_t client=PROC_NULL;unsigned char hash[20];
++ if(caller!=initproc || proc_pid(caller)!=1 || proc_getuid(caller)!=0 || !proc_is64bit_data(caller))return ENOPOLICY;
++ error=copyin(address,&a,sizeof a);if(error)return error;
++ error=copyinstr(a.operation,operation,sizeof operation,&length);if(error)return error;
++ error=copyinstr(a.filter,service,sizeof service,&length);if(error)return error;
++ if(strcmp(service,"com.apple.chronoservices"))return ENOPOLICY;
++ printf("XCOVER5 M57 CHRONO_QUERY pid=%llu version=%llu filter=%llu flags=%llx op=%s\n",(unsigned long long)a.pid,(unsigned long long)a.pidversion,(unsigned long long)a.filter_type,(unsigned long long)a.flags,operation);
++ if(!a.pid || a.pid>INT_MAX || a.pidversion>UINT32_MAX || a.filter_type!=6 || a.flags!=0x40000000ULL || strcmp(operation,"mach-lookup"))return ENOPOLICY;
++ client=proc_find((pid_t)a.pid);if(client==PROC_NULL)return ESRCH;
++ error=ENOPOLICY;
++ const uint64_t required=CS_VALID|CS_SIGNED|CS_PLATFORM_BINARY;
++ if(proc_getuid(client)!=501 || proc_ppid(client)!=1 || !proc_is64bit_data(client) ||
++    (uint32_t)proc_pidversion(client)!=a.pidversion || (proc_getcsflags(client)&required)!=required)goto out;
++ if(proc_getcdhash(client,hash)!=0 || xcover5_chrono_identity(hash)!=1)goto out;
++ /* exec changes pidversion: recheck after copying code identity. */
++ if((uint32_t)proc_pidversion(client)!=a.pidversion || proc_getuid(client)!=501 || proc_ppid(client)!=1 || (proc_getcsflags(client)&required)!=required)goto out;
++ error=copyout(&decision,a.result,sizeof decision);
++ if(!error)printf("XCOVER5 M57 CHRONO_LOOKUP allowed pid=%llu version=%llu exact_signed_identity=1\n",(unsigned long long)a.pid,(unsigned long long)a.pidversion);
++ out:proc_rele(client);return error;
++}
++#endif
