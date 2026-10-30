@@ -1,0 +1,20 @@
+{
+  "kernel_commit": "d82c64a",
+  "userland_commit": "a79ff0772a3454fd1ef127e181e5b3bce6c9ce18",
+  "kernel_sources": {
+    "bsd/kern/kern_minimac.c": "f5c9c9d7a57a0f48951bd6c4cf4cef6bef129765de91007612026688a31a6a0e",
+    "libkern/amfi/miniamfi.c": "e57a00d2d66739823d6828d46d8ed928550a333f45c243bdb44cd777c921314b",
+    "libkern/amfi/miniamfi_entitlements.cpp": "c8a316089739fa497683e87ebdb031197d6758d8b75de1828dca3347896ae26c"
+  },
+  "userland_sources": {
+    "inject.c": "42d1b443ab87acd2d8d4787b59ff2a79f875894f7f7016ece4b57685c5e4debe",
+    "inject_sb.c": "d51412c6a74c35e50fb034c99084660374923c0490bd216d1f67d8786ea180e5"
+  },
+  "adaptations": [
+    "Kernel sources XCOVER5 guards; fail-closed policy registration with marker",
+    "Existing SWEET AMFI table disabled on XCOVER5 to avoid duplicate registration",
+    "Upstream console TIOCSCTTY fix",
+    "Exact UI graph library injection adapted from exec_inject_env; no writable global sysctl",
+    "Existing code-signature parser/page validation retained"
+  ]
+}
