@@ -1,3 +1,38 @@
+2026-10-30 M56 exact UI identity classification PACKAGE VERIFIED; hardware PENDING
+
+Final kernel source6ac49f631531008bb90108c31ccd54d955fe1b48 CI41030502759 SUCCESS.
+0086 binds only SpringBoard CD453ae2e6057acb2dea0c5ae8ba0973077ea3eab1 and
+backboardd CD11627eea9a126a45b9a2b4abd31d6cafd59d7144 with platform2/adhoc2,
+after successful MACF validation before blob flag publication. Set signed+
+platform bits per existing notifyd/cfprefsd flow; parser/page checks unchanged.
+No name/path wildcards, entitlements grant or signature-validation bypass.
+320 one-bit identity mutations plus wrong platform/flags/null/unrelated hashes
+rejected by actual helper UBSan. Kernel literal table checked independently
+against original file SHA and extracted native CodeDirectory hashes. Actual
+fully replayed0052/53/54/55/58 source git apply + hook order/header checks PASS.
+Precompile/postbuild applied-source checks and all earlier regressions PASS.
+CI41029901922 rejected early: context omitted0054 include and hook had assumed
+blank before flag publication. Intermediateae6dbf5 fixed include only and was
+superseded/cancelled CI41030305507. Final diff generated from fully replayed
+actual source fixes both. Rejected/superseded builds never packaged.
+New kernel83199d20ea813bb3423950fbc230f699dc237342e2a78cad84cc15832a8e938e.
+Userspace original032c3ca/M55 CI41028034036 reused; exact whole16MiB root
+8bc2426bae964c4eb750f8eb92245d43e6e791220d65b9bda6c7d4eb4073ae82.
+All UI executable/Info/job/observer bytes and ownership unchanged, original
+native CodeDirectory pages verified. No userspace rebuild or UI-ready claim.
+Boot33566720/AP33577017; old shim/DTB/cmdline/RAM255MiB/RAMDisk a21b8000,
+boot-only tar/MD5footer/44MiB fit independently verified. M54/M55 AP preserved.
+AP ../artifacts/m56-ui-platform/AP_M56_UI_PLATFORM.tar.md5
+SHA2562e95acb1ba17d3b9aea4123483354ba974679a6517563b228680d3638ef859a7
+Expected M56 PINNED_UI kind1SpringBoard/2backboardd then actual UI startup.
+Retest previous non-platform panic; no guarantee later handshake/services/
+framework/render paths ready. Native77/wait4d00 remains observer45s capture
+endpoint ONLY, never lockscreen success. Capture new marker/CSOPS and next error.
+Actual boot/lockscreen is priority; initial boot intermittency deferred. No
+agent flash. All logs/root/identity/signature/package metadata ../artifacts/m56-ui-platform/.
+
+Previous records follow:
+
 2026-10-30 M56 exact UI signed-platform classification IN PROGRESS
 
 Continue actual UI boot after M55 non-platform SpringBoard panic.
