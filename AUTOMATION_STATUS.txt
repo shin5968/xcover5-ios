@@ -1,3 +1,40 @@
+2026-10-30 M55 REAL UI START observation PACKAGE VERIFIED; hardware PENDING
+
+Direction is actual iOS boot and lockscreen, no further synthetic graphics steps.
+Source032c3ca708f8d4699babcc9c56833c3ff8f50fb9 CI41028034036 SUCCESS.
+Original SpringBoard/backboardd and SpringBoard Info locally injected after CI;
+exact pinned SHA/length and all supported CodeDirectory page hashes verified.
+Some original Apple CodeDirectories already carry adhoc flags; original hashes
+are authority, no resigning performed, CMS/platform trust NOT assessed or changed.
+REA open identified SpringBoardarm64/MachO/hash; detailed provider unavailable
+onWindows, dependency list comes from ordinary local load-command parser.
+Native job identities/mobile501 and original service names tested; UI run once,
+stdout/stderr/oslog console. Diagnostic profile omits stock home-screen/hardware/
+RunningBoard activation gates; not faithful full stock boot. No app resources/
+other service set staged yet. Purpose is actual first-exec failure evidence.
+Observer replaces m39-probe with prechecks+45s heartbeat.77/wait4d00 means capture
+complete ONLY, not UI readiness. No previous graphics baseline delay. Both actual
+UI jobs launched by Apple launchd; observer does not spawn/kill them. Kernel
+byte-identical M50B649df6bd... no AMFI/signature/permission/IOFB access widening.
+CI strict iOS observer compile+codesign, staging/injection negative tests PASS.
+Independent HFS89entries: only old file changed /sbin/m39-probe;11 known entries
+added (2binaries+Info,2jobs,2app directories,4mobile Library directories).
+All other Apple files/old ownership/modes unchanged; newmobile dirs501:501/700,
+UI executablesroot0:0/755, configsroot0:0/644. Raw catalog check PASS.
+Root8bc2426bae964c4eb750f8eb92245d43e6e791220d65b9bda6c7d4eb4073ae82.
+Boot33566720/AP33577013, originalshim/DTB/cmdline/RAM255MiB/RAMDisk a21b8000;
+boot-only tar/MD5footer/44MiB partition fit PASS, passingM54 AP preserved.
+AP ../artifacts/m55-ui-boot/AP_M55_UI_BOOT.tar.md5
+SHA25631bf4869d2c66703bdb9f11a73903bf3a8621b289d704a3091bcede253784d1c
+Next device capture: boot through M55 OBSERVATION_END, actual launchd exits for
+backboardd/SpringBoard, dyld/policy/check-in errors. No lockscreen success claim.
+M54 video172844 visual reflow through16+console confirmed, final blurry status
+not confidently transcribed, review stored rather than assuming native76.
+No agent flash. Initial boot intermittency remains deferred. All metadata/logs/
+root/signature/dependency evidence ../artifacts/m55-ui-boot/.
+
+Previous records follow:
+
 2026-10-30 DIRECTION: prioritize real iOS boot/lock-screen; M55 UI launch diagnostic
 
 User explicitly prioritizes actual boot and lock screen over more synthetic
