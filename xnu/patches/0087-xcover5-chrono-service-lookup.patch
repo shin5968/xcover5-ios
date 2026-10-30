@@ -83,3 +83,15 @@
 + out:proc_rele(client);return error;
 +}
 +#endif
+--- a/bsd/sys/Makefile
++++ b/bsd/sys/Makefile
+@@ -248,7 +248,8 @@
+ 	ux_exception.h \
+ 	vnode_internal.h \
+ 	vsock_domain.h \
+-	code_signing_internal.h
++	code_signing_internal.h \
++	xcover5_chrono_identity.h
+ 
+ 
+ # /usr/include

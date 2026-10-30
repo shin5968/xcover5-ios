@@ -10,6 +10,7 @@ identity=added('bsd/sys/xcover5_chrono_identity.h');policy=added('security/xcove
 if len(sys.argv)>1:
  t=Path(sys.argv[1]);assert (t/'bsd/sys/xcover5_chrono_identity.h').read_text()==identity
  assert (t/'security/xcover5_chrono_lookup.h').read_text()==policy
+ make=(t/'bsd/sys/Makefile').read_text();internal=make.split('XNU_ONLY_EXPORTS =',1)[1].split('# /usr/include',1)[0];assert internal.count('xcover5_chrono_identity.h')==1
  s=(t/'security/mac_base.c').read_text();needle='if (error == ENOPOLICY) error = xcover5_chrono_lookup(p,uap->arg);'
  assert s.count(needle)==1 and s.count('#include "xcover5_chrono_lookup.h"')==1
  assert s.index('goto done;')<s.index(needle)
@@ -68,6 +69,9 @@ int main(void){
  reset();struct Proc imposter=root;assert(xcover5_chrono_lookup(&imposter,(uintptr_t)&a)==ENOPOLICY&&decision==99);
  reset();root.uid=501;rejected(ENOPOLICY);root.uid=0;
  for(unsigned bit=0;bit<160;bit++){unsigned char bad[20];memcpy(bad,spring,20);bad[bit/8]^=1U<<(bit%8);assert(!xcover5_chrono_identity(bad));}
+ const unsigned char chrono[20]={0x95,0xf7,0xee,0xff,0x86,0xd8,0xda,0xd6,0x15,0xc7,0xb5,0x78,0xda,0xe5,0x3f,0x61,0x54,0x35,0x1c,0x8d};
+ assert(xcover5_chrono_identity(chrono)==2);
+ for(unsigned bit=0;bit<160;bit++){unsigned char bad[20];memcpy(bad,chrono,20);bad[bit/8]^=1U<<(bit%8);assert(!xcover5_chrono_identity(bad));}
  assert(!xcover5_chrono_identity(NULL));return 0;
 }
 '''
