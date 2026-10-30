@@ -1,3 +1,31 @@
+2026-10-30 M60 original Objective-C trampoline PACKAGED / HARDWARE PENDING
+
+Revisited M59 camera frame94: SpringBoard OS_REASON_OBJC cannot dlopen
+/usr/lib/libobjc-trampolines.dylib: no such file, not in shared cache.
+This is distinct from backboardd's yet-unidentified first failure.
+HackiOS userland fetch.sh70-90 explicitly extracts non-cache OS cryptex
+files and unzbm-decompresses them; our minimal root omitted this library.
+Restored original iOS16.5/20F66 arm64 library from existing cryptex-os.dmg.part
+using same 7zz+unzbm workflow,68080bytes SHA256
+ a5410b215468c275e1f861c7e605f58401e332f7f23765a6e1fbe7391d4f05df.
+Original platform2/CD flags2/pages13 SHA256 page checks PASS; sole dependency
+libSystem.B.dylib. No Apple binary committed or uploaded to CI.
+M60 stages deterministic placeholder, injects exact bytes locally after CI.
+Source816999dca53ca7643dcecc8a284ef4684d9e59ce CI41051352166 SUCCESS.
+Same M58 kernel9fa242d/CI41046398347. Root96 entries, exactly one added
+/usr/lib/libobjc-trampolines.dylib root:wheel0755; every old M59 file
+(including observer and PID1 console fix) byte/ownership/mode identical.
+CI manifests, original native signature pages, boot-only tar/MD5, partition
+fit,255MiB RAM and ADT RAMDisk a21bc000 independently PASS.
+AP ../artifacts/m60-objc/AP_M60_OBJC.tar.md5
+SHA25625952b48756f639af6785b0fc2d63ef4e2244d9b7b4a0ad364dad87047d99a6d
+Root6d33c563ec9c9f175e67da4807cd64434f63d230f19a44000edb295009d5d0e5
+Boot33583104/AP33587250 bytes. M59 AP unchanged. No flashing performed.
+Hardware pending. No backboard/lockscreen success claimed. Native77 only
+capture complete. Next video: initial SpringBoard/backboardd errors after
+known SpringBoard missing library addressed. Local reports/scripts retained.
+M59 source video cache disappeared after review; saved frames/hashes remain.
+
 2026-10-30 M59 hardware video203951: NATIVE CHRONO EXEC PASS / UI BLOCKED
 
 190.75sec original video SHA256
