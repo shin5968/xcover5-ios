@@ -1,3 +1,36 @@
+2026-10-30 M54 CoreText paragraph PACKAGE VERIFIED; device PENDING
+
+Final sourcebad28a390066df70953f8e52c12dd4b4955dd56f CI41025761751 SUCCESS.
+Initial sourcea811bb1 CI41024727730 rejected by actual host test: attribute-key
+macro copied dlsym storage address instead of exported CFStringRef value,
+CFDictionaryCreate crashed. Fixed separate M54_KEY memcpy from p (not &p).
+Rejected build never packaged. Full host regression + real new CoreText tests,
+then iOS SDK strict compile/signature checks PASS on final source.
+Native macOS framesetter actual16 frames validate entire visible string,
+line width/origins/order, exact supplied font per glyph run, nonzero glyphs,
+white paragraph pixels; narrower width produces more lines; clipped-frame/
+empty/unsupported/nonfinite/oversize input rejected. Actual submit/cleanup
+orchestration uses real CoreText and mocked framebuffer; integrity/premature
+completion/bad restore faults rejected. UBSan PASS. Actual host preview visibly
+correct automatic word wrap/title/labels; no layout overlaps. iOS still untested.
+HFS78 entries only /sbin/m39-probe changed from passingM53; all Apple files,
+ownership/modes and original M39/40/41 objects identical; all CodeDirectory
+SHA256 pages verified. Embedded owned7996byte font identical. Kernel exact
+passingM50B649df6bd... CI41016867150. Root1c258da7f27a2e7c5b8fe0b45fecba2c5bf062567500d9f49336e1ab89bc91ef.
+Boot33566720/AP33577016; shim/DTB/cmdline/RAM255MiB/RAMDisk a21b8000 unchanged;
+boot-only tar/MD5footer/44MiB partition fit PASS; passingM53 AP hash unchanged.
+AP ../artifacts/m54-textlayout/AP_M54_TEXTLAYOUT.tar.md5
+SHA256fdebc3601f33a41564dcaab6579ee28ec87dee709ad6b95fd010230032aedc7d
+Expected original M53 then TEXT LAYOUT M54 paragraph with360/410/460/510 width
+cycling, console restore, native76/AUTO wait4c00 and surface counters0.
+Fail198setup/199submit-integrity-restore/200layout load-draw. Capture M54 PHASE
+resolve_framesetter/attributed_paragraph/framesetter_draw and draw rc if failed.
+Owned uppercase ASCII only; no general shaping/Unicode/system-font service/
+UIKit/CoreAnimation/SpringBoard/GPU/input/vsync/tear-free claim. Boot intermittency
+remains deferred. No agent flash. Evidence/logs/preview ../artifacts/m54-textlayout/.
+
+Previous records follow:
+
 2026-10-30 M54 CoreText automatic paragraph layout IN PROGRESS
 
 Next after hardware M53 native75. Initial boot intermittency stays deferred.
