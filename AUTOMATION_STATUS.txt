@@ -1,3 +1,49 @@
+2026-10-30 M50 task-death/recovery PACKAGE VERIFIED; device PENDING
+
+Complete hardware-passing M49 baseline first. Parent then starts fresh detacher,
+which forks an orphan, exits, and orphan waits actual ppid1 then execs fresh
+--m50-death-child. Existing root/ppid1/exact m39-probe IOFB access unchanged.
+Orphan creates its own full surface/standard framework connection, submits3
+frames (cyan, magenta, persistent magenta+yellow stripe), checks source hashes,
+registers expected death, writes PID/SID/last3 held packet, then pauses without
+CFRelease/IOServiceClose. Parent observes active state held1s and sends actual
+SIGKILL; requires pipe EOF and new restore generation, active0, exact victim PID,
+frames1,last3,clientDied reason4,restore0 and surface lookup absent. Observer is
+not victim's parent after adoption: no waitpid status claim; launchd reaps it.
+PID no longer retained for repeat kill after successful kill to avoid reuse.
+ClientDied override restores/frees once, then calls base closed-once machinery;
+normal close/free paths unchanged. One-shot empty scalar/structure selector94
+registers caller PID+proc_uniqueid, root/ppid1/name gated; only matching rv9 is
+intermediate CHILD_END instead of final automatic capture. All other failures,
+signals, unregistered actors and reused PIDs remain ordinary final captures.
+After death verification another entire M49 session must PASS, then final72 /
+wait4800. Fail87 m50 where;88 detach/pre-exec. Middle child exit0 and registered
+victim9 are expected intermediate events; judge final parent72 and zero counters.
+Host actual clientDied/helper restore/free/base guard/restore failure; registration
+bounds/identity/PID reuse/expected-only snapshot exception; real POSIX SIGKILL,
+fragmented packets/EOF/timeout and every restore-proof field PASS. Full orphan
+adoption and IOSurface task cleanup on this port still require hardware proof.
+Existing M46/M46C/M48/M48A/M49 parser/state/copy/cleanup regressions PASS.
+Applied original AUTO patch bytes remain pinned; exact M50 capture guard checked.
+Original M39/M40/M41 objects byte-identical M49. Root files/modes/ownership same
+except probe. Signature hashes, manifests/kernel equality, old shim/DTB/cmdline,
+255MiB mapping/ADT RAMDisk a21b8000, boot-only OdinMD5/partition fit PASS.
+Source0e527e2fa7bd047dfdf695f79f9c16f72f86bd47;
+kernel CI41005494263 and userspace CI41005542627 both SUCCESS.
+AP ../artifacts/m50-death/AP_M50_DEATH_RECOVERY.tar.md5
+SHA256 a9783ef1568f6623890071333e01c55cfee00495a675a2fc30d94157fce7e567
+Kernel3bd07b54d55b96fcaaff703e6fd0127afea1d7c4c85c19d2ec4dede83552821e
+M49 known-good hash rechecked unchanged; no agent flash. Record roughly2min
+from boot through final parent exit; need DEATH PASS and repeated session then
+native72/4800 and surface count0 pixels0 wired0. Earlier intermittency unresolved.
+Normal CFRelease finalizer branch1af1c823c -> shared-cache stub1afb37574 ->
+18e545870 _IOServiceClose confirmed with local ipsw CLI. REA artifact identity
+matched but native deep provider/inspect_macho unavailable on Windows; fallback
+static evidence retained, not mislabeled as REA runtime evidence. No new engine
+installed. No compositor/GPU/vsync/touch or tear-free claim.
+
+Previous records follow:
+
 2026-10-30 M49 video134045: persistent full-panel hardware PASS (one run)
 
 Full color bars/checker baseline followed by full-panel moving alternating red/
