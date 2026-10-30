@@ -1,3 +1,47 @@
+2026-10-30 M57 real Chrono service PACKAGE VERIFIED; hardware PENDING
+
+Final source9ddbaf301a848c5ac3ea61ac1ca65f37b8bd6f85 kernelCI41040004825 and
+userspaceCI41040166657 both SUCCESS. Native chronod+frameworkInfo+on-demand job
+added; actual original mobile service names/args, no fake XPC implementation.
+Exact original Chrono CD95f7eeff86d8dad615c7b578dae53f6154351c8d platform2/
+adhoc2 classification only after successful MACF signature validation.
+Exact initproc/root64 Sandbox fallback, mach-lookup/filter6/flags40000000 and
+chronoservices only; client UID501/ppid1/64bit, auditPIDversion before/after hash,
+CS_VALID|CS_SIGNED plus csproc_get_platform_binary (separate native getter),
+original SpringBoardCD453ae2... required. Registered policy results untouched.
+Actual helper UBSan includes320 hash-bit mutations, UID/ancestry/version/exec-race/
+flags/platform/API/output faults; refs/output balanced. Source checks verify
+actual headers, fallback placement, postvalidation classification and XNU-only
+header export. Full applied dispatcher equality retained, existing regression
+fixture updated for new exact branch; registered0/EPERM/ENOPOLICY never reaches
+Chrono, all prior fallbacksENOPOLICY reaches Chrono exactly once. All older
+preflight/applied regressions PASS. Target kernel/observer compile checks PASS.
+Earlier41035313093 rejected host typedef collision; fixed test-only address alias.
+41035600531/41035753484 superseded to use native platform getter (proc flags
+exclude platform bit; CSOPS adds blob platform state).41036352214 failed compile
+missing exported header; added XNU_ONLY_EXPORTS in bsd/sys/Makefile.
+41038127476 compiled kernel but rejected stale M39 dispatcher fixture; updated
+expected branch and added precedence tests without loosening equality check.
+Rejected/superseded builds not packaged. Final all-green builds used exclusively.
+Kernel797236b05f94dcd9ea87d274355211d0401ac1670df70c1726062a499e7db720.
+Rootd561cc9adc3b88a3d2483d32da2cc473dc32f1f5158a7171d68701e6f4fbf39c.
+Independent HFS95entries:6 additions only, ALL existing file bytes/ownership/
+modes identical M56 including original UI jobs/executables and observer. New
+native Chrono/Info pinned SHA+sizes, CodeDirectory pages and job services checked.
+No resigning; CMS/platform trust not independently assessed by host page verifier.
+Boot33583104/AP33587252, original shim/DTB/cmdline/RAM255MiB. New aligned ADT
+RAMDisk a21bc000 independently verified; boot-only tar/MD5footer/44MiB fit PASS.
+AP ../artifacts/m57-chrono/AP_M57_CHRONO.tar.md5
+SHA2569c3f72c4e5d3306106d8576074b29448f8f5af29e4593754be6cf2d9051a6484
+Expected M57 CHRONO_QUERY -> CHRONO_LOOKUP allowed -> real com.apple.chronod
+activation/CHRONO_PLATFORM. If shape differs, QUERY logs exact op/filter/flags.
+Not proof of UI progress/lockscreen until device; further dependencies may fail.
+Observer still oldM55 labels/native77/wait4d00 capture endpoint45s ONLY. No UI
+ready claim. M56 AP hash preserved, no agent flash. Actual boot/lockscreen stays
+priority, intermittent startup deferred. All metadata/logs ../artifacts/m57-chrono/.
+
+Previous records follow:
+
 2026-10-30 M57 actual Chrono registration + exact SpringBoard lookup IN PROGRESS
 
 M56 platform gate passed; observed com.apple.chronoservices lookup159.
