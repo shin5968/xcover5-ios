@@ -784,14 +784,9 @@
 +#endif /* XCOVER5 */
 --- a/bsd/conf/files
 +++ b/bsd/conf/files
-@@ -382,6 +382,7 @@
- bsd/kern/kern_crossarch.c		standard
- bsd/kern/kern_cs.c			standard
+@@ -385,1 +385,2 @@
  bsd/kern/sweet_amfi.c			standard
 +bsd/kern/kern_minimac.c			optional config_macf
- bsd/kern/kern_csr.c			optional config_csr
- bsd/kern/kern_debug.c			standard
- bsd/kern/kern_symfile.c			standard
 --- a/libkern/conf/files
 +++ b/libkern/conf/files
 @@ -124,6 +124,8 @@
@@ -819,10 +814,13 @@
  #include <libkern/amfi/amfi.h>
 --- a/osfmk/kern/startup.c
 +++ b/osfmk/kern/startup.c
-@@ -154,6 +154,9 @@
+@@ -154,6 +154,12 @@
  
  #if CONFIG_MACF
  #include <security/mac_mach_internal.h>
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++#include <pexpert/arm/board_config.h>
++#endif
 +#if defined(XCOVER5)
 +extern void minimac_policy_init(void);
 +#endif
