@@ -1,3 +1,22 @@
+2026-10-30 M59 hardware video203951: NATIVE CHRONO EXEC PASS / UI BLOCKED
+
+190.75sec original video SHA256
+537a5432319091fdcd2485b0f69618ad11c7f4aad58e2b9a5a534e6c78559866.
+Frame125 M58 image_end0/activate_return0 for ChronoPID20 mobile501,
+launchd INIT0/Successfully spawned chronod20, actual chronod user logs.
+Previous native spawn EACCES13 blocker passed in this recording.
+Chrono then denied lookup159: com.apple.lsd.mapdb,
+com.apple.system.notification_center, com.apple.backboard.display.services.
+BKDisplayServicesStart fatal: backboardd not running or unable to connect,
+invalid destination port10000003; SIGTRAP and repeated crash throttling.
+Frame62 SpringBoardPID7 launchd running/INIT0/successfullyspawned. No UIready
+claim; frame100 backboardd exited. Need its initial fatal and service wiring.
+M59CONSOLE marker not separately transcribed. Personaerrno3 not provenfatal.
+Next work: diagnose native backboardd initial exit and required bootstrap
+service lookups against HackiOS, retain exact identities/audit-token semantics.
+No lockscreen yet. Frames/contact/review saved in ../artifacts/m59-console/
+video-203951. Do not call this unchanged Chrono EACCES failure.
+
 2026-10-30 M59 HackiOS console initialization PACKAGED / HARDWARE PENDING
 
 User requested HackiOS reference. Compared local kernel d82c64a redwood.patch
