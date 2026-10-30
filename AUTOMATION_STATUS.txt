@@ -1,3 +1,22 @@
+2026-10-30 M53 video170030 HARDWARE PASS (one run)
+
+Video161.31s, final159s: PID6 kernel rv4b00/AUTO wait_status4b00/launchd exit75;
+surface count0 pixels0 wired0; console restored. Legible CORETEXT M53 / XCOVER5
+IOS / FRAME NN / 16 / 720 X 1480 BGRA / SURFACE READY visible with changing
+counter/chart/progress. Sampled counters01,02,05,08,11,14; rails red-left/blue-right.
+Native75 source-gates imply original M52 baseline74 and real iOS CoreText exact
+embedded-font identity/mapping/advances/draw/white-pixel coverage plus16 standard
+submissions/hash/hold/restore/released-ID checks passed. Individual API/restore
+markers not independently transcribed from camera. Initial two restore intervals
+and later persistent display match existing bounded semantics; no flicker-free claim.
+Review/hash/tail/native end ../artifacts/m53-coretext/video-170030/.
+Preserve AP_M53_CORETEXT.tar.md5 as new passing reference. No new code/package or
+flash in review. Owned ASCII font path only, no general text shaping/Unicode/
+system font service/CoreAnimation/GPU/SpringBoard/input/vsync/tear-free claim.
+Boot intermittency remains deferred by user.
+
+Previous records follow:
+
 2026-10-30 M53 CoreText explicit-font PACKAGE VERIFIED; device PENDING
 
 Source60a3412555065786fe2937777be01e137074a10a CI41023077754 attempt1 SUCCESS.
