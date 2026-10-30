@@ -60,6 +60,12 @@ if (repo/'xnu/patches/0087-xcover5-chrono-service-lookup.patch').exists():
  assert func.count(anchor)==1
  func=func.replace(anchor,anchor+'\n        if (error == ENOPOLICY) error = xcover5_chrono_lookup(p,uap->arg);')
  prefix+='static unsigned chrono_calls; static int xcover5_chrono_lookup(proc_t p,user_addr_t a){(void)p;(void)a;chrono_calls++;return ENOPOLICY;}\n'
+if (repo/'xnu/patches/0089-xcover5-ui-service-lookup.patch').exists():
+ anchor='        if (error == ENOPOLICY) error = xcover5_chrono_lookup(p,uap->arg);'
+ assert func.count(anchor)==1
+ func=func.replace(anchor,anchor+'\n        if (error == ENOPOLICY) error = xcover5_ui_lookup(p,uap->arg);')
+ prefix+='static unsigned ui_calls; static int xcover5_ui_lookup(proc_t p,user_addr_t a){(void)p;(void)a;ui_calls++;return ENOPOLICY;}\n'
+
 if len(sys.argv)>1:
  tree=Path(sys.argv[1]);source=(tree/'security/mac_base.c').read_text()
  pos=source.index('int\n__mac_syscall(');stop=source.index('\n}\n',pos)+3
@@ -134,10 +140,10 @@ fixture=fixture[:at]+'''
  policy_result=EPERM;DISPATCH(EPERM);policy_result=ENOPOLICY;DISPATCH(ENOPOLICY);policy_result=0;DISPATCH(0);
  assert(passthrough_calls==old_passthrough);mac_policy_list.entries[0].mpc=NULL;
  args.call=2;mac_policy_list.entries[0].mpc=&policy;
- unsigned chrono_before=chrono_calls;
+ unsigned chrono_before=chrono_calls,ui_before=ui_calls;
  policy_result=ENOPOLICY;DISPATCH(ENOPOLICY);policy_result=EPERM;DISPATCH(EPERM);policy_result=0;DISPATCH(0);
- assert(chrono_calls==chrono_before);mac_policy_list.entries[0].mpc=NULL;
- DISPATCH(ENOPOLICY);assert(chrono_calls==chrono_before+1);
+ assert(chrono_calls==chrono_before && ui_calls==ui_before);mac_policy_list.entries[0].mpc=NULL;
+ DISPATCH(ENOPOLICY);assert(chrono_calls==chrono_before+1 && ui_calls==ui_before+1);
  puts("M57 dispatcher: registered policy results preserved; Chrono reached only after all earlier fallbacks return ENOPOLICY PASS");
  puts("M39K query ABI, scope, fault, no-write and bounded publication PASS (host only)");
  puts("M39I scope, real return preservation, publication, capacity and overflow PASS (host only)");

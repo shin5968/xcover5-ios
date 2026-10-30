@@ -1,0 +1,52 @@
+--- a/security/mac_base.c
++++ b/security/mac_base.c
+@@ -1670,6 +1670,7 @@
+ #include "xcover5_prefs_self_lookup.h"
+ #include "xcover5_prefs_remote_read.h"
+ #include "xcover5_chrono_lookup.h"
++#include "xcover5_ui_lookup.h"
+ #endif
+ 
+ int
+@@ -1737,6 +1738,7 @@
+         if (error == ENOPOLICY) error = xcover5_preferences_self_lookup(p,uap->arg);
+         if (error == ENOPOLICY) error = xcover5_preferences_remote_read(p,uap->arg);
+         if (error == ENOPOLICY) error = xcover5_chrono_lookup(p,uap->arg);
++        if (error == ENOPOLICY) error = xcover5_ui_lookup(p,uap->arg);
+     } else if (uap->call == 4 && strcmp(target, "Sandbox") == 0) {
+         error = xcover5_prefs_container_path(p, uap->arg);
+     } else if (uap->call == 12 && strcmp(target, "Sandbox") == 0) {
+--- /dev/null
++++ b/security/xcover5_ui_lookup.h
+@@ -0,0 +1,31 @@
++/* M61: exact original UI-client lookups to real backboardd services.
++ * Fallback only when no registered Sandbox policy handled the request. */
++#ifndef XCOVER5_UI_LOOKUP_H
++#define XCOVER5_UI_LOOKUP_H
++#include <sys/codesign.h>
++#include <sys/xcover5_chrono_identity.h>
++static int xcover5_ui_lookup(proc_t caller,user_addr_t address) {
++ struct {uint64_t result,pid,operation,filter_type,filter,flags,pidversion;} a;
++ char operation[32],service[64];size_t length;int error;uint64_t decision=0;
++ proc_t client=PROC_NULL;unsigned char hash[20];unsigned identity=0,expected=0;
++ if(caller!=initproc || proc_pid(caller)!=1 || proc_getuid(caller)!=0 || !proc_is64bit_data(caller))return ENOPOLICY;
++ error=copyin(address,&a,sizeof a);if(error)return error;
++ error=copyinstr(a.operation,operation,sizeof operation,&length);if(error)return error;
++ error=copyinstr(a.filter,service,sizeof service,&length);if(error)return error;
++ if(!strcmp(service,"com.apple.backboard.system-app-server") || !strcmp(service,"com.apple.CARenderServer"))expected=1;
++ else if(!strcmp(service,"com.apple.backboard.display.services"))expected=2;
++ else return ENOPOLICY;
++ printf("XCOVER5 M61 UI_QUERY pid=%llu version=%llu filter=%llu flags=%llx op=%s service=%s\n",(unsigned long long)a.pid,(unsigned long long)a.pidversion,(unsigned long long)a.filter_type,(unsigned long long)a.flags,operation,service);
++ if(!a.pid || a.pid>INT_MAX || !a.pidversion || a.pidversion>UINT32_MAX || a.filter_type!=6 || a.flags!=0x40000000ULL || strcmp(operation,"mach-lookup"))return ENOPOLICY;
++ client=proc_find((pid_t)a.pid);if(client==PROC_NULL)return ESRCH;
++ error=ENOPOLICY;
++ const uint64_t required=CS_VALID|CS_SIGNED;
++ if(proc_getuid(client)!=501 || proc_ppid(client)!=1 || !proc_is64bit_data(client) ||
++    (uint32_t)proc_pidversion(client)!=a.pidversion || (proc_getcsflags(client)&required)!=required || !csproc_get_platform_binary(client))goto out;
++ if(proc_getcdhash(client,hash)!=0 || (identity=xcover5_chrono_identity(hash))!=expected)goto out;
++ if((uint32_t)proc_pidversion(client)!=a.pidversion || proc_getuid(client)!=501 || proc_ppid(client)!=1 || !proc_is64bit_data(client) || (proc_getcsflags(client)&required)!=required || !csproc_get_platform_binary(client))goto out;
++ error=copyout(&decision,a.result,sizeof decision);
++ if(!error)printf("XCOVER5 M61 UI_LOOKUP allowed pid=%llu version=%llu identity=%u service=%s\n",(unsigned long long)a.pid,(unsigned long long)a.pidversion,identity,service);
++ out:proc_rele(client);return error;
++}
++#endif

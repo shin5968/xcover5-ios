@@ -1,3 +1,21 @@
+2026-10-30 M61 exact native display-service lookup IN PROGRESS
+
+M60 camera confirms SpringBoard denied159 system-app-server/CARenderServer,
+Chrono denied159 backboard.display.services. All3 names exist in original
+backboardd launch plist. HackiOS kern_minimac.c answers all Sandbox queries
+allowed; M61 adapts only3 exact client/service pairs into existing absent-
+policy fallback, after M57 handler. Existing registered policies unchanged.
+Exact SB CDHash -> system-app-server or CARenderServer; exact Chrono CDHash
+-> display.services. UID501/directPID1/64bit/CS_VALID+SIGNED/blobplatform,
+nonzero bounded live audit PIDversion before/after hash copy, filter6,
+flags40000000 and mach-lookup only. Unknown forms rejected, query logged.
+No persona/global Sandbox behavior, task identity, native signatures or
+backend service replies changed. This does not ensure backboard stays alive.
+Actual C helper UBSan3 positivepairs/480 hash mutations/6 race mutations,
+identity/servicecrosspairs/UID/ancestry/version/flags/copyfail/refbalance/
+no-write rejection PASS. M39 dispatcher fixture updated without weakening
+exact applied-source equality or registered-policy preservation. Build pending.
+
 2026-10-30 M60 hardware video205831: UI SERVICE LOOKUP BLOCKED
 
 215.81sec video SHA256
