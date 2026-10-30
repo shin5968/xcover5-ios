@@ -1,3 +1,36 @@
+2026-10-30 M48A retained M40 readiness diagnostics PACKAGE VERIFIED; device PENDING
+
+Previous M48 device run exited176 before graphics. Exact poll/read cause unknown.
+M40 separate inherited progress pipe marks pre-exec1, reader entry2, notify3/4,
+initial CF sync5/6, initial cached-A lookup7/8, READY write9/10. Parent retains
+poll rc/errno/revents, read rc/errno/byte and expected R/B/D on ack failure.
+Bounded root/ppid1/m39-probe-only selector92 stores scalar snapshot, prints
+WAIT/POLL/READ immediately and at final surface report. No user pointers or
+process refs retained. READ rc2=not attempted, ffffffff=-1 in kernel hex logs.
+Diagnostic publication itself must succeed for retained evidence; no guarantee
+that a new earlier failure or service issue will produce it. See artifact README.
+Original15s wait, child35s/parent45s alarms and all original gates retained.
+No retry/bypass or speculative framebuffer change; full success remains70/4600.
+M39 and M41 objects byte-identical M48, M40 changed only for diagnostics.
+Full root catalog/ownership unchanged except probe. All signature page hashes,
+kernel equality/manifests, old shim/DTB/cmdline,255MiB memory layout, boot-only
+Odin MD5 and partition fit verified. Known-good M47 preserved; no agent flash.
+Host actual CFPreferences/notifyd normal PASS, missing-post rejection, injected
+pre-exec and pre-sync stalls both176 with distinctphase1/5, EOF and wrong-byte
+both176 with distinct read outcomes PASS. Host is not physical-device proof.
+Kernel actual new selector authorization/bounds/rejection retention UBSan PASS;
+existing M46/M46C/M47/M48 parser/state/copy/restore/cleanup regression PASS.
+Source a889df4921b6875b67599ad72668f7ddfb393655;
+kernel CI41001277782 and userspace CI41001295841 both SUCCESS.
+AP ../artifacts/m48a-readiness/AP_M48A_READINESS.tar.md5
+SHA256 9dfe8d6c7e7cfdd51d212fb259d60cdf7ab2611e4e0697990874a4be1ed8ae7c
+Kernel17384a369a1efcbe7c289c9e810b7a8cadcc07441401ddd78bb91e477cfa5cd4
+Need device final WAIT/POLL/READ lines if failure, or original graphics patterns
+then full-panel border/colorbars/checker and final70/4600 with zero counters.
+Earlier intermittent M39/M43 alarms/timeouts remain unresolved; no cause/fix claim.
+
+Previous records follow:
+
 2026-10-28 M48 video224736/photo224842: M40 readiness176; full panel pending
 
 Photo native rv/wait_statusb000 and launchd exit176; final surface0/pixels0/wired0.
