@@ -2,7 +2,7 @@
 +++ b/bsd/kern/kern_minimac.c
 @@ -0,0 +1,376 @@
 +#if defined(ARM64_BOARD_CONFIG_SWEET)
-+#include <pexpert/arm/board_config.h>
++#include <pexpert/arm64/board_config.h>
 +#endif
 +#if defined(XCOVER5)
 +/*
@@ -381,7 +381,7 @@
 +++ b/libkern/amfi/miniamfi.c
 @@ -0,0 +1,270 @@
 +#if defined(ARM64_BOARD_CONFIG_SWEET)
-+#include <pexpert/arm/board_config.h>
++#include <pexpert/arm64/board_config.h>
 +#endif
 +#if defined(XCOVER5)
 +/*
@@ -654,7 +654,7 @@
 +++ b/libkern/amfi/miniamfi_entitlements.cpp
 @@ -0,0 +1,129 @@
 +#if defined(ARM64_BOARD_CONFIG_SWEET)
-+#include <pexpert/arm/board_config.h>
++#include <pexpert/arm64/board_config.h>
 +#endif
 +#if defined(XCOVER5)
 +/*
@@ -808,7 +808,7 @@
   */
 -#if defined(ARM64_BOARD_CONFIG_SWEET)
 +#if defined(ARM64_BOARD_CONFIG_SWEET)
-+#include <pexpert/arm/board_config.h>
++#include <pexpert/arm64/board_config.h>
 +#endif
 +#if defined(ARM64_BOARD_CONFIG_SWEET) && !defined(XCOVER5)
  #include <kern/debug.h>
@@ -821,7 +821,7 @@
  #if CONFIG_MACF
  #include <security/mac_mach_internal.h>
 +#if defined(ARM64_BOARD_CONFIG_SWEET)
-+#include <pexpert/arm/board_config.h>
++#include <pexpert/arm64/board_config.h>
 +#endif
 +#if defined(XCOVER5)
 +extern void minimac_policy_init(void);
