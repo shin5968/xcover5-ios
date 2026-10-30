@@ -1,3 +1,19 @@
+2026-10-30 M50A video143645: startup-only48.62s; diagnostic outcome pending
+
+M34 cross-process Mach/peer cleanup and RAM-root/Apple launchd handoff visible.
+Final47s frame shows earlier PID1 startup BSD_BEGIN/END through seq11 with
+shown error0 returns. No M39 completion, framebuffer patterns, M50A retained
+failure lines or final parent72/4800 confirmed. Do not label shadow PID1 exit0
+as real launchd crash. Clip ends before M50A test outcome; no proof of hang,
+SIGPIPE recurrence, graphics regression or abnormal cleanup success.
+Evidence/hash/native47s frame/contact/review at
+../artifacts/m50a-transport/video-143645/.
+Next user action: same M50A package, allow roughly2min from boot through final
+status; if still unchanged after waiting, capture last screen and elapsed time
+for separate launchd-startup diagnosis. No new package/device writes in review.
+
+Previous records follow:
+
 2026-10-30 M50A first-failure transport diagnostic PACKAGE VERIFIED; device PENDING
 
 M50 prior PID21 rv=d/SIGPIPE write site and first parent failure still unknown.
