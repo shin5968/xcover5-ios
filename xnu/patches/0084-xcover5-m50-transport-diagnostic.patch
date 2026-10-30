@@ -1,0 +1,55 @@
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -192,6 +192,27 @@
+     IOLog("XCOVER5 M48A POLL rc=%llx errno=%llu revents=%llx\n",v[4],v[5],v[6]);
+     IOLog("XCOVER5 M48A READ rc=%llx errno=%llu got=%llu reason=%llu FINAL\n",v[7],v[8],v[9],v[10]);
+ }
++/* M50A: first parent transport failure only; scalar data, no user pointers. */
++static uint64_t gM50ADiag[21];
++static bool xcM50ADiagValid(const void *data,size_t n) {
++ if(!data || n!=20*sizeof(uint64_t))return false;
++ uint64_t v[20];memcpy(v,data,sizeof(v));
++ for(unsigned i=0;i<20;i++)if(v[i]>0xffffffffULL)return false;
++ return v[0]>=1 && v[0]<=11 && v[1]<=1024 && v[2]<=0x7fffffffULL && v[3]<=0x7fffffffULL &&
++  v[4]<=16 && v[5]<=0x7fffffffULL && v[7]<=1024 &&
++  (v[8]<=1 || v[8]==0xffffffffULL || v[8]==0xfffffffeULL) && v[9]<=1024 && v[10]<=0xffff &&
++  (v[11]<=16 || v[11]==0xffffffffULL || v[11]==0xfffffffeULL) && v[12]<=1024 && v[13]<=16 &&
++  v[19]<=7;
++}
++static void xcM50ADiagReport(void) {
++ uint64_t v[21];IOLockLock(gSurfaceLock);memcpy(v,gM50ADiag,sizeof(v));IOLockUnlock(gSurfaceLock);
++ if(!v[0])return;
++ IOLog("XCOVER5 M50A FAIL parent=%llu stage=%llu errno=%llu orphan=%llu middle=%llu\n",v[0],v[1],v[2],v[3],v[4]);
++ IOLog("XCOVER5 M50A CHILD phase=%llu pid=%llu rc=%llx errno=%llu flags=%llu\n",v[5],v[6],v[7],v[8],v[20]);
++ IOLog("XCOVER5 M50A POLL rc=%llx errno=%llu revents=%llx bytes=%llu\n",v[9],v[10],v[11],v[14]);
++ IOLog("XCOVER5 M50A READ rc=%llx errno=%llu type=%llx pid=%llu sid=%llu last=%llu\n",v[12],v[13],v[15],v[16],v[17],v[18]);
++ IOLog("XCOVER5 M50A WAIT status=%llx FIRST\n",v[19]);
++}
+ extern "C" void xcover5_surface_report(void);
+ extern "C" void xcover5_surface_report(void) {
+     if(gSurfaceLock==NULL || gSurfaceKeptLock==NULL) { IOLog("XCOVER5 M43 SURFACE unavailable\n"); return; }
+@@ -200,6 +221,7 @@
+     IOLog("XCOVER5 M43 SURFACE count=%u pixels=%llu wired=%llu budget=%llu\n",count,pixel,wired,XC_SURFACE_BUDGET);
+     xcReaderDiagReport();
+     xcM40DiagReport();
++    xcM50ADiagReport();
+ }
+ 
+ void
+@@ -1964,6 +1986,16 @@
+   IOUserClient::free();
+  }
+  IOReturn externalMethod(uint32_t selector,IOExternalMethodArguments *a,IOExternalMethodDispatch *,OSObject *,void *) APPLE_KEXT_OVERRIDE {
++  if(selector==95) {
++   proc_t p=current_proc_EXTERNAL();char name[32];bzero(name,sizeof(name));proc_name(proc_pid(p),name,sizeof(name));
++   if(proc_getuid(p)!=0 || proc_ppid(p)!=1 || strcmp(name,"m39-probe"))return kIOReturnNotPrivileged;
++   if(!a || a->scalarInputCount || a->scalarOutputCount || a->structureOutputSize ||
++      a->structureInputDescriptor || a->structureOutputDescriptor ||
++      !xcM50ADiagValid(a->structureInput,a->structureInputSize))return kIOReturnBadArgument;
++   IOLockLock(gSurfaceLock);bool first=!gM50ADiag[0];
++   if(first){gM50ADiag[0]=(uint32_t)proc_pid(p);memcpy(gM50ADiag+1,a->structureInput,20*sizeof(uint64_t));}
++   IOLockUnlock(gSurfaceLock);if(first)xcM50ADiagReport();return first?kIOReturnSuccess:kIOReturnBadArgument;
++  }
+   if(selector==94) {
+    proc_t p=current_proc_EXTERNAL();char name[32];bzero(name,sizeof(name));proc_name(proc_pid(p),name,sizeof(name));
+    if(proc_getuid(p)!=0 || proc_ppid(p)!=1 || strcmp(name,"m39-probe"))return kIOReturnNotPrivileged;
