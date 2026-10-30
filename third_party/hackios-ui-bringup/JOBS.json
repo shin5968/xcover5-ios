@@ -1,0 +1,23 @@
+[
+  "com.apple.notifyd",
+  "com.apple.cfprefsd.xpc.daemon",
+  "com.apple.cfprefsd.xpc.daemon.system",
+  "com.apple.logd",
+  "com.apple.syslogd",
+  "com.apple.distnoted.xpc.daemon",
+  "com.apple.diagnosticd",
+  "com.apple.fseventsd",
+  "com.apple.containermanagerd",
+  "com.apple.containermanagerd.system",
+  "com.apple.runningboardd",
+  "com.apple.backboardd",
+  "com.apple.mobile.usermanagerd",
+  "com.apple.mobilegestalt.xpc",
+  "com.apple.lsd",
+  "com.apple.powerd",
+  "com.apple.analyticsd",
+  "com.apple.logd_helper",
+  "com.apple.iconservices.iconservicesagent",
+  "com.apple.pluginkit.pkd",
+  "com.apple.SpringBoard"
+]

@@ -85,6 +85,11 @@ if [[ "${XCOVER_UI_BOOT:-0}" == 1 ]]; then
     sudo python3 tools/stage_chrono_boot.py "$WORK/mnt"
   fi
 fi
+if [[ "${XCOVER_HACKIOS_BOOT:-0}" == 1 ]]; then
+  sudo python3 tools/stage_hackios_boot.py "$WORK/mnt"
+  sudo cp "$(dirname "$INIT")/libxcover-hackios.dylib" "$(dirname "$INIT")/libxcover-hackios-sb.dylib" "$WORK/mnt/usr/lib/"
+  sudo chmod 755 "$WORK/mnt/usr/lib/libxcover-hackios.dylib" "$WORK/mnt/usr/lib/libxcover-hackios-sb.dylib"
+fi
 sudo cp "$LAUNCHDPROOF" "$WORK/mnt/sbin/m35-proof"
 sudo chmod 755 "$WORK/mnt/sbin/m35-proof"
 sudo cp "$BOOTSTRAP" "$WORK/mnt/sbin/m36-probe"

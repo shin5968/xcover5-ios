@@ -1,0 +1,90 @@
+{
+  "usr/libexec/logd": [
+    245824,
+    "54abd9c96bec2d11f0bb97c2cd6e8247f425cae6c091816c4e52d40db473ac25"
+  ],
+  "usr/sbin/syslogd": [
+    166848,
+    "86838d9149bb898e3d39266fea884c6c92eeac1e6486c072b135a879c9eeaabe"
+  ],
+  "usr/sbin/distnoted": [
+    94688,
+    "db468dacfdcdd4e7e9b528720cc27ac8eb332728183406268f5e5274c7c2a6c5"
+  ],
+  "usr/libexec/diagnosticd": [
+    118784,
+    "dcebf99e18de6f7acc070268349ce1404f5f527de8275808164a7913f1cdc219"
+  ],
+  "usr/libexec/fseventsd": [
+    181344,
+    "4ce9a7ce15433492ce24d91d63ac0456d6ccc825e28ba84ca53d58c614b33d97"
+  ],
+  "usr/libexec/containermanagerd": [
+    54112,
+    "c1e4652d6ab32e69c85d1d36ca9cbe00667a8d05ea331e31ec8b9d0120cf9f21"
+  ],
+  "usr/libexec/containermanagerd_system": [
+    54128,
+    "f4d189fc9f1364a16da98f1e9b7c17f1a4d94642b9aaced98696e0ea2f31fbd2"
+  ],
+  "usr/libexec/runningboardd": [
+    72352,
+    "d3aececd7a40417c4f9e462e09a239c8074ee48fcac1c6bf126880410a3c2dff"
+  ],
+  "usr/libexec/usermanagerd": [
+    700128,
+    "ca0cba10ad90ca78f739b6c3e3f2ebf48ace5af0b70b8bc19fe0fa0383543568"
+  ],
+  "usr/libexec/MobileGestaltHelper": [
+    76160,
+    "692352fd19a7ff9fec975b901887a91717ce9c4590ecf48f8acbd4de6885c75d"
+  ],
+  "usr/libexec/lsd": [
+    57424,
+    "cb9a5082ac7448e1ff8ee30e45925909568f39e6f4dc30e0bbbdf4332c27d0e4"
+  ],
+  "System/Library/CoreServices/powerd.bundle/powerd": [
+    624096,
+    "0d504def14d3eeacfa1ad361788d12abe3a752c8253fd65c1457a07a5826b808"
+  ],
+  "System/Library/PrivateFrameworks/CoreAnalytics.framework/Support/analyticsd": [
+    1347696,
+    "5876d2a1b80e4651685d17faf53ad739879e7d96e122dd04e1b7c670296849ff"
+  ],
+  "usr/libexec/logd_helper": [
+    96608,
+    "f7df7e9871dfcc15fcdaf810d82d260f33034af86550cee0f77ac14617c9313b"
+  ],
+  "System/Library/CoreServices/iconservicesagent": [
+    95728,
+    "792cd7cdeb93c79eb0389641843216f0dc48a977f69fbaec72eb0407c84caac7"
+  ],
+  "usr/libexec/pkd": [
+    229504,
+    "a81e35e0bb6ae1a2933078366a710fd8946921acbdebaa2a1154666cd55b42c4"
+  ],
+  "System/Library/CoreServices/SystemVersion.plist": [
+    570,
+    "46457f81a04a81f462bfa0ab24693eff2140ce81a254e64354e43bd0b996dd22"
+  ],
+  "System/Library/CoreServices/powerd.bundle/Info.plist": [
+    836,
+    "64a5a441d600439d99d05aa8e8efe32835aa2e42a8725f4705d84ab2290eb6d8"
+  ],
+  "System/Library/PrivateFrameworks/BackBoardServices.framework/Info.plist": [
+    810,
+    "ecc538d319bb83a9480657adcae8a63bbba2c4d3910b1851b79609dcb1977262"
+  ],
+  "System/Library/PrivateFrameworks/FrontBoardServices.framework/Info.plist": [
+    811,
+    "5f0b626aa06832296c156776a06cea9245da11c39ff35fe3729c9e8b6d57a2ef"
+  ],
+  "System/Library/PrivateFrameworks/RunningBoardServices.framework/Info.plist": [
+    792,
+    "5fd9521bbbd0bfa9e4304e667077e23bed12a5e201d5fde17bfb54b8df4f9392"
+  ],
+  "System/Library/PrivateFrameworks/MobileContainerManager.framework/Info.plist": [
+    814,
+    "8127bdfc8f186b35f089bbf977d45d6e1b899672d97421ef1d233aeb565f86a0"
+  ]
+}
