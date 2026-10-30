@@ -20,6 +20,7 @@ jobs:
           python3 tools/test_m55_ui_boot.py
           python3 tools/test_m57_chrono_staging.py
           python3 tools/test_m60_objc_staging.py
+          python3 tools/test_m62_boot.py
       - name: Build console-prepared PID1 bootstrap
         run: |
           mkdir -p out

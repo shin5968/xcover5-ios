@@ -1,6 +1,9 @@
 --- /dev/null
 +++ b/bsd/kern/kern_minimac.c
-@@ -0,0 +1,373 @@
+@@ -0,0 +1,376 @@
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++#include <pexpert/arm/board_config.h>
++#endif
 +#if defined(XCOVER5)
 +/*
 + * Stand-ins for the two closed security policies user space cannot do
@@ -376,7 +379,10 @@
 +#endif /* XCOVER5 */
 --- /dev/null
 +++ b/libkern/amfi/miniamfi.c
-@@ -0,0 +1,267 @@
+@@ -0,0 +1,270 @@
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++#include <pexpert/arm/board_config.h>
++#endif
 +#if defined(XCOVER5)
 +/*
 + * Stand-in for the AppleMobileFileIntegrity kext interface.
@@ -646,7 +652,10 @@
 +#endif /* XCOVER5 */
 --- /dev/null
 +++ b/libkern/amfi/miniamfi_entitlements.cpp
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,129 @@
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++#include <pexpert/arm/board_config.h>
++#endif
 +#if defined(XCOVER5)
 +/*
 + * Entitlement queries for the AMFI stand-in (see miniamfi.c).
@@ -796,11 +805,14 @@
  libkern/ptrauth_utils.c         standard
 --- a/bsd/kern/sweet_amfi.c
 +++ b/bsd/kern/sweet_amfi.c
-@@ -15,7 +15,7 @@
+@@ -15,7 +15,10 @@
   * Interfaces no kernel path uses on SWEET (they serve other Apple kexts)
   * panic with a clear message instead of being NULL.
   */
 -#if defined(ARM64_BOARD_CONFIG_SWEET)
++#if defined(ARM64_BOARD_CONFIG_SWEET)
++#include <pexpert/arm/board_config.h>
++#endif
 +#if defined(ARM64_BOARD_CONFIG_SWEET) && !defined(XCOVER5)
  #include <kern/debug.h>
  #include <kern/startup.h>
