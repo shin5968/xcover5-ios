@@ -1,3 +1,29 @@
+2026-10-30 M59 HackiOS console initialization PACKAGED / HARDWARE PENDING
+
+User requested HackiOS reference. Compared local kernel d82c64a redwood.patch
+and userland a79ff0772a3454fd1ef127e181e5b3bce6c9ce18 init.c1455-1456.
+HackiOS explicitly chmods console0666 before launchd. Our devfs creates
+root:wheel0622, and PID1 had no such preparation. Mobile O_RDWR console
+file actions can return EACCES before exec_activate_image/M58 saved_path.
+This fits missing M58 camera stages but is not yet a confirmed runtime cause.
+Persona errno3 warnings not proven causal; no persona changes imported.
+M59 calls fchmod(existing console fd,0666) immediately before PID1 handoff,
+stops on syscall error and prints M59 CONSOLE success marker only on success.
+Source18a93d2e4abf82050bfca784aedcf06483bfa426 userspace CI41049210787 SUCCESS.
+Same M58 kernel9fa242d/CI41046398347. Root inventory exactly one changed file:
+/sbin/launchd; all native files/observer bytes and uid/gid/modes unchanged.
+Actual CI ARM64 object emulated: syscall124(fd7,0666), marker then handoff
+on success; syscall error branches to m35_fail with no success marker PASS.
+CI object reproduces signed init exactly. Original native signature pages,
+HFS inventory, boot-only tar/MD5,255MiB geometry,RAMDisk a21bc000 PASS.
+AP ../artifacts/m59-console/AP_M59_CONSOLE.tar.md5
+SHA256 d07af1166a06d0fd766c932f2b3d14eb59337a36a1c734cb2f802b80852d0d2f
+Root a5c172fc1f53c435e4ddcaad36a8451c1bd5839978135c88982badc33957829b
+Boot33583104/AP33587253 bytes. M58 AP unchanged. No flashing performed.
+Next camera: M59 CONSOLE marker, subsequent Chrono and M58 stage results.
+Native77 remains capture-only. No lockscreen or Chrono success claimed.
+Verification scripts/reports/README/SHA256SUMS retained in local artifacts.
+
 M58 final: kernel source 9fa242dad7dd70ce1a25bad8207b1c6134ad3bef,
 CI41046398347 all jobs SUCCESS. Exact M57 userspace CI41040166657 reused.
 AP ../artifacts/m58-execdiag/AP_M58_EXEC_DIAG.tar.md5
