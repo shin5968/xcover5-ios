@@ -1,3 +1,22 @@
+2026-10-30 M52 video164506 HARDWARE PASS (one run)
+
+Video136.54s, final135s: PID6 rv4a00/AUTO wait_status4a00/launchd exit74;
+surface count0 pixels0 wired0, snapshot305889 crc986af809 dropped0.
+Visible M51 windows then actual M52 three circles, changing gold chart line and
+bars, advancing green progress, left red/right blue rails; console restored.
+Source-gated native74 confirms prior M51 baseline73 plus real iOS CoreGraphics
+load/18 resolved symbols/context caller-memory identity/geometry/bitmapinfo/
+BGRA and full opaque coverage,16 submissions and hash/hold/restore/ID-release
+gates. Individual symbol/restore diagnostic lines not independently transcribed.
+Observed layout has circles above chart and progress below, matching intended
+panel despite no UIKit coordinate assumptions. Review/original media hash/tail/
+end frame ../artifacts/m52-coregraphics/video-164506/.
+Preserve AP_M52_COREGRAPHICS.tar.md5 as hardware-passing reference. No new code,
+package or flash in this review. CPU CoreGraphics bitmap path only; no GPU/
+CoreAnimation/SpringBoard/input/vsync/tear-free claim. Boot intermittency deferred.
+
+Previous records follow:
+
 2026-10-30 M52 actual CoreGraphics PACKAGE VERIFIED; device PENDING
 
 CI41021317721 attempt1 SUCCESS, source5c39097de17b3912f221312dc364c97e2ee3ec10.
