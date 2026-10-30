@@ -1,16 +1,17 @@
 --- a/bsd/kern/ubc_subr.c
 +++ b/bsd/kern/ubc_subr.c
-@@ -42,7 +42,8 @@
+@@ -41,6 +41,7 @@
+ #endif
  #if defined(XCOVER5)
  #include "xcover5_notify_platform.h"
 +#include "xcover5_ui_platform.h"
  #endif
  #include <sys/types.h>
  #include "xcover5_m38c.h"
- #include <sys/param.h>
- #include <sys/systm.h>
-@@ -4764,6 +4765,13 @@
- 
+@@ -4767,6 +4768,13 @@
+         printf("XCOVER5 M39: pinned cfprefsd signed platform identity\n");
+     }
+ #endif
 +#if defined(XCOVER5)
 +    unsigned int ui_identity=xcover5_ui_platform(tmp_blob.csb_cdhash,cs_flags,platform);
 +    if(ui_identity) {
@@ -21,8 +22,6 @@
  	tmp_blob.csb_flags = cs_flags;
  	tmp_blob.csb_signer_type = signer_type;
  
- 	if (tmp_blob.csb_flags & CS_PLATFORM_BINARY) {
- 		tmp_blob.csb_platform_binary = 1;
 --- /dev/null
 +++ b/bsd/kern/xcover5_ui_platform.h
 @@ -0,0 +1,18 @@
