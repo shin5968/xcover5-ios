@@ -1,3 +1,47 @@
+2026-10-30 M50B launchd startup-watch PACKAGE VERIFIED; device PENDING
+
+M50A is hardware-passing on reboot (photo72/4800), but user confirms intermittent
+startup stall. M50B adds only kernel boot observation; exact entire16MiB M50A
+root bytes reused, SHA81bc1a640766f188eb5fa2de0c7d7591041c8149fefad3140badf3ca79b0fad5.
+All Apple files/settings, probe and original M39/M40/M41 objects identical;
+no rebuild/new userspace claim. User source files unchanged from d413a46.
+Root PID1 launchd/launchd.ios raw SVC entry/normal return plus Mach/BSD
+continuation return recorded in8-event bounded ring: seq/TID/phase/raw trap,
+PC/LR/SP,x0..x5,absolute time. Kernel-owned saved registers read only, no user
+buffer access and no thread/process references retained. Direct absolute/
+continuous time traps omitted. Platform/nonstandard paths may lack paired return;
+last entry does not by itself prove a blocked syscall or exact instruction.
+One thread call allocated at BSD init, arms on first matching PID1 SVC, prints
+5s snapshots up to3 times. First root/ppid1 m39-probe observed SVC suppresses
+future timer output; already-printing callback may finish. Timer/scheduler must
+operate for snapshots; absence of output is not proof of launchd cause. No
+result/timeout/signing/service policy changes, no reboot/reset/USB/storage writes.
+Original M50A full death/recovery gates remain native72/wait4800; no new native
+success code. Need failing boot's M50B BOOT/CALL/REGS/MORE/BOOT_END page plus
+elapsed time, and successful72 page for comparison. No intermittent-fix claim.
+Actual monitor host UBSan: identity/phase/64bit filters, raw entry/return fields,
+register immutability, ring order/cap,3-tick budget, probe suppression and timer
+allocation failure PASS. Actual git-apply/context check and applied whole source
+hook locations checked before compile and again after kernel build. All original
+M39-M50A preflight/applied regressions and AUTO capture tests PASS.
+CI41015102573 rejected: minimal line1 anchors caused patch skip; postcheck caught
+missing monitor, no package. Fixed full context, local git apply PASS.
+CI41016387029 rejected early: host cc under builder kernel SDK lacked string.h;
+split early source-only validation from normal host compile. No target change
+from that harness fix. Neither rejected build was packaged.
+Final kernel source c5487adaf9b182780781b353a094341d396f4cc0 CI41016867150 SUCCESS.
+Reused user source d413a4644976902ad3b88800d8746981752108eb CI41008158161 SUCCESS.
+Signature pages, old manifest provenance/new kernel hash, exact root HFS files/
+metadata/ownership, old shim/DTB/cmdline,255MiB/RAMDisk a21b8000, boot-only tar
+OdinMD5 and44MiB fit PASS. M50A known-good AP hash rechecked unchanged.
+AP ../artifacts/m50b-bootwatch/AP_M50B_BOOTWATCH.tar.md5
+SHA256 546f68661e02ac2aba5c1059771ab988acc23789e74066c07ca2a26527ee8341
+Kernel649df6bd5031ae86fc61e28b65f50fdbea7355a93318d591fb0ea7f9c1f48159
+No agent flash. No compositor/GPU/vsync/touch/tear-free claim. Hardware startup
+reliability and meaning of any last observed trap still need device evidence.
+
+Previous records follow:
+
 2026-10-30 M50A photo153229: parent72/4800 hardware PASS on reboot; boot intermittent
 
 Photo confirms PID6 kernel rv4800, AUTO TEST_END wait_status4800, launchd
