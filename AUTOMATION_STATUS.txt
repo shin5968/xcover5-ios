@@ -1,3 +1,22 @@
+2026-10-30 M52 actual Apple CoreGraphics rendering IN PROGRESS
+
+User asks next after M51 hardware73. Initial boot intermittency stays DEFERRED.
+M52 dlopens actual CoreGraphics after original M51 baseline73, resolves18 SDK-
+typed functions (typeof actual SDK declarations, no handwritten ABI guess),
+creates CGBitmapContext on existing IOSurface base pointer. BGRA little-endian
+premultiplied-first exact bitmapinfo/data identity/720x1480/stride2880 required.
+Draw actual Quartz rectangles/antialiased circles/stroked chart path; full-height
+red/blue rails check channel order and entire pixel alpha must be255. Release
+context while surface is locked, hash then standard16 submissions and original
+persistent restore/ID cleanup gates. New final74/wait4a00 only after all M51.
+No kernel change. Reuse byte-identical M50B kernel and original Apple root files.
+Real macOS CoreGraphics guard-memory/16distinct renders + actual new submission
+code with framebuffer mock, then actual iOS SDK strict compile are planned.
+iOS framework runtime and display still require hardware. No GPU/CoreAnimation/
+SpringBoard/input/vsync/tear-free claim. CI/package/device pending.
+
+Previous records follow:
+
 2026-10-30 M51 video162847 HARDWARE PASS (one run)
 
 Video117.75s, final116s: PID6 rv4900/AUTO wait_status4900/launchd exit73;
