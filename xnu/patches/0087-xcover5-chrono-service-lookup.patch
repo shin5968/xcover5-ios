@@ -72,12 +72,12 @@
 + if(!a.pid || a.pid>INT_MAX || a.pidversion>UINT32_MAX || a.filter_type!=6 || a.flags!=0x40000000ULL || strcmp(operation,"mach-lookup"))return ENOPOLICY;
 + client=proc_find((pid_t)a.pid);if(client==PROC_NULL)return ESRCH;
 + error=ENOPOLICY;
-+ const uint64_t required=CS_VALID|CS_SIGNED|CS_PLATFORM_BINARY;
++ const uint64_t required=CS_VALID|CS_SIGNED;
 + if(proc_getuid(client)!=501 || proc_ppid(client)!=1 || !proc_is64bit_data(client) ||
-+    (uint32_t)proc_pidversion(client)!=a.pidversion || (proc_getcsflags(client)&required)!=required)goto out;
++    (uint32_t)proc_pidversion(client)!=a.pidversion || ((proc_getcsflags(client)&required)!=required || !csproc_get_platform_binary(client)))goto out;
 + if(proc_getcdhash(client,hash)!=0 || xcover5_chrono_identity(hash)!=1)goto out;
 + /* exec changes pidversion: recheck after copying code identity. */
-+ if((uint32_t)proc_pidversion(client)!=a.pidversion || proc_getuid(client)!=501 || proc_ppid(client)!=1 || (proc_getcsflags(client)&required)!=required)goto out;
++ if((uint32_t)proc_pidversion(client)!=a.pidversion || proc_getuid(client)!=501 || proc_ppid(client)!=1 || ((proc_getcsflags(client)&required)!=required || !csproc_get_platform_binary(client)))goto out;
 + error=copyout(&decision,a.result,sizeof decision);
 + if(!error)printf("XCOVER5 M57 CHRONO_LOOKUP allowed pid=%llu version=%llu exact_signed_identity=1\n",(unsigned long long)a.pid,(unsigned long long)a.pidversion);
 + out:proc_rele(client);return error;

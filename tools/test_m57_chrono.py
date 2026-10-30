@@ -32,12 +32,13 @@ prefix=r'''
 #define PROC_NULL NULL
 #define user_addr_t uintptr_t
 typedef int pid_t;
-struct Proc{int pid,uid,parent,bits;unsigned version;uint64_t flags;unsigned char hash[20];};typedef struct Proc*proc_t;
+struct Proc{int pid,uid,parent,bits,platform;unsigned version;uint64_t flags;unsigned char hash[20];};typedef struct Proc*proc_t;
 static struct Proc root={.pid=1,.uid=0,.bits=1},app;static proc_t initproc=&root;
 static unsigned refs,fault,race;
 static int proc_pid(proc_t p){return p->pid;}static int proc_getuid(proc_t p){return p->uid;}
 static int proc_ppid(proc_t p){return p->parent;}static int proc_is64bit_data(proc_t p){return p->bits;}
 static unsigned proc_pidversion(proc_t p){return p->version;}static uint64_t proc_getcsflags(proc_t p){return p->flags;}
+static int csproc_get_platform_binary(proc_t p){return p->platform;}
 static proc_t proc_find(pid_t pid){if(pid!=6)return NULL;refs++;return &app;}
 static void proc_rele(proc_t p){assert(p==&app&&refs==1);refs--;}
 static int proc_getcdhash(proc_t p,unsigned char*out){if(fault==4)return EIO;memcpy(out,p->hash,20);if(race)p->version++;return 0;}
@@ -49,14 +50,14 @@ test=r'''
 struct Args{uint64_t result,pid,operation,filter_type,filter,flags,pidversion;};
 static const unsigned char spring[20]={0x45,0x3a,0xe2,0xe6,0x05,0x7a,0xcb,0x2d,0xea,0x0c,0x5a,0xe8,0xba,0x09,0x73,0x07,0x7e,0xa3,0xea,0xb1};
 static uint64_t decision;static struct Args a;
-static void reset(void){assert(!refs);fault=race=0;app=(struct Proc){.pid=6,.uid=501,.parent=1,.bits=1,.version=17,.flags=CS_VALID|CS_SIGNED|CS_PLATFORM_BINARY};memcpy(app.hash,spring,20);decision=99;a=(struct Args){(uintptr_t)&decision,6,(uintptr_t)"mach-lookup",6,(uintptr_t)"com.apple.chronoservices",0x40000000ULL,17};}
+static void reset(void){assert(!refs);fault=race=0;app=(struct Proc){.pid=6,.uid=501,.parent=1,.bits=1,.platform=1,.version=17,.flags=CS_VALID|CS_SIGNED};memcpy(app.hash,spring,20);decision=99;a=(struct Args){(uintptr_t)&decision,6,(uintptr_t)"mach-lookup",6,(uintptr_t)"com.apple.chronoservices",0x40000000ULL,17};}
 static void rejected(int expected){assert(xcover5_chrono_lookup(&root,(uintptr_t)&a)==expected);assert(!refs&&decision==99);}
 int main(void){
  reset();assert(!xcover5_chrono_lookup(&root,(uintptr_t)&a)&&decision==0&&!refs);
  reset();app.uid=0;rejected(ENOPOLICY);reset();app.parent=7;rejected(ENOPOLICY);
- reset();app.bits=0;rejected(ENOPOLICY);reset();app.version++;rejected(ENOPOLICY);
+ reset();app.platform=0;rejected(ENOPOLICY);reset();app.bits=0;rejected(ENOPOLICY);reset();app.version++;rejected(ENOPOLICY);
  reset();race=1;rejected(ENOPOLICY);reset();app.hash[0]^=1;rejected(ENOPOLICY);
- for(unsigned bit=0;bit<32;bit++)if((CS_VALID|CS_SIGNED|CS_PLATFORM_BINARY)&(1U<<bit)){reset();app.flags&=~(1U<<bit);rejected(ENOPOLICY);}
+ for(unsigned bit=0;bit<32;bit++)if((CS_VALID|CS_SIGNED)&(1U<<bit)){reset();app.flags&=~(1U<<bit);rejected(ENOPOLICY);}
  reset();a.filter=(uintptr_t)"com.apple.chrono.widgetcenterconnection";rejected(ENOPOLICY);
  reset();a.filter=(uintptr_t)"com.apple.chronoservices.fake";rejected(ENOPOLICY);
  reset();a.operation=(uintptr_t)"mach-cross-domain-lookup";rejected(ENOPOLICY);
