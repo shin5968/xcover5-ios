@@ -1,3 +1,37 @@
+2026-10-30 M53 CoreText explicit-font PACKAGE VERIFIED; device PENDING
+
+Source60a3412555065786fe2937777be01e137074a10a CI41023077754 attempt1 SUCCESS.
+Real macOS CoreText verifies exact supplied PostScript font identity, native
+UTF16 glyph mapping/advances, actual glyph pixels>=500,16 distinct guarded
+renders, missing glyph/nonASCII/empty/long/outside-width errors. Actual new
+submission/cleanup code tested with real CoreText and framebuffer mock incl
+corrupted-source/premature-completion/bad-restore rejection. Host UBSan PASS.
+Actual host preview exported and visually inspected: legible correct titles/
+resolution/counter, no overlap, correct orientation. macOS differs from iOS.
+All previous real readiness/IOSurface sharing/fault and parser/user tests PASS.
+iOS SDK-typed strict target compile/signature validation PASS. Dynamic CoreText
+and CoreGraphics load only after baselines; no entry-time framework dependency.
+Font7996bytes owned outlines f8d62b97... deterministic regeneration and exact
+new executable embedded bytes verified. No Apple/system font file copied.
+HFS78 records, only /sbin/m39-probe differs from passingM52; all Apple files,
+ownership/modes and original M39/M40/M41 object bytes identical; all new probe
+CodeDirectory SHA256 pages checked. Root6c6cb528dd0297d7f0ce9870b7eb9ad76db7afaa4909a0c89ae50474d3ea2cd9.
+Kernel exact passingM50B649df6bd... CI41016867150. Boot33566720/AP33577014,
+old shim/DTB/cmdline/RAM255MiB and RAMDisk a21b8000 preserved; boot-only tar/
+MD5footer/44MiB partition fit PASS. Passing M52 AP hash rechecked unchanged.
+AP ../artifacts/m53-coretext/AP_M53_CORETEXT.tar.md5
+SHA256a07c542461f691f0d932eb5b0a8491474d05febdb11f199666a152406bc709cc
+Expected original M52 circles/chart then labeled CORETEXT M53 / FRAME NN / 16 /
+720 X 1480 BGRA / SURFACE READY; console restore, native75/AUTO wait4b00,
+surface counters0. Fail195setup/196submit-integrity-restore/197CoreText load-draw;
+M53 PHASE dlopen/provider_font/ctfont/glyph_draw and draw rc help diagnosis.
+Actual iOS CoreText execution/panel PENDING. Latin uppercase/digit test only,
+no general shaping/Unicode fallback/system font service/CoreAnimation/GPU/
+SpringBoard/input/vsync/tear-free claim. Boot intermittency remains deferred.
+No agent flash. All metadata/logs/signatures/font/preview ../artifacts/m53-coretext/.
+
+Previous records follow:
+
 2026-10-30 M53 explicit-font CoreText text IN PROGRESS
 
 Next after hardware M52 native74; boot intermittency explicitly deferred.
