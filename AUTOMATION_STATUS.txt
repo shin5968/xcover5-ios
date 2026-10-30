@@ -1,4 +1,18 @@
-2026-10-30 M58 exact Chrono exec stage diagnostics IN PROGRESS
+M58 final: kernel source 9fa242dad7dd70ce1a25bad8207b1c6134ad3bef,
+CI41046398347 all jobs SUCCESS. Exact M57 userspace CI41040166657 reused.
+AP ../artifacts/m58-execdiag/AP_M58_EXEC_DIAG.tar.md5
+AP SHA256 a1189759c03aead94a1740071c454b0a52db784cb2238fafbde4f1ea13633a74
+Kernel SHA256 2708e1af660283c2dd0274f77c976a8cc0a1fa73f28b9e7471efd9c5527547b7
+Root SHA256 d561cc9adc3b88a3d2483d32da2cc473dc32f1f5158a7171d68701e6f4fbf39c
+Boot33583104/AP33587255 bytes; boot.img-only tar and appended MD5 PASS.
+Independent original native file/signature pages, exact entire M57 root,
+255MiB RAM/ADT RAMDisk a21bc000, shim/DTB/cmdline checks PASS.
+M56/M57 reference AP hashes unchanged. Not flashed. No hardware fix or
+lock-screen success claimed. Capture M58 EXEC / ATTR near Chrono error13.
+Logs before saved_path cannot diagnose earlier failures. Observer77 only
+means capture complete. Local verification/provenance/SHA256SUMS retained.
+
+2026-10-30 M58 exact Chrono exec stage diagnostics PACKAGED / HARDWARE PENDING
 
 M57 camera: native Chrono spawn EACCES13, xpcproxy78, stage not known.
 0088 instruments exact kernel-copied chronod path only, no new user memory
@@ -16,7 +30,7 @@ no-write checks and non-XCover no-op fallback PASS. Applied source checked
 against actual fixture and all hook placements before path release; all prior
 exec patches replayed locally and0088 git apply PASS. No permission relaxations.
 Exact entire M57 root will be reused, existing77/capture-only endpoint unchanged.
-New helper local bsd/kern header, not a new exported API. Build/package pending.
+New helper local bsd/kern header, not a new exported API. Build/package PASS; hardware pending.
 
 Previous records follow:
 
