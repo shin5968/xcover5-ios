@@ -15,6 +15,8 @@
 #define OSTypeAlloc(C) new C
 #define OSDynamicCast(C,o) dynamic_cast<C*>(o)
 #define OSSafeReleaseNULL(o) do{if(o){(o)->release();(o)=nullptr;}}while(0)
+#define task_t MockTask
+#define mach_port_t MockPort
 using UInt32=uint32_t;using task_t=void*;using mach_port_t=void*;
 using mach_port_name_t=uint32_t;using io_user_reference_t=uint64_t;
 using thread_call_param_t=void*;using OSAsyncReference64=uint64_t[8];

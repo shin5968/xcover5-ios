@@ -27,6 +27,8 @@ on:
     branches: [main]
     paths:
       - "xnu/patches/**"
+      - "tools/framebuffer/native_*"
+      - "tools/test_m68_graphics.py"
       - "tools/mkhfsroot.sh"
       - "tools/mkinit.py"
       - "tools/sweet-init.S"
