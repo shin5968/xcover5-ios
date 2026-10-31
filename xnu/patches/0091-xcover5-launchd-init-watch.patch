@@ -45,9 +45,9 @@
  bsd/dev/xcover5_autolog.c		standard
  bsd/kern/xcover5_bootdiag.c		standard
 +bsd/kern/xcover5_initdiag.c		standard
+ bsd/kern/kern_minimac.c			optional config_macf
  
  OPTIONS/config_macf			optional config_macf
- OPTIONS/mach_assert			optional mach_assert
 --- /dev/null
 +++ b/bsd/kern/xcover5_initdiag.c
 @@ -0,0 +1,105 @@
