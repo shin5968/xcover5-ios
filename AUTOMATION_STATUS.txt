@@ -1,3 +1,39 @@
+2026-10-31 M64 FIXED M63 24MiB BOOT-VIEW SIZE REGRESSION / PACKAGED / HARDWARE PENDING
+
+User reports repeated identical M63 boot failure. Corrected earlier advice to
+retry: this is deterministic, not proved intermittent. Exact035 video frame
+already shows M20 HFS view discovery failed stage7; xcuserdata3GiB registers.
+Patch0036 xc_discover only accepted16MiB, while M63 root is24MiB. It refused
+to publish /dev/xchfs; PID1 M20 mount returnedENOENT/stage21 and entered tick.
+Local actual M63 boot with original C parser reproduces valid=>stage7.
+M63 root expansion omitted this integration contract. Earlier unknown-missing
+component/reboot advice in camera093153 record is superseded by this finding.
+
+M64 accepts only exact shipped16/24MiB, retaining segment/payload/volume/disk
+bounds, read-only strategy and real M20 mount/file/M28 cache proofs. Neither
+failure bypass nor fabricated success added. New M64BOOT_HFS runtime marker.
+Exact C parser tests accept actual M62/M63 boot files; malformed-size, short
+VM range, out-of-payload extent, GPT CRC/HFS geometry/read/write bounds reject.
+CI synthetic16/24MiB fixtures include no original iOS bytes. Cache-hit font
+source-only check now skips absent source; kernel cache remains source-keyed.
+
+Source b23ae258f11b0eaac1955ac144fbaa96ef77bdac, full kernelCI41151507821 all jobs SUCCESS.
+KernelSHA256 d004efca60d5d940c5a6ca2199327f164d02b45bca716a05e8336483d37f0694.
+Entire verified M63 root, PID1, observer,23 signature inventories and resources
+retained byte-for-byte; rootSHA256 0d0c0b17cb755bdfd79461a058881bcfaf6a5994af456ed6db4a3ffe32b58f50.
+Kernel workflow default raw root/preference probe NOT used. Actual final boot
+image passed C parser/strategy and all negative cases before AP creation.
+Independent exact loaded kernel segments/entry, M63root/shim/DTB/cmdline,
+255MiB, ADT/boot-only tar/MD5 PASS. Nonloaded CTF metadata has file bounds
+verified separately. RAMDisk0xa21c0000..0xa39c0000 unchanged.
+Boot41973760B/AP41984055B;44MiB headroom4163584B.
+AP ../artifacts/m64-root-view/AP_M64_BOOT_VIEW.tar.md5
+SHA256 ef5206e691c56f30090e19021e9323e929b767bac657de3ebd409b66c0f17e89
+Local source/status/log/parser regression/README/SHA256SUMS preserved.
+No flashing performed. Require actual M64BOOT_HFS size25165824, M20 USER PASS,
+M28 cache proof and native M63 RESOURCE/SPACE/firstUI or fatal on hardware.
+Real lockscreen remains PENDING. Unrelated sweet-bootstrap-exec.S untouched.
+
 2026-10-31 M63 camera093153: PRE-UI M20 MOUNT FAILURE / RESOURCE PROFILE NOT REACHED
 
 Video preserved locally ../artifacts/m63-resources/video-093153/source.mp4,
