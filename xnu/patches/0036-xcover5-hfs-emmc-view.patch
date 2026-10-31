@@ -16,7 +16,7 @@
  }
 --- /dev/null
 +++ b/bsd/dev/xchfs.h
-@@ -0,0 +1,139 @@
+@@ -0,0 +1,141 @@
 +/* Read-only HFS view of the RAM-root image stored inside our boot payload.
 + * No controller writes beyond existing read-command setup; no media writes.
 + * All on-disk offsets are parsed and bounded before access. */
@@ -90,7 +90,8 @@
 + if(count<2 || count>16 || table_end>rd)return 6;
 + if(xc_bytes(base+table_end-32,b,32))return 6;
 + uint64_t vo=xc_le64(b+16),vs=xc_le64(b+24);
-+ if(vs!=16*1024*1024 || xc_le64(b+8)<vs || vo<table_end || vo>rd || vs>rd-vo)return 7;
++ /* M64: M63 expanded the RAM root; both shipped sizes retain exact bounds. */
++ if((vs!=16*1024*1024 && vs!=24*1024*1024) || xc_le64(b+8)<vs || vo<table_end || vo>rd || vs>rd-vo)return 7;
 + if(xc_bytes(base+vo+1024,h,512) || h[0]!='H' || (h[1]!='+' && h[1]!='X'))return 8;
 + uint32_t bs=xc_be32(h+40),bc=xc_be32(h+44);
 + if(bs<512 || bs>65536 || (bs&(bs-1)) || (uint64_t)bs*bc!=vs)return 8;
@@ -154,5 +155,6 @@
 +  bdevsw_remove(maj,&xc_hfs_sw);printf("XCOVER5 M20: devfs failed\n");return;
 + }
 + printf("XCOVER5 M20: /dev/xchfs read-only HFS view base=%llu size=%llu\n",xc_view.base,xc_view.size);
++ printf("XCOVER5 M64 BOOT_HFS size=%llu; exact 16/24MiB image geometry verified\n",xc_view.size);
 +}
 +#endif

@@ -18,7 +18,8 @@ n=struct.unpack_from('<I',boot,po+12)[0]
 entry=po+0x2a8+(n-1)*32
 vo=struct.unpack_from('<Q',boot,entry+16)[0]
 base=FIRST*512+po+vo
-size=16*1024*1024
+size=struct.unpack_from('<Q',boot,entry+24)[0]
+assert size in (16*1024*1024,24*1024*1024), 'fixture must be a shipped root size'
 prefix=r"""
 #include <stdint.h>
 #include <string.h>
@@ -67,7 +68,8 @@ with tempfile.TemporaryDirectory() as tmp:
     lib.strategy_test.argtypes=[C.c_int,C.c_int64,C.c_uint32,C.c_void_p]
     for mode,expected in [('valid',0),('header_crc',1),('layout',2),('table_crc',3),
                           ('duplicate',4),('range',4),('boot_magic',5),('kernel_overflow',5),
-                          ('payload_magic',6),('segments',6),('extent',7),('hfs_magic',8),
+                          ('payload_magic',6),('segments',6),('extent',7),
+                          ('unsupported_size',7),('vm_too_small',7),('root_past_payload',7),('hfs_magic',8),
                           ('hfs_size',8),('io_error',1)]:
         table=bytearray(16384);table[:16]=bytes(range(1,17))
         struct.pack_into('<QQ',table,32,FIRST,LAST)
@@ -89,6 +91,9 @@ with tempfile.TemporaryDirectory() as tmp:
         if mode=='payload_magic':b[po]^=1
         if mode=='segments':struct.pack_into('<I',b,po+12,0xffffffff)
         if mode=='extent':struct.pack_into('<Q',b,entry+16,0xffffffffffffffff)
+        if mode=='unsupported_size':struct.pack_into('<Q',b,entry+24,20*1024*1024)
+        if mode=='vm_too_small':struct.pack_into('<Q',b,entry+8,size-16384)
+        if mode=='root_past_payload':struct.pack_into('<Q',b,entry+16,struct.unpack_from('<I',b,16)[0]-size+16)
         if mode=='hfs_magic':b[po+vo+1024]^=1
         if mode=='hfs_size':struct.pack_into('>I',b,po+vo+1024+44,0xffffffff)
         @CB
