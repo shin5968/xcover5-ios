@@ -27,9 +27,19 @@ static void m73_start(void){
  if(rc)m73.connection=0;
  if(service)release(service);
  printf("XCOVER5 M73 DISPLAY_OBSERVER open=%x connection=%u\n",(unsigned)rc,m73.connection!=0);
- const char *resources[]={"/System/Library/Fonts/CoreUI/SFUI.ttf","/System/Library/CoreServices/SpringBoard.app/Assets.car"};
- for(unsigned i=0;i<2;i++){struct stat st;errno=0;int found=stat(resources[i],&st),error=errno;
+ const char *resources[]={"/System/Library/Fonts/CoreUI/SFUI.ttf","/System/Library/CoreServices/SpringBoard.app/Assets.car",
+  "/System/Library/PrivateFrameworks/CoreDuet.framework/_DKDataModel.momd/VersionInfo.plist",
+  "/System/Library/PrivateFrameworks/CoreDuet.framework/_DKDataModel.momd/_DKDataModel35.mom",
+  "/System/Library/PrivateFrameworks/CoreDuet.framework/_DKDataModel.momd/_DKDataModel35.omo"};
+ for(unsigned i=0;i<sizeof(resources)/sizeof(resources[0]);i++){struct stat st;errno=0;int found=stat(resources[i],&st),error=errno;
   printf("XCOVER5 M73 RESOURCE path=%s stat=%d errno=%d bytes=%lld\n",resources[i],found,error,found?-1LL:(long long)st.st_size);}
+ CFURLRef url=CFURLCreateWithFileSystemPath(kCFAllocatorDefault,CFSTR("/System/Library/PrivateFrameworks/CoreDuet.framework"),kCFURLPOSIXPathStyle,true);
+ CFBundleRef bundle=url?CFBundleCreate(kCFAllocatorDefault,url):NULL;
+ CFURLRef model=bundle?CFBundleCopyResourceURL(bundle,CFSTR("_DKDataModel"),CFSTR("momd"),NULL):NULL;
+ printf("XCOVER5 M73 COREDUET bundle=%d model_url=%d; resource lookup only, not store initialization\n",bundle!=NULL,model!=NULL);
+ if(model)CFRelease(model);
+ if(bundle)CFRelease(bundle);
+ if(url)CFRelease(url);
 }
 static void m73_observe(unsigned elapsed){
  if(!m73.connection||!m73.call)return;

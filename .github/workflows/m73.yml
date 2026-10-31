@@ -40,7 +40,7 @@ jobs:
           xcrun clang -target arm64-apple-ios16.0 -isysroot "$SDK" -O1 -Wall -Wextra -Werror -DM63_RESOURCE_PROFILE -DM66_ICU_PROFILE -DM67_EVENTCFG_PROFILE -DM71_BUNDLE_PROFILE -DM72_PORTABLE_PROFILE -DM73_DISPLAY_PROFILE -framework CoreFoundation -Wl,-adhoc_codesign tools/ui-boot-observer.c -o out/m39-probe
           codesign --verify --strict out/m39-probe
           xcrun otool -L out/m39-probe > out/M73_LOADS.txt
-      - name: Replace only the owned observer in the verified M72 asset root
+      - name: Replace owned observer and stage current CoreDuet model placeholders
         run: |
           cp base/root-hfs.img out/root-hfs.img
           WORK=$(mktemp -d)
@@ -49,6 +49,7 @@ jobs:
           sudo cp out/m39-probe "$WORK/mnt/sbin/m39-probe"
           sudo chown 0:0 "$WORK/mnt/sbin/m39-probe"
           sudo chmod 755 "$WORK/mnt/sbin/m39-probe"
+          sudo python3 tools/stage_m73_resources.py "$WORK/mnt"
           sync
           hdiutil detach "$WORK/mnt" >/dev/null
           XCOVER_UI_BOOT=1 XCOVER_HACKIOS_BOOT=1 XCOVER_M63_BOOT=1 python3 tools/check_hfs_owners.py out/root-hfs.img
