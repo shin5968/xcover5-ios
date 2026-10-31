@@ -21,7 +21,8 @@ python3 tools/fix_cache_ownership.py "$OUT" > "$OUT.ownership.json"
 python3 - "$OUT" "$OUT.ownership.json" <<'PY'
 import json,struct,sys
 from pathlib import Path
-from tools.stage_m66_icu import FILES
+sys.path.insert(0, 'tools')
+from stage_m66_icu import FILES
 p=Path(sys.argv[1]);assert p.stat().st_size==3*1024**3
 with p.open('rb') as f:f.seek(1024);h=f.read(48)
 assert h[:4]==b'HX\0\5' and struct.unpack_from('>II',h,40)==(4096,786432)
