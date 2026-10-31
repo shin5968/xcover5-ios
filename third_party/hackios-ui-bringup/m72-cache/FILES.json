@@ -1,0 +1,1770 @@
+{
+  "System/Library/CoreServices/SpringBoard.app/Assets.car": [
+    152216,
+    "12fcebe8502705f76ed11f023770137763edf286e355765fc2ae4be57ec244cc"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/CarDisplay.loctable": [
+    1285,
+    "dc1d9b23b145d01f1aa52d786be3ff19a18c863d4e46435366ac1c07aebd2ab5"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/DefaultEnabledWeeApps.plist": [
+    304,
+    "2ff0642512d72cd974150b137c05e740e406d736f741746b04019987a107b38a"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/DefaultIconState-375w-667h~iphone.plist": [
+    2186,
+    "807bc3c1e547a8d5cb15917c094818979c45a2694a743248fa72967afae91e54"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/DefaultIconState-414w-736h~iphone.plist": [
+    2186,
+    "807bc3c1e547a8d5cb15917c094818979c45a2694a743248fa72967afae91e54"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/DefaultIconState.plist": [
+    2186,
+    "807bc3c1e547a8d5cb15917c094818979c45a2694a743248fa72967afae91e54"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/DefaultIconState~iphone.plist": [
+    2186,
+    "807bc3c1e547a8d5cb15917c094818979c45a2694a743248fa72967afae91e54"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/DefaultTodaySnippetBulletinOrder.plist": [
+    287,
+    "9886e3d52db1e1ed1da3e56e90f5f3720e2d8a6c1314eb0ded8df5b39f3386f0"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/DefaultTomorrowSnippetBulletinOrder.plist": [
+    132,
+    "46236c3875b2c5062154a8b595ece547ea658689a0519d12f7bac0b695e17bc3"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/EmergencyCallStrings.strings": [
+    266,
+    "12879fb2bd50916e72af0f78990d547a4dc1175f856253e46b6598ef06c2e961"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/Info.plist": [
+    4367,
+    "2357c9d12af0d70ec201d5566d093e06da6ab6da3c48374c593cad2663839c7a"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/Jibbler.loctable": [
+    4569,
+    "a20dc02871f94db37a91a9f6492bce835fe4e57a62de1b40379e37d571e52a62"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/Late_Fall_2017_iOS_Strings.loctable": [
+    33964,
+    "d7a517f912041af4253a08fec3bfc1b15d8bf6b6c9aa2a37a70385608c453695"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/PkgInfo": [
+    8,
+    "82502191c9484b04d685374f9879a0066069c49b8acae7a04b01d38d07e8eca0"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/PlugIns/SpringBoardDiagnosticExtension.appex/Info.plist": [
+    1118,
+    "7dfcd59d6bb2d395b32b5b0c7fb0f7af7ba6f9ecc3c33521e796d7afcd1d7fb2"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/PlugIns/SpringBoardDiagnosticExtension.appex/SpringBoardDiagnosticExtension": [
+    71376,
+    "f4c1e330336016a27bff888d868b3a3dc690ba248baa12649c5f926906e2e3ba"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/PlugIns/SpringBoardDiagnosticExtension.appex/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/PluginSpecification.plist": [
+    562,
+    "c620e1a7aed6c5e47c55f90128b8b0d69ad255a70d5ba846be6eb53a870ba968"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/RingerChanged.aif": [
+    14902,
+    "f9966f65787f1ba4469c6ccc89d4eb164cf7e28943def706eaa3e26bb98fd2a8"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SBApplicationShortcutMenuMask@2x.png": [
+    710,
+    "0ab8ee9a7437f120446a2ff8c2918dd2571880ac694cf1bc4a36245b03d199e7"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SIMToolkitCallDropped.aiff": [
+    15198,
+    "41892646ef7fd611e7148526b93958ed81cae189fff8f52df164ec0d746ec3a2"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SIMToolkitGeneralBeep.aiff": [
+    33570,
+    "2c661fee0955862c32328817dca7cfccb042eccb011fdc508b35e625852582e3"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SIMToolkitNegativeACK.aiff": [
+    14562,
+    "858a373680ddd191e370f74968f69490f22960c6758fa0dbe99b5f216587c212"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SIMToolkitPositiveACK.aiff": [
+    111186,
+    "4d1917f2ee71025a0a713a14256ca787d682442d15cdbdfcd14f90af63192d9f"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SIMToolkitSMS.aiff": [
+    43454,
+    "6cb3a996e9b876992308543b9aafda075f37088094bb131ffab378a7284ecfb5"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SpringBoard": [
+    112048,
+    "7926a1ba0b115cf45102b2c3d8e4eb7bc9c84bcf70b573d2a798690d9148059c"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SpringBoard-Mesa.loctable": [
+    2157,
+    "d3205ec10ee7bb947f534f760f3de2e07e9be80957c7ea30168bb66418b2891a"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SpringBoard-gemini.strings": [
+    547,
+    "ef2d403518a9737c1ac6f6a487dc94c2560caa8a16519dfe5c578c4217037ed3"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SpringBoard.loctable": [
+    1117760,
+    "3a2f8ed44707d71d2520918bf16ab5d81fca44e47d0e76d22b7251ca57cc0c48"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/SpringBoardPlurals.loctable": [
+    124076,
+    "ccbd295475fedcc7531f8c8e9e92f4859bd6c85b8b3a2aaa810116f0b5f66354"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/TVOutSettings.plist": [
+    537,
+    "fd8cf1f87aa836af40a45975f583d68a8b581a73c2989acb41558539a70500f8"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/TinkX2.aif": [
+    14902,
+    "f9966f65787f1ba4469c6ccc89d4eb164cf7e28943def706eaa3e26bb98fd2a8"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/US.uchr": [
+    5588,
+    "d078006d2d55f952101f606f144a469aa15252655e39285a3d3426342d9641ec"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/_CodeSignature/CodeResources": [
+    2777,
+    "7465805c8f239ea5d949feefa137856c565fc8a7d3ccdcf50b3c3cc01096e1ca"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/com.apple.SpringBoard.mesa.plist": [
+    103,
+    "fee52e30b9ac52de96ca80bcdd46b6d8225f5cd955e6a556fa570e7a3bb94e2b"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/com.apple.springboard-cloud-users.defaults": [
+    2090,
+    "b3fb751d97ced7b68d5359dcefdd6df065825c3dc302f74ab863570b678e2048"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/lock.aiff": [
+    70454,
+    "3c6f9b320d53b2e3e7b44fb2ef6646f7d7c6a9149b28ab49b0da589ab9a53cd3"
+  ],
+  "System/Library/CoreServices/SpringBoard.app/ussd.aiff": [
+    233786,
+    "2333f04dfba0b71891c3a43e5e93b56ae57851c27bb902828c536192b6e8878d"
+  ],
+  "System/Library/Fonts/AppFonts/AcademyEngraved.ttf": [
+    109152,
+    "8fa97115d74b73c4657525f78fd4d7a2c7618245eeefdcf51e7f39b0efe23232"
+  ],
+  "System/Library/Fonts/AppFonts/AlNile.ttc": [
+    131264,
+    "ef8e9a2e578d12fdedf719b70c12eb631996bd8bfd46ecbee0b0c7cc23832d3e"
+  ],
+  "System/Library/Fonts/AppFonts/AppleGothic.otf": [
+    2244728,
+    "e1f335f95481031869da7e145b8c469aa72082ecb115e13d09252ebfcc68007a"
+  ],
+  "System/Library/Fonts/AppFonts/Athelas.ttc": [
+    1193260,
+    "b7db2a4fae9a46640a15f4f03fd744b9c94209e06055a75833777a127cad85fe"
+  ],
+  "System/Library/Fonts/AppFonts/AvenirNextCondensed.ttc": [
+    1808604,
+    "3692eb7e18f9f616490bd272c79a42878c1d4b33acf1922117e38c0e48ee6f79"
+  ],
+  "System/Library/Fonts/AppFonts/Bodoni-Ornaments.ttf": [
+    54912,
+    "2a0ec70e9c625a2e5604bd28a42013c81421214a9bdf46b6dcb855c5bff001fb"
+  ],
+  "System/Library/Fonts/AppFonts/Bodoni72-Book-SmallCaps.ttf": [
+    49904,
+    "8cb46aac8fc7f3662dfae8e4a2eb0c7d16c932bbbac5da0d8f2480625560ac54"
+  ],
+  "System/Library/Fonts/AppFonts/Bodoni72-OldStyle.ttc": [
+    147596,
+    "81a5c96817431381733ab1a2bd56d67553ae6dfadda5dde9629a9c619858c8af"
+  ],
+  "System/Library/Fonts/AppFonts/Bodoni72.ttc": [
+    279360,
+    "ecc21707c3300874386eb0a29c0c7be4929a323ec5e40a8c962764f73f28ff4e"
+  ],
+  "System/Library/Fonts/AppFonts/BradleyHand-Bold.ttf": [
+    431516,
+    "3cb12c0c6aa15bfbdbc31d76fc4b7d909c595ded5d106b75820b1998dc3f9dea"
+  ],
+  "System/Library/Fonts/AppFonts/Carlito.ttc": [
+    2747068,
+    "56663af7f5b9cd530b7e03d4890ef63019c98f8d61e268cc78db27f510d12cc0"
+  ],
+  "System/Library/Fonts/AppFonts/ChalkboardSE.ttc": [
+    345896,
+    "7c4f1f3e59fc9e05b9d00e39b9456f4a874fc0c526c18182fd1037d63bedc137"
+  ],
+  "System/Library/Fonts/AppFonts/Chalkduster.ttf": [
+    486880,
+    "0579613b4e9911c66ccf70a8bc047f2a75d6fc36b32f660d9264f3015b377ef7"
+  ],
+  "System/Library/Fonts/AppFonts/Charter.ttc": [
+    1058724,
+    "cd5e4e4f0e4837dfb860ba9f2a1d4c288b6dbeca66fe213603d9bb4e6f7402b1"
+  ],
+  "System/Library/Fonts/AppFonts/Cochin.ttc": [
+    524176,
+    "25090c1871c6c758664d6dea48d13e2095f52d455de41bc989e27bfb532033be"
+  ],
+  "System/Library/Fonts/AppFonts/DB_LCD_Temp-Black.ttf": [
+    7252,
+    "9a4104ace8be84738dd1fb41998d5a3897cc2c998a75abf02c7477892cbddacd"
+  ],
+  "System/Library/Fonts/AppFonts/Damascus.ttc": [
+    2233532,
+    "4e2e18fa29787522728818b98dd2b2f1ab9db18fc71e7f9e026d27380cb87d60"
+  ],
+  "System/Library/Fonts/AppFonts/DevanagariSangamMN.ttc": [
+    1027920,
+    "ff0ecc152f129b2eeac811347b13cd956da3ef38e6d2822e087f8c0d1ef818b2"
+  ],
+  "System/Library/Fonts/AppFonts/Didot.ttc": [
+    358584,
+    "2f35cd736f033eaecf8ca70cb269f00046b691503fa8de63866c25a93c5be521"
+  ],
+  "System/Library/Fonts/AppFonts/Farah.ttc": [
+    91112,
+    "506964e2a985915d493bb4095b753a42c0a66930f1b5156502ac38025a11ab2f"
+  ],
+  "System/Library/Fonts/AppFonts/GillSans.ttc": [
+    676720,
+    "e38000a6d77171c9a4f9950f4ddcdd8e6fa0bb566a19375d106cf8fad79b8f06"
+  ],
+  "System/Library/Fonts/AppFonts/HiraginoMincho.ttc": [
+    19357152,
+    "af8212a87ca4bcd4b88ea64b2ead3b6e480b4feca3f4b89cf6287958fba2f1ba"
+  ],
+  "System/Library/Fonts/AppFonts/HoeflerText.ttc": [
+    1647144,
+    "4e7f471379588b2e40a6e9a96407e0d03207b5185fd92b77481abb4c9eae0e80"
+  ],
+  "System/Library/Fonts/AppFonts/LockClock.ttf": [
+    34308,
+    "35d98f319b0d677935cb4d5219964bcf6b588af5853a5a94c6e0b094d55763ec"
+  ],
+  "System/Library/Fonts/AppFonts/Marion.ttc": [
+    399300,
+    "b05f717f3803d5911475e70b016935c63cca1ba86873e5fbb7291277f7bf1440"
+  ],
+  "System/Library/Fonts/AppFonts/MarkerFeltThin.ttf": [
+    190512,
+    "b7197cab3cbde52a62dc0030ed63e23a82b6f2386653bb6e7d942f7713b32c48"
+  ],
+  "System/Library/Fonts/AppFonts/MarkerFeltWide.ttf": [
+    198768,
+    "8f0ea179b0c0feb512fa6c806c0b0d7ee3254afec95bc5434b2b0740188c1a44"
+  ],
+  "System/Library/Fonts/AppFonts/Mishafi.ttf": [
+    1294044,
+    "9205bf166b7dfba088ce6a93552d93e36f57ecd015e34b6cedcac960fcedf58a"
+  ],
+  "System/Library/Fonts/AppFonts/Noteworthy.ttc": [
+    286684,
+    "950888a629d43d0eb5f9cdfc98afc1681dac4646513ac9ad3f9599fd17dcde7f"
+  ],
+  "System/Library/Fonts/AppFonts/Optima.ttc": [
+    239160,
+    "b31ac2558c4a5ae7e44015b3e8deaddc080a236d291cba40ba93cd0b3d893974"
+  ],
+  "System/Library/Fonts/AppFonts/Palatino.ttc": [
+    1043284,
+    "790bb4f801aded1c07d9fdb9f113e53e98d59c7c6f9d520659d3b1c46945ab86"
+  ],
+  "System/Library/Fonts/AppFonts/Papyrus.ttc": [
+    1111320,
+    "831d3ec987dbaee2c45dbf4edea1b910d5a61f062794b38cdeb73cca523bb20b"
+  ],
+  "System/Library/Fonts/AppFonts/PartyLET.ttf": [
+    163892,
+    "ffca2102ff0e2392c94743d205addbaff03c8c9f59a8f740c00d56cf323d67e3"
+  ],
+  "System/Library/Fonts/AppFonts/Seravek.ttc": [
+    3697788,
+    "0da80715ed85d85330daab4c62bb28dce22f4194d79cc8053bbd61e082021275"
+  ],
+  "System/Library/Fonts/AppFonts/SnellRoundhand.ttc": [
+    1525776,
+    "6b53b2f9dd01c5a5b8dab8eee4aeec6f69e8f92229ebac2ac06ecc8a8b26ddf1"
+  ],
+  "System/Library/Fonts/AppFonts/SuperClarendon.ttc": [
+    1420588,
+    "38defb5ae7f601ed6aa6bf9bcfdeb7e94db61cdeac18c5c14d4082ab4eb379c2"
+  ],
+  "System/Library/Fonts/AppFonts/Zapfino.ttf": [
+    403308,
+    "f30e7620766b57a7dc73a43fa415b0ecd81a655684c41255abe5910fc7cd1fdd"
+  ],
+  "System/Library/Fonts/Core/AppleSDGothicNeo.ttc": [
+    22254240,
+    "cfaecf77b079317d7121ebe08c98c985689d6fef0b546242877967af43d5941a"
+  ],
+  "System/Library/Fonts/Core/AppleSymbols.ttf": [
+    897936,
+    "99b1a177669c568bcb157c107ea4ba0f1f60c77021df990cc5c1d7afa3863b92"
+  ],
+  "System/Library/Fonts/Core/ArialHB.ttc": [
+    133400,
+    "d2f0a32fc62e2ca51dd7d802707336723e10ff0d0ed18e2a1c1b2b884d2fd02e"
+  ],
+  "System/Library/Fonts/Core/Avenir.ttc": [
+    766220,
+    "d9c2d974becc7d97595b8a615c16db9ee61bcb67f0689445badfb277624e1b0c"
+  ],
+  "System/Library/Fonts/Core/AvenirNext.ttc": [
+    2517356,
+    "92ec6bb88276e9358d82eacf2290548384ccaab19de6b9daee09b8231724b9c9"
+  ],
+  "System/Library/Fonts/Core/Courier.ttc": [
+    749956,
+    "4d99c7d247bb8e8ce325d0a812abe6fa646d823d2bdd4c693851ce54ed773dd4"
+  ],
+  "System/Library/Fonts/Core/CourierNew.ttf": [
+    684624,
+    "c886ca3172d8ce9189976992d145ec090500a4ff516ecb9d4df56b1a78336247"
+  ],
+  "System/Library/Fonts/Core/CourierNewBold.ttf": [
+    691796,
+    "500df4e46b554ae7d646e8727952fd8c7e60e94423481f6b82325cfddba2ee6a"
+  ],
+  "System/Library/Fonts/Core/CourierNewBoldItalic.ttf": [
+    506640,
+    "60e4c514200985d3f8405af039ffb89cd24b45fef5005b019825a4937b96135d"
+  ],
+  "System/Library/Fonts/Core/CourierNewItalic.ttf": [
+    589900,
+    "b5c6d453f16fb1693652671fa2e11d8c8ad1cd0046c3f38ae2608d165838ecf1"
+  ],
+  "System/Library/Fonts/Core/DINAlternate-bold.ttf": [
+    77364,
+    "95bf9a806c8c9d20ac4fa6406e982a258257edb1ce5e1afe945605323d17f2de"
+  ],
+  "System/Library/Fonts/Core/DINCondensed-bold.ttf": [
+    212040,
+    "36958182a424e1e8a1307b2636a615a6323ce1bbfadda136735ab4fb3bd26ceb"
+  ],
+  "System/Library/Fonts/Core/EuphemiaCAS.ttc": [
+    261436,
+    "dedb13ddf44caf14aeaf47ca8bbd9c991626c624083bef673eddd3f33a7ebc41"
+  ],
+  "System/Library/Fonts/Core/Fallback.ttf": [
+    20416,
+    "98db800b5bdb616c43e6dac4f44c623bfeb4b15ecaa0600e53487addb2f08e98"
+  ],
+  "System/Library/Fonts/Core/Futura.ttc": [
+    487620,
+    "c59c04e8e87f752e2e57b3f3d43a793eba907a9e2affcbfeac85e7c6779e878f"
+  ],
+  "System/Library/Fonts/Core/Galvji.ttc": [
+    208108,
+    "9bea2f62bc59af098b555ed0e7f63423839a25adce6bcb102ddea4b066570a59"
+  ],
+  "System/Library/Fonts/Core/GeezaPro.ttc": [
+    1018224,
+    "4635da30cd91a6152585db632ed83b808c54d75c20d3c079234a7d94e1f28079"
+  ],
+  "System/Library/Fonts/Core/HelveLTMM": [
+    181804,
+    "b4ce36ff1bd935951bbc9b9afaa871e99884cd022249a358de0871e596c21f08"
+  ],
+  "System/Library/Fonts/Core/Helvetica.ttc": [
+    1195996,
+    "e5af39f85fa200eb0dfe5783c21de76139d76edeee6f3cebbe795b9d2f6cd5a1"
+  ],
+  "System/Library/Fonts/Core/HelveticaNeue.ttc": [
+    2268928,
+    "afff599672b35900692f628bb60c5627173ee045d38aaa1e18eba7080848a274"
+  ],
+  "System/Library/Fonts/Core/HelveticaNeueExtras.ttc": [
+    205416,
+    "66246e6ba624529e12dfe6bdfc3e34c16bd9b98b6cea816d034f8596234ac400"
+  ],
+  "System/Library/Fonts/Core/HelveticaNeueInterface.ttc": [
+    17488,
+    "3d7cd4ec69d592df53eb0201bc1f7e98d4d0d0729728c221f627859b63c93dd4"
+  ],
+  "System/Library/Fonts/Core/HiraginoKakuGothic.ttc": [
+    23710944,
+    "9ac2c81551d4c5c0006dd9f90f4dec6006dfcda8e1b7cca5ca33e38a696dc175"
+  ],
+  "System/Library/Fonts/Core/Kailasa.ttc": [
+    1178132,
+    "1f97f782da61a3329fd7aaa889dea8a6468b58cb4128bea083e0e540e3c9e551"
+  ],
+  "System/Library/Fonts/Core/Kefa.ttf": [
+    186908,
+    "53c315b96f6a5abd3332327e4fe62de14951b96f546b8f7b8bd193d8e3c26bb1"
+  ],
+  "System/Library/Fonts/Core/KhmerSangamMN.ttf": [
+    188048,
+    "60d4d878979f391fae7b3adfe69c03fc933001e9cfc8585e40b2f97047709424"
+  ],
+  "System/Library/Fonts/Core/Kohinoor.ttc": [
+    624392,
+    "d22c55a51677b87c2e2479b5df89f67941d906f9e323af9106d2bf3e5f16f3fd"
+  ],
+  "System/Library/Fonts/Core/KohinoorBangla.ttc": [
+    420808,
+    "1f6c24395651c9f853f03642df61f37e4bbdbfb46eaeb82d3ca3c6c8dde14c53"
+  ],
+  "System/Library/Fonts/Core/KohinoorGujarati.ttc": [
+    317852,
+    "21bf8e911110f59baaba7469f618226a486d4b0c2ff309922a8f7a8e3a043a0b"
+  ],
+  "System/Library/Fonts/Core/KohinoorTelugu.ttc": [
+    406044,
+    "a6e323b0c46524a844254fb69945f652aaffcdc3707a8afac9b0b9b96597aa97"
+  ],
+  "System/Library/Fonts/Core/LaoSangamMN.ttf": [
+    58092,
+    "958682e1c151d1a1c9ef2508a2c44f0be869308c2aaad793a167739a23dc6356"
+  ],
+  "System/Library/Fonts/Core/LastResort.otf": [
+    2468,
+    "c813cfc7edcf69559771e11a92ff3a4f5d968bafc11e31a370ee1f3f3ce1c687"
+  ],
+  "System/Library/Fonts/Core/MalayalamSangamMN.ttc": [
+    185216,
+    "2976f19fa18b91f875b379a04a2b043a3c0d1099ca6ee2f5fe7577420829c6c0"
+  ],
+  "System/Library/Fonts/Core/MuktaMahee.ttc": [
+    607372,
+    "52cb2219540976f28e1dfc046d0d7f4b35b1650ff58828bc703a8ec1a6087c32"
+  ],
+  "System/Library/Fonts/Core/MyanmarSangamMN.ttc": [
+    193720,
+    "3772190509b76977ec1c57120e1bc6c78dab0551d6a448dde95fbe25092c1504"
+  ],
+  "System/Library/Fonts/Core/NewYork.ttf": [
+    495508,
+    "4f382a7c9db53f49ef1821acd0be27b8c43214e59618e9ff0127e2397d4e144c"
+  ],
+  "System/Library/Fonts/Core/NewYorkItalic.ttf": [
+    523020,
+    "fa03abac96f48bfc4adaf197bf8b96f272d97d0c1b39d9ebda268826e266924b"
+  ],
+  "System/Library/Fonts/Core/NotoNastaliq.ttc": [
+    919972,
+    "8ee410b01a1492e99dd7bcd17920216d48200f91949987e982a0204ad34f08cd"
+  ],
+  "System/Library/Fonts/Core/NotoSansArmenian.ttc": [
+    57788,
+    "25a0e532663e40e8a1c1a4adf17204f1ce9342c15728fb9513c3aa0e1c08258a"
+  ],
+  "System/Library/Fonts/Core/NotoSansKannada.ttc": [
+    363212,
+    "d0a29ff436d199f0cea0a71f6a8d4cdd95b64f3ec79af23f44039f30c19808e6"
+  ],
+  "System/Library/Fonts/Core/NotoSansMyanmar.ttc": [
+    651988,
+    "87924c2098d3c87c95b15eeac7e83322a8f1670279b8982c0c67572cf621e473"
+  ],
+  "System/Library/Fonts/Core/NotoSansOriya.ttc": [
+    318396,
+    "fe46df8e6b792b1e83b1af49b150ea1cb570a99b6716a05862f82af15afab8b4"
+  ],
+  "System/Library/Fonts/Core/PhonepadTwo.ttf": [
+    16416,
+    "b54f778b28ba0517f0e3f6ad737178d3f4200dd1884dbc5e1bee789e23b2008f"
+  ],
+  "System/Library/Fonts/Core/SFArabic.ttf": [
+    722904,
+    "00b9bd807f7d348ac760df28267cfaac3384af3cc071ac019ff04eddc7faabf3"
+  ],
+  "System/Library/Fonts/Core/SFArabicRounded.ttf": [
+    789488,
+    "6b40559eeb17e860c126a19da16879686fe764d3938d56f55d809b539e61c558"
+  ],
+  "System/Library/Fonts/Core/SFUIMono.ttf": [
+    218688,
+    "6272ff9c31355ac29af7c62aa8525945de212aafbccf3100dc7ea3716a6bfc48"
+  ],
+  "System/Library/Fonts/Core/SFUIMonoItalic.ttf": [
+    199276,
+    "5ab3106efd7f82f339800dd4b7fa6cf7da448f13447d35950ed6a777b093282f"
+  ],
+  "System/Library/Fonts/Core/SFUISymbols-Regular.otf": [
+    4880,
+    "48e83e998e684f2f82ebccfaad9da9ab7fb9b9835cf8267c92d3eae07d33655a"
+  ],
+  "System/Library/Fonts/Core/SinhalaSangamMN.ttc": [
+    757768,
+    "ab965f76f05df703eb96dd93bc5a3708626cddd45cd037cacbfe3f47c3f51ba4"
+  ],
+  "System/Library/Fonts/Core/Symbol.ttf": [
+    29024,
+    "49207682839eb66797929a26715b1a46bfb8ccda79e2b7e8362f3eacdd2b36d5"
+  ],
+  "System/Library/Fonts/Core/TamilSangamMN.ttc": [
+    313276,
+    "4d4a5f42be259527b751c82dec0d5c16e0fbf3ff12ad11241fba9a87c5966fac"
+  ],
+  "System/Library/Fonts/Core/Thonburi.ttc": [
+    1515388,
+    "005370c5ec29075f193ba8b67db94b15a27739cd9b46bebace758fd8c01cabb1"
+  ],
+  "System/Library/Fonts/Core/ThonburiUI.ttc": [
+    80900,
+    "810e5ec99d51fc040764d2b8a652e40c9b01235bebff13680861c0fb80f7e402"
+  ],
+  "System/Library/Fonts/Core/TimesLTMM": [
+    208494,
+    "47797574c0c2564dba73d17ef243761382ace5dd5db2f322b6fe9e8da016a245"
+  ],
+  "System/Library/Fonts/Core/TimesNewRoman.ttf": [
+    824920,
+    "f3b4ffff71c2a0c7227d37497683b2498fb2d0a4e8beae26f022e3ccfcaabfa3"
+  ],
+  "System/Library/Fonts/Core/TimesNewRomanBold.ttf": [
+    832472,
+    "50f5b1f27b7d34621090e437e8b1dd4510a22d2823fc876b3286bed327b64bbb"
+  ],
+  "System/Library/Fonts/Core/TimesNewRomanBoldItalic.ttf": [
+    620008,
+    "906157e8294fdf168d83002eaabde01c2d30fc3f44977be89e33fa22f262002a"
+  ],
+  "System/Library/Fonts/Core/TimesNewRomanItalic.ttf": [
+    660268,
+    "7bb99c3a67697fbce15ab66d806d9a2151432ce1dab2eaba4156e1251da486c0"
+  ],
+  "System/Library/Fonts/Core/ZapfDingbats.ttf": [
+    40128,
+    "708fd36659dd2bd8c1fe4b05cd011f98e7971bcea1df753a2b9d392048deafa8"
+  ],
+  "System/Library/Fonts/CoreAddition/AppleColorEmoji-160px.ttc": [
+    136714712,
+    "53812c6ea77e5868e437057062a74a97a178983b98b9b3b55953c7c7d7d33bff"
+  ],
+  "System/Library/Fonts/CoreAddition/Arial.ttf": [
+    773236,
+    "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9"
+  ],
+  "System/Library/Fonts/CoreAddition/ArialBold.ttf": [
+    750984,
+    "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0"
+  ],
+  "System/Library/Fonts/CoreAddition/ArialBoldItalic.ttf": [
+    558672,
+    "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731"
+  ],
+  "System/Library/Fonts/CoreAddition/ArialItalic.ttf": [
+    553284,
+    "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98"
+  ],
+  "System/Library/Fonts/CoreAddition/ArialRoundedMTBold.ttf": [
+    49296,
+    "a74ea71c366f15c81f9ce00a757cefb938cda21c0d32e51037d9a038e5ebc14b"
+  ],
+  "System/Library/Fonts/CoreAddition/Georgia.ttf": [
+    379588,
+    "4f54eb299fccea7f103edeb0d92437359bfd4441811d53222b82b335369f6218"
+  ],
+  "System/Library/Fonts/CoreAddition/GeorgiaBold.ttf": [
+    363800,
+    "1cfa9abd55be746c798c22ef4eba88fce82257934897404be2dae53ed0a4142a"
+  ],
+  "System/Library/Fonts/CoreAddition/GeorgiaBoldItalic.ttf": [
+    385768,
+    "a2036878f47d0da1765869a8747cfb0079b6125776675bad352468b59ca4493d"
+  ],
+  "System/Library/Fonts/CoreAddition/GeorgiaItalic.ttf": [
+    400624,
+    "7758840cacb7382db65aa038e9fd1194d077ba9b55fe748f9cfb196d2773ac4e"
+  ],
+  "System/Library/Fonts/CoreAddition/Impact.ttf": [
+    138488,
+    "57e95627fd36fe2740e5ee8a91ff1ae74fb216df9580bd23e30d6772814727be"
+  ],
+  "System/Library/Fonts/CoreAddition/Keycaps.ttc": [
+    3575572,
+    "30ed6231a3fb3bfabc069d681be6bc8abb640d61a8ee7b0de9d02f9f81782eac"
+  ],
+  "System/Library/Fonts/CoreAddition/KeycapsPad.ttc": [
+    2003136,
+    "5c06cd9360ac093d26ac8de0022d83f6491d08794b60ca7f5539119b53ccb5ed"
+  ],
+  "System/Library/Fonts/CoreAddition/PhoneKeyCaps.ttf": [
+    887000,
+    "06f69f0264b0ff16356f033ccf33d08fad0ad67bb10e15e65d8c241a4e80c9f9"
+  ],
+  "System/Library/Fonts/CoreAddition/STIXGeneral.otf": [
+    369156,
+    "5add3f3f2bd7fd897d2fa5ccbe468607c52111dc44cdfaaf2d851a574f5357a7"
+  ],
+  "System/Library/Fonts/CoreAddition/STIXGeneralBol.otf": [
+    186612,
+    "7e4dfb4979e9bb79a0bdedc56f055eab615fb9a3dff8788a52992ae65e8f572d"
+  ],
+  "System/Library/Fonts/CoreAddition/STIXGeneralBolIta.otf": [
+    143764,
+    "4585fcdd3aa1a6f3451c03d4f587134b9fc8a0835380ffec25f3105908ddf31a"
+  ],
+  "System/Library/Fonts/CoreAddition/STIXGeneralItalic.otf": [
+    141844,
+    "7f6bf9cab728febe4ce111bbfbcd16253806dcab0bbe1940ede2782cfc319a72"
+  ],
+  "System/Library/Fonts/CoreAddition/Verdana.ttf": [
+    186188,
+    "0da8c12f3e15d95585434d2cf294b3113a3e3fc84bf9ba9d64f2ef834ef4bd98"
+  ],
+  "System/Library/Fonts/CoreAddition/VerdanaBold.ttf": [
+    153260,
+    "480f66b66430bdfa6e9a2199e4bf8f79d915221e60d58e7a32b4ff50645de2e0"
+  ],
+  "System/Library/Fonts/CoreAddition/VerdanaBoldItalic.ttf": [
+    173132,
+    "252ef50efa09218d77d83311b531c14d7c0d45230e79389bd3db78448bc942f4"
+  ],
+  "System/Library/Fonts/CoreAddition/VerdanaItalic.ttf": [
+    174612,
+    "a1149e84da9e5c0a9b4cad68b62542b8503cb16ed8d1d7efd2640b36ce202b44"
+  ],
+  "System/Library/Fonts/CoreUI/AmericanTypewriter.ttc": [
+    1316600,
+    "132ce78bf875c341b86fbab52505122519a9ff796673a67256cb4df6e24e153a"
+  ],
+  "System/Library/Fonts/CoreUI/AsphaltMedium.otf": [
+    353604,
+    "df7894d1c8b2696ae5bfc9d0703a4680518d380d83ca81203aebd6420ff56661"
+  ],
+  "System/Library/Fonts/CoreUI/BalegaRegular.otf": [
+    36004,
+    "17aa7ee8ed8f7b49e6ffb2f722af9af36d8852495b3888577c007d5d0c673f44"
+  ],
+  "System/Library/Fonts/CoreUI/Baskerville.ttc": [
+    1373016,
+    "11f63e492099fbcfb50ad4f2ac373485af16c049fd6c975ef4ea79ae53222ef9"
+  ],
+  "System/Library/Fonts/CoreUI/BebasNeue.otf": [
+    38444,
+    "e12485286e5ece5fc110552b3926184714d6ccecbe9555c83bac727e76a41de8"
+  ],
+  "System/Library/Fonts/CoreUI/Copperplate.ttc": [
+    638688,
+    "fb0a205ea69c2582f802b9282d900b3d6aebfd951671aa790af19ae331d43e43"
+  ],
+  "System/Library/Fonts/CoreUI/DearJoe-small-semibold.ttf": [
+    317408,
+    "f2963e2481235a2054988b807e99f7fec545ff092fc2e6fbbfee78f8b773073b"
+  ],
+  "System/Library/Fonts/CoreUI/Druk.ttc": [
+    2620380,
+    "1b19ab044467a532f56a58f210ed78f1802ebc6e4e72ffb6696de9a0a7d03c1b"
+  ],
+  "System/Library/Fonts/CoreUI/FaktSlabStencilPro-medium.otf": [
+    296456,
+    "a945ca781abd2c2c3205abda884377627444583870c9a7ad3b48d55e511d964e"
+  ],
+  "System/Library/Fonts/CoreUI/HiraginoMaruGothProN.ttc": [
+    9718696,
+    "1129e740671eb79e89d820dfc9142adf647ee5e2594b59539cb9c243ae4ea1e0"
+  ],
+  "System/Library/Fonts/CoreUI/IowanOldStyle.ttc": [
+    1520956,
+    "8ed1004c712d5e1848ec5911074b2fd3da8170e01bdba5c15d15a3104a09f68d"
+  ],
+  "System/Library/Fonts/CoreUI/JournalSansInline.otf": [
+    420808,
+    "1b0d0160a2e87c1d6e1f73b39b7449acb9777f14b2eec84cf52108aa7a32396e"
+  ],
+  "System/Library/Fonts/CoreUI/Menlo.ttc": [
+    1350836,
+    "899d659bea53a309ff2d9f73f8640ffd8dd4b781e39a2299d950d3dbc835a6e6"
+  ],
+  "System/Library/Fonts/CoreUI/Rockwell.ttc": [
+    488992,
+    "6d723f5f8e28f9e555753192cd744c7d2e3e6a458ed8a1080f375915eb57496b"
+  ],
+  "System/Library/Fonts/CoreUI/SFUI.ttf": [
+    8263844,
+    "9dc801a34bfb5fe47fbb84860343a1e63cba15d18fc6a70a855901690f30c4d7"
+  ],
+  "System/Library/Fonts/CoreUI/SFUIItalic.ttf": [
+    1005944,
+    "259ce643d225db38d1d840a6b3a06bff6fee0c6cb5de2f061fa0fa8c0358c19c"
+  ],
+  "System/Library/Fonts/CoreUI/SFUIRounded.ttf": [
+    1649580,
+    "dec94403e0d82919b827302c4a9214a14ff1e31a9403974c3869f49965fb1fd0"
+  ],
+  "System/Library/Fonts/CoreUI/SFUISoft.ttc": [
+    229012,
+    "f73a4e2b2f4a2834ce82959c41bfa33a43c4a80bb6733dcbb6144ad07143dd20"
+  ],
+  "System/Library/Fonts/CoreUI/Savoye.ttc": [
+    110272,
+    "bc8f841db3e902a17a1709f106c858495ea8594cdd11dc17ca54553e53aa6ee6"
+  ],
+  "System/Library/Fonts/CoreUI/SchemeBold.otf": [
+    173228,
+    "e41f044982fecfa175f870a0470aa3684f45734c754f04978b57d466b86cae68"
+  ],
+  "System/Library/Fonts/CoreUI/SignPainter-Semibold.otf": [
+    232916,
+    "ae67efc764a57487353415ab35250e5f5c24c3325a6e83b6d1b321061ccbb3c1"
+  ],
+  "System/Library/Fonts/CoreUI/TheHandSerif-semibold.otf": [
+    684048,
+    "da8c57354cb1bb0e67663b953df9ba3d8a033fed5585630fb00f1bbe029e9f74"
+  ],
+  "System/Library/Fonts/CoreUI/TrebuchetMS.ttf": [
+    138848,
+    "ff1d49fde63aabd7f4fc7cd0a80ac7cdb1b9540058988fcbb64d7c23639a7386"
+  ],
+  "System/Library/Fonts/CoreUI/TrebuchetMSBold.ttf": [
+    129360,
+    "c7df0daa11665420461614fc22682c687852b2e1cf5c6ff9188096f5d2a8d0b2"
+  ],
+  "System/Library/Fonts/CoreUI/TrebuchetMSBoldItalic.ttf": [
+    137008,
+    "7ea9e6c68ffd1ac74639277fece1b4258a2e51aa8d54d1cae4688b6f39953385"
+  ],
+  "System/Library/Fonts/CoreUI/TrebuchetMSItalic.ttf": [
+    144820,
+    "15012b4dfe5470d0f8b75d98b38c461cf81b295485061e1382dc30030c00f2cd"
+  ],
+  "System/Library/Fonts/LanguageSupport/PingFang.ttc": [
+    77871956,
+    "6464159410c45e73c2ef78041c8b5b17689cea1730a6e269056a8313ff410c84"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansAdlam-Regular.ttf": [
+    61236,
+    "4ca58c4f467db4ca8df06ce40f7cc8b27ded41963984f8a4d441285335626dab"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansAvestan-Regular.ttf": [
+    12888,
+    "2a7dc1aba3bc403fa830c90d5755583ae6bdec8284ad6b5309001f16e00a4bbc"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansBamum-Regular.ttf": [
+    148664,
+    "ac11fedc2a73d0a9bfc3fc72ecd2e3e833107a1156797f3677945e320fd499d7"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansBassaVah-Regular.ttf": [
+    7740,
+    "b2cb12dafa67d0a4aca432aa598b2e947361a3738d79cf9652c25b599e985f7d"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansBatak-Regular.ttf": [
+    15148,
+    "5c16309840e0d4cd47ea8142ae495f002011cf308ec564bc3d2e9cae45dc79e0"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansBhaiksuki-Regular.ttf": [
+    220044,
+    "ab4dd380c621508d510b80309fd2ecde63818fc4dee9140e36e70d118db18beb"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansBrahmi-Regular.ttf": [
+    39428,
+    "c13211e5b1738428afbab18e77a21d859888738e75246891dae51641253db487"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansBuginese-Regular.ttf": [
+    7236,
+    "1ade06c5d328f0978d173c18a061ec3b157ba7ced3f4449ad73e16add4f24eef"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansBuhid-Regular.ttf": [
+    5612,
+    "ce3f9e3c785f84fa29246e690e7ccccfe8daf07eb727f1feddec5fa10465a256"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansCanadianAboriginal-Regular.otf": [
+    41468,
+    "b7f8287bb749f2a1ff4910e3ddbe2c7a8b22cb3947d8ac7b80f9b6d7e483a117"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansCarian-Regular.ttf": [
+    6688,
+    "d1631100e9b431e672401397465f00300acf1002a10e35d08d4fd0e7a416abae"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansCaucasianAlbanian-Regular.ttf": [
+    26828,
+    "6c83cbe4540aed2e976169674e0dcdcee9d6aa7d4dc286fb2559cf4a4e46d418"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansChakma-Regular.ttf": [
+    41592,
+    "69a99548a7a1f36ec3ba6fe93f88749b66cf091087eba7a0d1934d27784dba91"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansCham-Regular.ttf": [
+    30208,
+    "a02e3a71a31f6e38f504976ebbca80add502006a04d3ad62833ffc4e59142b4d"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansCoptic-Regular.ttf": [
+    28084,
+    "28b6686a032e98205dfec91dcfe196eb4169ad758696b7c2932968b7cd5b6f66"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansCuneiform-Regular.ttf": [
+    820316,
+    "bae49e30a541479cdc8040d6ed2aefe2e75570b3ac303ebece0f25d90fe25e1d"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansCypriot-Regular.ttf": [
+    8332,
+    "3e2f2c2a051547937876ca00f43544450489e16e24501d0362c621dae9923b8b"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansDuployan-Regular.ttf": [
+    18724,
+    "081cfdc3be05bf0280aebf360723d0606ae4b571fa3f1fde12058cc63f3eb24c"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansEgyptianHieroglyphs-Regular.ttf": [
+    585444,
+    "93889bf8a5563f87f70269fc546ca51cbbda6c617c6f3b417792bfe65d6b1165"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansElbasan-Regular.ttf": [
+    11172,
+    "15489bca9803de2a8777c1f478d41dd6de1f81703af34abfb1275afae4857478"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansGlagolitic-Regular.ttf": [
+    23264,
+    "fce75abc3b73e537d92e0bef60dc93d65a5cf9ae4d5b8bbb77222b30dc8125c4"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansGothic-Regular.ttf": [
+    6152,
+    "8638a2c56f231dddb5c4a5be06cd62855718913275f5bc0af5113a87f227f3b5"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansGunjalaGondi-Regular.otf": [
+    32372,
+    "896b11b131c7edd23ae97765c16f0c9abb78a9aa322338bacd296ea81357899c"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansHanifiRohingya-Regular.ttf": [
+    19400,
+    "2c3b37dbaf80f240b432a5805160add5a4307a9d3adb4a632a1ce52a3e53f894"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansHanunoo-Regular.ttf": [
+    7896,
+    "3f54af33b23863e6cbccdbadc206d3e1c8f3d04ac7154442b8635df5468d9cc4"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansHatran-Regular.ttf": [
+    5020,
+    "3b72a1ced0b9a018dbe77408f3fa505f65dad5682ba81f9a560af1f3d1b2dec7"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansImperialAramaic-Regular.ttf": [
+    6500,
+    "1d8dec133932014d3baceae6ece503aa52ecce3b17c64b2dff6ccd691d81c478"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansInscriptionalPahlavi-Regular.ttf": [
+    6032,
+    "e571797e882fd8a93874f6a75810dd8016120f8112d6ffb469c5d45e56c2da5a"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansInscriptionalParthian-Regular.ttf": [
+    7792,
+    "1a9c98df07720413e51fd29bec966a4e0c9edcc0fba8e45038ef4974b255c074"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansJavanese-Regular.otf": [
+    86944,
+    "18254c5855aa9ec145cbcbf3c2db69daf52f323e3ac2b049d137b6ec85c50a28"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansKaithi-Regular.ttf": [
+    62716,
+    "75b74f45f121e9fc7cf4a3b5fb765101d51d74a8b321f755b938c9f6f2bdc58e"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansKayahLi-Regular.ttf": [
+    9464,
+    "8e3a92a485f062923f221f043c292d7bb8b0715617aabc5e4c88591f865a2307"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansKharoshthi-Regular.ttf": [
+    25388,
+    "bfe057992a0f4e60b61a4cc977d10badb9036b635f184b28307192df1a1a4b76"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansKhojki-Regular.ttf": [
+    42632,
+    "d743510e9c5a045f14890e694e98b623beb36294a9a10420e6d4ef3723f8dcfc"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansKhudawadi-Regular.ttf": [
+    19032,
+    "37406ba2413ad4753fba389822a203e55359e32eb028ac15be587b2541d11090"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansLepcha-Regular.ttf": [
+    24500,
+    "6019ed0497ddf6d07bd9310976e591898f46ea3f4a45782b6e3e901ab3a53bdc"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansLimbu-Regular.ttf": [
+    12912,
+    "2c225a605c5a8aae3c05cf4e8aa710eedf3fa20d59578b1facb127e08ee47191"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansLinearA-Regular.ttf": [
+    58140,
+    "a133c2e91206a17e5354f5ea16656a6d8ecb46dcf29a1d17dba62653eee8c51e"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansLinearB-Regular.ttf": [
+    64828,
+    "23275e2c7aacf0740c08e184525aa50d8312f9d3235be582549114e2ae2c506e"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansLisu-Regular.ttf": [
+    6516,
+    "f78f3387e505fa6fbbe19fa1c6d20f2d96c141b17dacab33b9dfd45a5289ecd1"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansLycian-Regular.ttf": [
+    4556,
+    "1a06d8d62b5d7e616c1caed04e2351f7d03d7e691f9a0ee9f4b5bf529014149d"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansLydian-Regular.ttf": [
+    4592,
+    "1ccad3ff44c94446a65e5c15be2714acf12487d4e11a3dd39481f62667f43173"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMahajani-Regular.ttf": [
+    14144,
+    "87b29271c0485e5ded2b65e15bea5ff205e4a2e12b61c0c9678cb41d45c790a9"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMandaic-Regular.ttf": [
+    18908,
+    "4d17d30a0c47a4b2dc87a61f4751e9e54740d4fb3631a991e1c0369ee38c4f73"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansManichaean-Regular.ttf": [
+    31448,
+    "f30038aeca2c7d0f44c085df4c7ecb598e04732b70daab8219ae29be6861011d"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMarchen-Regular.ttf": [
+    125956,
+    "6b55b9e8bc50d2f71e211821840c02d29675419608ed981cb1907e50c3fc1e2c"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMasaramGondi-Regular.otf": [
+    23052,
+    "ea4a6ecb03bf46fd3b8ceb79c8aef5cadcd23d4bc0fd2da9aedea87ab0501bd1"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMeeteiMayek-Regular.ttf": [
+    16044,
+    "cb3bf6030dfeaa765fc0b97469a98444ae6eff937162c1221b3cb368f7c6388a"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMendeKikakui-Regular.ttf": [
+    35360,
+    "04ee7b18ca85d6d7e5d093e2c9c5494994a7d8ce1bddfeee8712490e4a8f08ed"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMeroitic-Regular.ttf": [
+    33644,
+    "b3158127a35076b87deac06b13a29df6c397fb2d2562f5d40f7e47a389b43be1"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMiao-Regular.ttf": [
+    36236,
+    "e66141c65237edecb22a32e4051516e33ea32548d5aa83a5c70edde9ff5f6be6"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansModi-Regular.ttf": [
+    42688,
+    "be1dbe9c189e98ac2df4dc497148b81585865457c8c8f53f1698cc3fac6e0a27"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMongolian-Regular.ttf": [
+    135484,
+    "82b5916a72f3f8dfb915f0da176da216c2346c1dfcd54728cfa1d64bc7557d3e"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMro-Regular.ttf": [
+    6904,
+    "611858696f30b442bf6405f4bad0a8dfc0810763441d804890a736aa6f902a2d"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansMultani-Regular.ttf": [
+    9856,
+    "fce81e8f9a463f40793136cc446653085a46aa82e635d9520e31a70ee6f629f3"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansNKo-Regular.ttf": [
+    23236,
+    "b1cbc3fe4d0a8321157bb34640a0492a9111f13fa46a79944fdcfe1b937747ae"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansNabataean-Regular.ttf": [
+    8400,
+    "f4c55f60942c3b21d7e449b96ac240e19a1e5510618ef310b20ea97a079c8d5a"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansNewTaiLue-Regular.ttf": [
+    17000,
+    "f622c16e1e452905bbe8d94347b9bcec071a49cdc187e1a74e4dffc6d526dbeb"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansNewa-Regular.ttf": [
+    149024,
+    "6eb7557d0b7b40f22556c1d90afe011e628df457191830355577da6157ea443e"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansOlChiki-Regular.ttf": [
+    8860,
+    "42020ef6e4bb0ebde8ecea0c85877fac817a49b69670d5ab755ac6cc16a351f1"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansOldHungarian-Regular.ttf": [
+    54020,
+    "9a926369d7e44450c9c4e211f38829f880ecce16f6325e699eb29ce3851bfc7b"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansOldItalic-Regular.ttf": [
+    7524,
+    "411ef5004b1978f51878394bec0971811e28f81cd4184ac2282dcb6996b27c87"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansOldNorthArabian-Regular.ttf": [
+    7284,
+    "6d4e0f32ab4bc7bee8954e21ee80c3e20dc50b7b0961668a9455e7a809e78cf0"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansOldPermic-Regular.ttf": [
+    9984,
+    "8897b1d76fa4d872add20b23244ec351e80cb8df1e2a9434aabfc778a1a247e8"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansOldPersian-Regular.ttf": [
+    13180,
+    "fd46d52e32b296b6f2db73ed02c423d4384f3ae5c2f7e1de4f2df3ff4dbf0eb1"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansOldSouthArabian-Regular.ttf": [
+    5232,
+    "5d0b9191b80d23fbc22b4ea48d50e6cd53ffb6cbeea86644127ebe836ab96bb3"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansOldTurkic-Regular.ttf": [
+    8372,
+    "02f35911c7249d2412f819b013a4705a5477fa44d0912e70212313ec7f7ae2a2"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansOsage-Regular.ttf": [
+    12512,
+    "93b97cbfe440cdedc69014b775faab9b44f9cf4a3cf801851278486d15e9cfe3"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansOsmanya-Regular.ttf": [
+    8604,
+    "42b8ef4101c6cb45c85ea98c69d75be5838b6f86622bf8449e07312f9fa5db62"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansPahawhHmong-Regular.ttf": [
+    18272,
+    "6033e882e304ab204b55bbf75032c87f7cce516e59a26df7633264bfa077c545"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansPalmyrene-Regular.ttf": [
+    15684,
+    "0303c0e1a6653b05035a74255423e812529f89b8ef3d006513ce48b1756a2365"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansPauCinHau-Regular.ttf": [
+    9816,
+    "e0850630f6affd48b4d077b55ed7160e80616bf8ff69c62c6d873245cfffac2b"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansPhagsPa-Regular.ttf": [
+    34176,
+    "dc6975773e7c2707d36cd1018ec1c93a396a19d68ae484360b551ec5157dac2d"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansPhoenician-Regular.ttf": [
+    6252,
+    "47709d5c78988406ccada0d83d60a3dd58eb292e21bf0ef58d0212d20802d1b7"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansPsalterPahlavi-Regular.ttf": [
+    21676,
+    "08553bb6205276d6e96ecee2c31b626f3f3e5774dbfb83011fdd1095ec3d68cd"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansRejang-Regular.ttf": [
+    7620,
+    "d4692c20ee33dadb2d1187dd2a6022e087dec011ccef869ab6553ff5771fb6fe"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansSamaritan-Regular.ttf": [
+    11164,
+    "4740b58fe07816db1fc838a3004b62dd978b6ac20dbb43a792bef7f28debe0c5"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansSaurashtra-Regular.ttf": [
+    19792,
+    "892db68ca8f826b6af8d13c8a4249e1fd74598c8dba73a478d6c3ad0efb23cb3"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansSharada-Regular.ttf": [
+    44108,
+    "0ad26fc89ef2be580c1e6ae10450878f2fddbe2c3b3c9e6bb3dd11ff1c9cbeb2"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansSiddham-Regular.ttf": [
+    142328,
+    "027af86f9a9059390575a84e2d8ede3e50a650faf7b9b2a5391465a223804c59"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansSoraSompeng-Regular.ttf": [
+    8108,
+    "84db8313949e266e43740eab6a93c69f6deaf090aa9fa01739a0ad99b63f6cbd"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansSundanese-Regular.ttf": [
+    11512,
+    "44116238e4f55dedf5a0232f6d6eadbeedd8896b8bee6a63fe949e4c2ec1cf29"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansSylotiNagri-Regular.ttf": [
+    16576,
+    "e45262b5d2a31db47cc177ddd1c466e241a8ccd5bbff6ba6166e1bd97d9c0635"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansSyriac-Regular.ttf": [
+    179132,
+    "138462bae10e5011c90a3d5fcd470dd841c77a07945320636a2545a8ac0155e2"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansTagalog-Regular.ttf": [
+    6656,
+    "227a803371e6799ba9cfb7fc0f9f0ec713fb6083185b614dd253d353fba67aec"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansTagbanwa-Regular.ttf": [
+    6648,
+    "7dedb32bfc8dc5ef05a222bc05ad4fc8f72e0e3fca2a9eb9841591102c040c48"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansTaiLe-Regular.ttf": [
+    12072,
+    "396016aacf92e480f369ba41ed9958bcceb002eaf057da65647ae9250d02b491"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansTaiTham-Regular.ttf": [
+    51040,
+    "8b58452015baffee6ba520dcd3396f79d23cdc39392a13f5e784e72ac29d0d22"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansTaiViet-Regular.ttf": [
+    18220,
+    "4d3bd3ab7a8f0dd7276f8f8020a1f628098cd27f95a02966d4959af2cb50a8e3"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansTakri-Regular.ttf": [
+    16652,
+    "a541ceccf0b2f3c733f362373e3cc2ad4b7b834160a889b4ad44bf0d2ddbbab9"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansThaana-Regular.ttf": [
+    18792,
+    "d518c8161d9ae68470c9ef5080f9c9aae887dd93bf3c1529a9913ba059ae60e4"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansTifinagh-Regular.ttf": [
+    15356,
+    "1321ffc603c1c2f828937b7a24496437d83caee3d961daa979618b1e55c38e92"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansTirhuta-Regular.ttf": [
+    69944,
+    "a4fed705f990f3cc11403d41a673941def5e65f211dcc7871b13d27bf089ed22"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansUgaritic-Regular.ttf": [
+    7656,
+    "4cab9c4e616e162fef49211db26dcd2d4452a6bf945770330d8571c4e7e6841e"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansVai-Regular.ttf": [
+    57764,
+    "8730386f446879e610c2aa0cc1b98c56031594fbe94c07f26e515cf7c07a32b2"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansWancho-Regular.ttf": [
+    17992,
+    "7a736f363686f9e88a38a1cc0ba8d68f6cba3da4149f320d91a1a42b2896d2e3"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansWarangCiti-Regular.ttf": [
+    25304,
+    "e9f7e9f0c581c467f6f0f942c8dfb494c87a1373cc1aea0d6ed93727804bad47"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSansYi-Regular.ttf": [
+    134064,
+    "1744f6ebb56f63c9c2276362bf3fcad69d15afcdd199018238ff39558eadf06e"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSerifAhom-Regular.ttf": [
+    19512,
+    "635cd17bfcbd37457c98f0f9e70c7a0aa520f7f202a2b267b09f18fe5e80223d"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSerifBalinese-Regular.ttf": [
+    51264,
+    "009f6471b5d2f95172cf3e186d497386f1d2499d69daa6b188e04ced3def8aa1"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSerifNyiakengPuachueHmong-Regular.ttf": [
+    14888,
+    "4727ad21c1c9e520ab244399c93014062856009c25fc4154066d9e5e3626b579"
+  ],
+  "System/Library/Fonts/UnicodeSupport/NotoSerifYezidi-Regular.otf": [
+    8664,
+    "f8a3c04d1a0a872e2a522d07f1280369c30c680c40099eaf4471ee7c389ebde9"
+  ],
+  "System/Library/Fonts/UnicodeSupport/STIXTwoMath.otf": [
+    838652,
+    "3a5f3f26f40d5698b3c62dd085d48d6663696a3f80825aab8b553d5097518e8c"
+  ],
+  "System/Library/Fonts/UnicodeSupport/STIXTwoText-Italic.ttf": [
+    454368,
+    "88c0e2e316eaff56eddc9e51e4850317e2a1e490bbf758b2dec4793aedba9c74"
+  ],
+  "System/Library/Fonts/UnicodeSupport/STIXTwoText.ttf": [
+    418956,
+    "7962b8b7811e6a896c9a91a0bccbb5241047770eb24d4997c5cb5fe21d5c0df2"
+  ],
+  "System/Library/Fonts/Watch/ADTTime.ttc": [
+    233124,
+    "f1b5bd49268167241f328c8fd4015bbf86e9afe6877d6f827ec5022d739d3b05"
+  ],
+  "System/Library/Fonts/Watch/SFCompact.ttf": [
+    1733808,
+    "522d8c718d7ca5aa9085db49abd75f41deabaa38b910d27dbcaf1edff62f57f6"
+  ],
+  "System/Library/Fonts/Watch/SFCompactItalic.ttf": [
+    952436,
+    "713a4e3d135634c704638fcdbf0fbb9e6283f5fe25b9d3bb8046d6d1f09107da"
+  ],
+  "System/Library/Fonts/Watch/SFCompactRounded.ttf": [
+    957116,
+    "06aca8d8320c017877463a7027f2588ff423f05f948c560e55154ad9ce594852"
+  ],
+  "System/Library/Fonts/Watch/SFCompactSoft.ttc": [
+    157268,
+    "6677d5b3a7b140a8af07dc705ad6bbb261caacee6498a43b67962370acaeb4dd"
+  ],
+  "System/Library/Fonts/Watch/SukhumvitSet.ttc": [
+    356420,
+    "08b8ae91fe308a82d2390319e178cd578707412bb9df6841204ae9a68e772e75"
+  ],
+  "System/Library/PrivateFrameworks/CoreGlyphs.framework/Info.plist": [
+    772,
+    "1147e9da05256e25b98a26a8f57a21e43235fae2314a113fd16889d4fbb3dd0f"
+  ],
+  "System/Library/PrivateFrameworks/CoreGlyphs.framework/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/CarPlayRepositories/DarkIncreasedContrast.car": [
+    13544,
+    "de307696b8a7edf7e6a09f8255594fec126fcc9bb023b15cf9f96b95ae1b6049"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/CarPlayRepositories/DarkStandard.car": [
+    18264,
+    "a2dc355249ffbf5fcb9fb4e7e476010d257155b07d0a8cecdab4ec01d0051027"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/CarPlayRepositories/LightIncreasedContrast.car": [
+    13544,
+    "90bc6cccf3bb31f3383c0f362300dbb07d8ef8788e2c40836afea062e59dd2a0"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/CarPlayRepositories/LightStandard.car": [
+    17976,
+    "6f8eba03e5398f1a62fa23a448da2cfd2338a5cfed23dc034ec1f455a628359b"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/DesignLibrary-iOS": [
+    35056,
+    "d16dd5fe1bf8bf306e8848af972a48b87f430a9a067026f8c54112b19ddb35af"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/Info.plist": [
+    794,
+    "bfc3e97ee1f68ad59f3c4afe4763083851eaccef5512000a26bfbc79c1e06c61"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/iOSRepositories/DarkIncreasedContrast.car": [
+    27016,
+    "457e0319a9d134305d5871996c871bb91278ea6e234c4341811f0bae097a6d58"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/iOSRepositories/DarkStandard.car": [
+    29064,
+    "8656405c2557f9fe21dd1e5612195eb8d686e04d413a31cbed118758facfd3ee"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/iOSRepositories/DarkVibrantStandard.car": [
+    22936,
+    "dca79ee7b7b1f91318ab0e44c1d37cdb36c5c946e1070cbb4803c368df879840"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/iOSRepositories/LightIncreasedContrast.car": [
+    22936,
+    "ea4ca460e19784d9aa9838eaff9a558e641dcb233a5d98144e0153b59fe9f22a"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/iOSRepositories/LightStandard.car": [
+    29960,
+    "c38dd16e67c8104b3fafe53923de66d538783a21c4319908db24e3db6f11816c"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/iOSRepositories/LightVibrantStandard.car": [
+    23240,
+    "1e5351ba738de682893904ace300f6045232aa4cc5cf91dba15070cea533dbb1"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/tvOSRepositories/DarkIncreasedContrast.car": [
+    21176,
+    "0dd452c8e6d058b11da4f220b60713dc1f160859ffb5b95088f73c19e345aba6"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/tvOSRepositories/DarkStandard.car": [
+    19432,
+    "91cdc98c7c0832fac55538c81b0b3385b542d3ace53d105422d262c2d684c74f"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/tvOSRepositories/DarkVibrantStandard.car": [
+    22936,
+    "70a9b1cfcdc3cb7641917298cae224303256b4a643bf984cdc1c219300ff15d2"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/tvOSRepositories/LightIncreasedContrast.car": [
+    21176,
+    "735bb289170630ac693f95a5dae47cb7e75bfeafde0bf3c050fd2689071ac09d"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/tvOSRepositories/LightStandard.car": [
+    19432,
+    "65835812f39f863938011691543ca1934c3108ef02527e990c930554efe68ae7"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/tvOSRepositories/LightVibrantStandard.car": [
+    13544,
+    "9d8e289068a7bc2bb7037e0f8513183f1d9e6970f29c943daf1bc26f65d572f5"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/watchOSRepositories/DarkIncreasedContrast.car": [
+    19144,
+    "e3b670c133c6c6a3a69375348fd6065a5bde44832a347ed659b8a59a089c387c"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/DesignLibrary-iOS.bundle/watchOSRepositories/DarkStandard.car": [
+    27016,
+    "7a7d2098070019eaeef38a4e71004a7480fe755a97f190de7a935972eccd578d"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/Info.plist": [
+    784,
+    "a006a66bbc1bb709f6418494f05691b5d85a5a735547c2ceff7131fd22bfe84f"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/CoreUI.framework/default.metallib": [
+    25394,
+    "8e8532fdedd1d9259102e34bacc503e307f8cdb6040d4fa7e96447c43d407a03"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/200312_ch_FPO-D52-D53-D54.wav": [
+    233836,
+    "ae0c0023f5564e37e82b723e5c8b7b6de2250924292c5328d80872d4e55b5fbd"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/Artwork": [
+    34896,
+    "97fd42008d7ad564154d49d11f4e47fc54735893a1c8572dcd58ba52c9e886ee"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/Artwork-Info.plist": [
+    69,
+    "dc73c8b56474da31e09047c7710a729a9a5828507fd080750137e94bf8f2f5cd"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/Artwork-Prefix.pch": [
+    35,
+    "ee89fe61f929c32e15cb46f37b75a82bead6c1dd68fa97c1684c41d96e3ddf38"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/Assets.car": [
+    2648184,
+    "967ebee3e9d0e0de78ae7c048a8cd90d38b7f5f63d00562979c96727722ac44a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndo.ca/assets/MenuFrameBarLight 2.png": [
+    7181,
+    "4e1e5bd22c4de92ba068828b2ad46c8a5ae006e596304d13ccab470ca6ce3c66"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndo.ca/assets/Selected button.png": [
+    1938,
+    "402e4027847728a47328bda385c6333e355dd10465238d91664663eba816d8cb"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndo.ca/index.xml": [
+    1254,
+    "c7ebbf5416e20bba80fcd3d87e8d4db140f07e68a3789e81aa11ce1aa9d0985c"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndo.ca/main.caml": [
+    14146,
+    "afce19f4387c9bba7df97b6a76863cf65d455f56b363c133774cc95957342aa8"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndoDark.ca/assets/MenuFrameBarDark.png": [
+    7631,
+    "4df74f2d68c0e1647ea60bae0c1c31c47ca545217bd4cf46b3fb983c7c8344a6"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndoDark.ca/assets/Selected button Dark Undo.png": [
+    1960,
+    "72fd4cb75ef75c65fa77619fa683177aa09f77f5210b926456a5ef9cd0bdb3a0"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndoDark.ca/index.xml": [
+    1254,
+    "c7ebbf5416e20bba80fcd3d87e8d4db140f07e68a3789e81aa11ce1aa9d0985c"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndoDark.ca/main.caml": [
+    14216,
+    "ad879c9adbbe7e07cc19aae433fbcbf7d5f860f644bd34aeca3efbc88edfc164"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndoPhone.ca/index.xml": [
+    1505,
+    "207a444e386c31f7c70a351f3d734c63d4ff46a2ba01d4de757779e157f5ea44"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndoPhone.ca/main.caml": [
+    25752,
+    "b188171f7801ce034dd576d8d2df0257d28bf29ab6b91af2944b031c311a8b9c"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndoPhoneDark.ca/index.xml": [
+    1505,
+    "004bc100bc38c5c8bf9a98d67f78eafa1066775104ad4167ee7e32b7c1494d94"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/DoubleTapUndoPhoneDark.ca/main.caml": [
+    25808,
+    "1d265425253ff1e3674bfe59eed27c6a7d1e0cf510f266c37b87bf6a024d92bc"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/Info.plist": [
+    760,
+    "cdae35686a7dc809c04d22bd9c0eef089d01cbe1067742116739f69cea2ae388"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCP.ca/assets/Blue-2.png": [
+    1081,
+    "df9f5c504b812ea6cc13f35c8b9ddee33c2aa1f3074053c3a5b8d420dc961be2"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCP.ca/assets/CopyLightSelect.png": [
+    2225,
+    "6559e6656cdcbf96555bcab6b93574dd7a63afb74ded4a9baf2a042dab17c3b5"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCP.ca/assets/MenuFrameBarLight 2.png": [
+    7391,
+    "d26a11af4dd2657a6e3115241c0a88c1538c003bf6f06938e6112e459406ccf5"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCP.ca/assets/PasteLightSelect-1.png": [
+    2225,
+    "c47c52b72e4e49ee72df109206fff38115977157024a4fdbb3c4b97220f40d13"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCP.ca/index.xml": [
+    1327,
+    "e20e95ea97dd0168500cf7996c55b07df892949247ce7652f1f8d8643658a231"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCP.ca/main.caml": [
+    33703,
+    "8bf3f5f7293bb108fa2ea0b60f9cdb774df40d7074d3169b7d1944c81265b91f"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCPDark.ca/assets/Blue-3.png": [
+    1310,
+    "05373c678327decdcf95e7bda8ad707257f8b02838cd40dc92a5f4c4dfa9c891"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCPDark.ca/assets/CopyDarkSelect.png": [
+    2241,
+    "d44ebaed0578219ff16b132c67cd815f5beefb692622e042348474520d5af401"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCPDark.ca/assets/MenuFrameBarDark.png": [
+    7631,
+    "4df74f2d68c0e1647ea60bae0c1c31c47ca545217bd4cf46b3fb983c7c8344a6"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCPDark.ca/assets/PasteDarkSelect-1.png": [
+    2239,
+    "4ef3a442e3d3a87bd17e1b2cd23b8884dd239f4efd8e29bfd2bb3095436c870c"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCPDark.ca/index.xml": [
+    1327,
+    "e20e95ea97dd0168500cf7996c55b07df892949247ce7652f1f8d8643658a231"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/PinchCPDark.ca/main.caml": [
+    33727,
+    "3ab3dee68dcdd90879426c038fbfeb27b5006d30852145889565fcd144e0cba5"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedo.ca/assets/Blue-1.png": [
+    1081,
+    "df9f5c504b812ea6cc13f35c8b9ddee33c2aa1f3074053c3a5b8d420dc961be2"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedo.ca/assets/Blue.png": [
+    1081,
+    "df9f5c504b812ea6cc13f35c8b9ddee33c2aa1f3074053c3a5b8d420dc961be2"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedo.ca/assets/MenuFrameBarLight 2.png": [
+    7391,
+    "d26a11af4dd2657a6e3115241c0a88c1538c003bf6f06938e6112e459406ccf5"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedo.ca/assets/Selected button redo.png": [
+    1951,
+    "7eb6598e5545aa84e5180c88f28719e464826a13d44f88d9bf4bc1116cf4df93"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedo.ca/assets/Selected button.png": [
+    1938,
+    "402e4027847728a47328bda385c6333e355dd10465238d91664663eba816d8cb"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedo.ca/index.xml": [
+    1327,
+    "93c5cf49196b9736c8fac6be731ef34863aebf64f17da0c80e93b6360abc82d9"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedo.ca/main.caml": [
+    36409,
+    "a1807c9481c074fb42f09707eb722f3103ec993792e49cdfdcf2d03bec733cbc"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedoDark.ca/assets/Blue-4.png": [
+    1310,
+    "05373c678327decdcf95e7bda8ad707257f8b02838cd40dc92a5f4c4dfa9c891"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedoDark.ca/assets/MenuFrameBarDark.png": [
+    7631,
+    "4df74f2d68c0e1647ea60bae0c1c31c47ca545217bd4cf46b3fb983c7c8344a6"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedoDark.ca/assets/Selected button Dark Undo.png": [
+    1960,
+    "72fd4cb75ef75c65fa77619fa683177aa09f77f5210b926456a5ef9cd0bdb3a0"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedoDark.ca/assets/Selected button Redo Dark.png": [
+    1966,
+    "efb8de63ce4f4a7449a5b8d91e3864012a01a8d936a48aa266533bb5a20e9aae"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedoDark.ca/index.xml": [
+    1327,
+    "93c5cf49196b9736c8fac6be731ef34863aebf64f17da0c80e93b6360abc82d9"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/SwipeUndoRedoDark.ca/main.caml": [
+    36444,
+    "80af3fc054732258f0ef1b04322b5be2697ca9fba811f25317aa64520ec867c4"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/UIKeyboardContinuousPathIntroductionDark.mov": [
+    450560,
+    "0f394cc9a7ffb7fef42b7ee4b6325367228d65862c8115043aa60fa3f298e8ea"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/UIKeyboardContinuousPathIntroductionLight.mov": [
+    282378,
+    "7f1ac40099d45bff8f81e8f25e4804741e52796d2bfbe3a286e30a667b677cc1"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Artwork.bundle/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/BoundingPathData.bundle/Assets.car": [
+    101768,
+    "198b8b5ec7c68bf56fe3397839ea3ef807c6f83682795ea67210393982929873"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/BoundingPathData.bundle/BoundingPathData": [
+    34912,
+    "6dbed2645cb037fb73a9c61b103cd4cedcffbe6bbde074329fc39851328f2177"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/BoundingPathData.bundle/Info.plist": [
+    780,
+    "9dd0976bf6291b097b80ed1a4528194ae6558a72500abaa96f981e730efd3a46"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/BoundingPathData.bundle/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/CarPlayArtwork.bundle/Assets.car": [
+    208360,
+    "6beff7fd7eff3c10f5bc98189fece95c2f69cf82c20f4706c089181cc34a49b7"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/CarPlayArtwork.bundle/CarPlayArtwork": [
+    34896,
+    "dae9a594cc2bffa61c225966cf50033db8df46b7a01ddbf412bcfb44214ead34"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/CarPlayArtwork.bundle/Info.plist": [
+    807,
+    "e22036c00b78af8809b7ba9f844377c242040203fce12d689d94af0e483ca4a2"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/CarPlayArtwork.bundle/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/DictationCommands_en.plist": [
+    771,
+    "762be645b0dd9ea0654dbc80eef215d4379870e7687fa26fe463c3532683a800"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Info.plist": [
+    2298,
+    "a43e0117866390c3c4f4e5707d74963bf1d3451ce4fb12fc341b0303e296ddf0"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Keyboard-default.plist": [
+    3202,
+    "5e486b3f2cb2ae87705b1eb9be4ad91469187b3bbea980a1d3fcd59d08629d68"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Localizable.loctable": [
+    710967,
+    "25fd26b853825ebb726e6b7e79d3495ac0c577a78a761f71e564e5ce0458a874"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/MagSafe_Wallet_Detach.ahap": [
+    2137,
+    "b99d895d99a64e6a6c1fc509c37d15b39ba466a64f542b7f26f7d80eac68d76a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Single_0ms_S10-D52-D53-D54.ahap": [
+    486,
+    "cefde30b6bee0fd5db327c95cba7fe16f6e27497cf85967a9b5042c1872c986d"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/Single_0ms_S10_charge_500ms-D52-D53-D54.ahap": [
+    2277,
+    "f6c715c276aae563c31bcfc7c18ed0163ddffa6b4fcdce9ccf0786b19be8720a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/TextEffectsCatalog.bundle/Info.plist": [
+    784,
+    "d625a5adfe82d7c903e7d1af87d54d182eb09d921b66ea62451551c9f33bdae3"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/TextEffectsCatalog.bundle/TextEffects.car": [
+    24264,
+    "c7e5dbc5f59ba196df212c39f692694585fcde655548337c140d0a8bc0d35285"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/TextEffectsCatalog.bundle/TextEffectsCatalog": [
+    34912,
+    "06779810fe73f445838972819c988098ab3dca38686066391d554434fe3e46e2"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/TextEffectsCatalog.bundle/TextEffectsCatalog-Info.plist": [
+    69,
+    "dc73c8b56474da31e09047c7710a729a9a5828507fd080750137e94bf8f2f5cd"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/TextEffectsCatalog.bundle/TextEffectsCatalog-Prefix.pch": [
+    35,
+    "ee89fe61f929c32e15cb46f37b75a82bead6c1dd68fa97c1684c41d96e3ddf38"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/TextEffectsCatalog.bundle/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/UIDocumentPickerDefaultTags.plist": [
+    292,
+    "35312592342fd29c93b822c9d8fc8325d3c28c0c2cc64684b1f527032f395b07"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/XPCServices/SecureControlService.xpc/Info.plist": [
+    733,
+    "f87e71c45c72ceafd6074e9a21a9786d29d90b805ad5652cbb6a15e33580f1b6"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/XPCServices/SecureControlService.xpc/SecureControlService": [
+    73552,
+    "ac1abfd370a0806bd19d86ee484fd1776720a70571a9c29e99fcdfd56ff95415"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/XPCServices/SecureControlService.xpc/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/XPCServices/com.apple.UIKit.KeyboardManagement.xpc/Info.plist": [
+    842,
+    "43e68f7e1867d81a885cc4a091abef53392dba76e6d7f37142de4483759a12bc"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/XPCServices/com.apple.UIKit.KeyboardManagement.xpc/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/XPCServices/com.apple.UIKit.KeyboardManagement.xpc/com.apple.UIKit.KeyboardManagement": [
+    73200,
+    "36e2a49c1757b96ca703ca6bfae73ed7d1be08cc3f487098ee424b5feb0da456"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/_CodeSignature/CodeResources": [
+    3077,
+    "a54dc47c458cbd2b263d44ee064187e34ba3d6841732436c5117e551bf28c832"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/ar.lproj/UITableViewLocalizedSectionIndex.plist": [
+    672,
+    "d11ab1a9fc184c2e1075da5c3c8534f6a78593c5642b3a0e8a8de556790e1ec5"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/autocorrect_bubble_stretchable@2x.png": [
+    853,
+    "6fc33e2955ad9b59e55ea17ea0f0fdba66d02d03e4d7a9a3eb79e6a72dad93f9"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/bg.lproj/UITableViewLocalizedSectionIndex.plist": [
+    708,
+    "292ab20f4f560aac4e9a6230b0688b80dabace050654dc427132edcbcb2d381a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/ca.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "6e52158750f32bba4e67ce3511bc55063b3d206fa9b5672682f2d82f529eebf5"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/connect_power-D52-D53-D54.wav": [
+    159360,
+    "f65b8941ac549bd727ffbe17f4f61a6464323255bd39de787c0cdb200cd05a24"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/cs.lproj/UITableViewLocalizedSectionIndex.plist": [
+    513,
+    "342d02e5b770256d35d96f5771b0b11c4a9cea90e666d764d31b9686b325b5cb"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/da.lproj/UITableViewLocalizedSectionIndex.plist": [
+    487,
+    "834b5a141c94188467e763be7bed52aea848f1029e9797ac83aa390f81c99db0"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/de.lproj/UITableViewLocalizedSectionIndex.plist": [
+    470,
+    "f082038627da702943d12447ce3725eb91e33b6e3d841cc13606aceb28ab6c89"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/el.lproj/UITableViewLocalizedSectionIndex.plist": [
+    760,
+    "44b49b320bc2e18e5d4e2631c7abea8fc899353aa09bc883eecebcf16cc20981"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/en.lproj/UITableViewLocalizedSectionIndex.plist": [
+    635,
+    "3392e04ff6232a913b170062f11b6a19a303e300e45dcca826742d5cf753a221"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/en_AU.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "a56421c83d679f4e576c783731e5a812091f9812f82ac1dc23d6c28171e51f77"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/en_GB.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "a56421c83d679f4e576c783731e5a812091f9812f82ac1dc23d6c28171e51f77"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/es.lproj/UITableViewLocalizedSectionIndex.plist": [
+    461,
+    "5358ff8db3b8217415f488de6646680f5324be69faa2ac53349116e149f5427d"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/es_419.lproj/UITableViewLocalizedSectionIndex.plist": [
+    461,
+    "5358ff8db3b8217415f488de6646680f5324be69faa2ac53349116e149f5427d"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/fi.lproj/UITableViewLocalizedSectionIndex.plist": [
+    487,
+    "48320d4ff2323bf16998281b2a3d8bedd09bccc93487ded133b4d141be017f01"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/fr.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "ee1eca4d8916c848dd1aa561f62586e3e9592223ca108901f48efa76e2bf6367"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/fr_CA.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "ee1eca4d8916c848dd1aa561f62586e3e9592223ca108901f48efa76e2bf6367"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/he.lproj/UITableViewLocalizedSectionIndex.plist": [
+    624,
+    "7901c46dd7b9e61722fbbc8bafdcfed685fc69d46f416528350c3f385a952b04"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/hi.lproj/UITableViewLocalizedSectionIndex.plist": [
+    1390,
+    "9a66f85a463eb05c97107ef4bf5414d0f03227f4dbbbe331b26b789ad76b8502"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/hr.lproj/UITableViewLocalizedSectionIndex.plist": [
+    512,
+    "72701c403a90b187be6345d47d19aac558bb937e8dad3168c28b71eea626d1fd"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/hu.lproj/UITableViewLocalizedSectionIndex.plist": [
+    640,
+    "73981186b4ac8b5194c4a47981ada312b8aff5f6b769a224804bd94c2c9f36df"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/iTunesStoreURLPatterns.plist": [
+    1880,
+    "c046af8697a624e87ae33e2025fd0027cd7b272be0fea10800e40f3774339074"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/id.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "1152699e9277005dee170a48341ae324a014c3d8139430cf9dc2ef90e39add02"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/it.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "946b52384780148f6a9b67fcb6136a1a5973dff66b171e11f04351c8fb52d719"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/ja.lproj/UITableViewLocalizedSectionIndex.plist": [
+    528,
+    "f6e9d9ca76da4d9b3917762cbc6d10b647baa8b8c4a9f1568846d6341f27e0fc"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/key_press_click.caf": [
+    4490,
+    "6acf08272efa46d9bc6ab58e7d00bc58c7055ceeb0f3d41dc60ea9be74de18bd"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/key_press_delete.caf": [
+    5420,
+    "f3f0064af5fecbf0ad81c42f469a2b6dac97c71ed2ee2273b5cee2df2fa1453f"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/key_press_modifier.caf": [
+    5808,
+    "2b02c5272d46aaf3692b22345de072433d11ce30553c57563018b41437fd7139"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/kk.lproj/UITableViewLocalizedSectionIndex.plist": [
+    776,
+    "4fe8fad0accfae925654bd071332919e3d82503fb14b24d44e225504730be767"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/ko.lproj/UITableViewLocalizedSectionIndex.plist": [
+    560,
+    "159a973f59ac5436c457d2abfe96bde1171a9d815e12af70d346b3f5993a90b9"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/ms.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "7334af3d57b80d1a15638da88332d60c694c78266b4ade9e1fb41377fc004989"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/nl.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "a03b652b058bd5d602ac421c75ec774e964839f714c0bb14e930e7868653c633"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/no.lproj/UITableViewLocalizedSectionIndex.plist": [
+    487,
+    "fdbe636a6e53484a7cc7689273330ff4dbe3b77184a15856488b6f1bebb6d865"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/pl.lproj/UITableViewLocalizedSectionIndex.plist": [
+    416,
+    "42fdec00e7e1b615e20d7733e42db94ff05374ec39589dcf9d4247483755be0d"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/pt.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "c9f2998e32da68ff7c6ca06fc7f3d0b74e5a76caa2061695fc6b45939e8de1fb"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/pt_PT.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "c9f2998e32da68ff7c6ca06fc7f3d0b74e5a76caa2061695fc6b45939e8de1fb"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/ro.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "29effcc81da74e50f578d35a979f7f69e11622833be58bb8a4690cfe084ce42a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/ru.lproj/UITableViewLocalizedSectionIndex.plist": [
+    688,
+    "144a8fffa9a2028dcdf23d8fb57d95462e4f5dc25d6685a5b3b2ceccbf86be79"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/sk.lproj/UITableViewLocalizedSectionIndex.plist": [
+    448,
+    "0ffdb4f2b1b5c763ffb6a48142ac66789986e347f16f1de50ab464bafd3e62a6"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/sv.lproj/UITableViewLocalizedSectionIndex.plist": [
+    487,
+    "20d3d80d0429a4d7b3b2e7888ee9ae3d2d3383a0b929c6c93996a6169e5fce84"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/th.lproj/UITableViewLocalizedSectionIndex.plist": [
+    839,
+    "f92fc4be8a0d9530d607232ad91d3be6cc1d4c561fe1355b890505ee21b3a7ee"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/tr.lproj/UITableViewLocalizedSectionIndex.plist": [
+    513,
+    "1fce5910525f83c4427e55ee9e53cf1ebac113bb0b47cc16be4404ba7772e6a7"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/uk.lproj/UITableViewLocalizedSectionIndex.plist": [
+    704,
+    "73ac2cfbab6a5be24a99ec18f02d73dba9e3714194b677d95dee18ac1c08bfa1"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/vi.lproj/UITableViewLocalizedSectionIndex.plist": [
+    539,
+    "167350e3d7fd770a4ff2882d0f780010903854a37a48206363d5103c0e278095"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/zh_CN.lproj/UITableViewLocalizedSectionIndex.plist": [
+    503,
+    "1438373ddac8f0436c7c68fd13f8ccc80b6a5b1830df030950ea1c50298cda39"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/zh_HK.lproj/UITableViewLocalizedSectionIndex.plist": [
+    1044,
+    "bddbe253ee8e4bfd2f2f7478ce3d60cf60cbc75b6b4ac70e926ceee105c5947a"
+  ],
+  "System/Library/PrivateFrameworks/UIKitCore.framework/zh_TW.lproj/UITableViewLocalizedSectionIndex.plist": [
+    1044,
+    "bddbe253ee8e4bfd2f2f7478ce3d60cf60cbc75b6b4ac70e926ceee105c5947a"
+  ]
+}
