@@ -137,10 +137,17 @@ static int xc74_mobile_proof(void){
  return done==pid&&WIFEXITED(status)&&WEXITSTATUS(status)==0?0:-1;
 }
 extern char **environ;
+#if defined(M75_DIRECTORY_PROFILE)
+#include "m75-dir-proof.h"
+#endif
 int main(void){
  setvbuf(stdout,NULL,_IONBF,0);setvbuf(stderr,NULL,_IONBF,0);
  printf("XCOVER5 M74 VAR_BEGIN pid=%d uid=%d; HackiOS RAMFS var policy before Apple launchd\n",getpid(),getuid());
- if(getpid()==1&&getuid()==0&&!xc74_prepare()&&!xc74_mobile_proof()){
+ if(getpid()==1&&getuid()==0&&!xc74_prepare()&&!xc74_mobile_proof()
+#if defined(M75_DIRECTORY_PROFILE)
+  &&!xc75_dir_proof()
+#endif
+ ){
   char *argv[]={"/sbin/launchd.ios",NULL};
   printf("XCOVER5 M74 HANDOFF original Apple launchd, fresh writable var; no flash writes\n");
   execve(argv[0],argv,environ);

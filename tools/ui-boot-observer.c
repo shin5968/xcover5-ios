@@ -5,6 +5,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#if defined(M75_DIRECTORY_PROFILE)
+#include "m75-boot-observer.h"
+#endif
 #if defined(M74_VAR_PROFILE)
 #include "m74-var-observer.h"
 #endif
@@ -66,6 +69,9 @@ int main(void){
  m73_start();
 #endif
  for(unsigned elapsed=0;elapsed<OBSERVATION_SECONDS;elapsed++){
+#if defined(M75_DIRECTORY_PROFILE)
+  if(elapsed%15==0)m75_boot_status(elapsed);
+#endif
 #if defined(M74_VAR_PROFILE)
   if(elapsed%30==0)m74_var_status(elapsed);
 #endif
@@ -84,6 +90,9 @@ int main(void){
 #endif
 #if defined(M74_VAR_PROFILE)
  m74_var_status(OBSERVATION_SECONDS);
+#endif
+#if defined(M75_DIRECTORY_PROFILE)
+ m75_boot_status(OBSERVATION_SECONDS);
 #endif
 #if defined(M63_RESOURCE_PROFILE)
  resource_status(OBSERVATION_SECONDS);

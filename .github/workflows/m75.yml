@@ -1,0 +1,62 @@
+name: M75 RAMFS directory ABI and native preflight
+on:
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  userspace:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exercise actual preparation and native directory proof bodies
+        run: |
+          sudo python3 tools/test_m74_var.py
+          sudo python3 tools/test_m75_directory.py
+      - name: Download verified M74 synthetic root and libraries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run view 41182354779 --json status,conclusion,headSha,jobs > source-ci.json
+          python3 - <<'PY'
+          import json
+          s=json.load(open('source-ci.json'))
+          assert s['status']=='completed' and s['conclusion']=='success'
+          assert s['headSha']=='3df37b86b6fbc1fc7504eb1747ef7dc6343aacd0'
+          assert s['jobs'] and all(j['status']=='completed' and j['conclusion']=='success' for j in s['jobs'])
+          PY
+          gh run download 41182354779 --name m74-userspace --dir base
+          (cd base && shasum -a 256 -c M74_SHA256SUMS)
+          mkdir out
+          cp base/init.o base/init-mockfs.img base/m74-static-init.S base/libxcover-hackios*.dylib base/M63_LIB_SHA256SUMS out/
+          cp source-ci.json out/
+      - name: Build owned native directory preflight and observer
+        run: |
+          SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
+          xcrun clang -target arm64-apple-ios16.0 -isysroot "$SDK" -O1 -Wall -Wextra -Werror -DM75_DIRECTORY_PROFILE -Wl,-adhoc_codesign tools/m74-var-init.c -o out/m74-var-init
+          xcrun clang -target arm64-apple-ios16.0 -isysroot "$SDK" -O1 -Wall -Wextra -Werror -DM63_RESOURCE_PROFILE -DM66_ICU_PROFILE -DM67_EVENTCFG_PROFILE -DM71_BUNDLE_PROFILE -DM72_PORTABLE_PROFILE -DM73_DISPLAY_PROFILE -DM74_VAR_PROFILE -DM75_DIRECTORY_PROFILE -framework CoreFoundation -Wl,-adhoc_codesign tools/ui-boot-observer.c -o out/m39-probe
+          codesign --verify --strict out/m74-var-init
+          codesign --verify --strict out/m39-probe
+          xcrun otool -L out/m74-var-init > out/M75_INIT_LOADS.txt
+          xcrun otool -L out/m39-probe > out/M75_OBSERVER_LOADS.txt
+      - name: Replace only two owned executables in retained M74 root
+        run: |
+          cp base/root-hfs.img out/root-hfs.img
+          WORK=$(mktemp -d)
+          trap 'hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true' EXIT
+          hdiutil attach -imagekey diskimage-class=CRawDiskImage -owners on -nobrowse -mountpoint "$WORK/mnt" out/root-hfs.img >/dev/null
+          sudo cp out/m39-probe "$WORK/mnt/sbin/m39-probe"
+          sudo cp out/m74-var-init "$WORK/mnt/sbin/m74-var-init"
+          sudo chown 0:0 "$WORK/mnt/sbin/m39-probe" "$WORK/mnt/sbin/m74-var-init"
+          sudo chmod 755 "$WORK/mnt/sbin/m39-probe" "$WORK/mnt/sbin/m74-var-init"
+          sync
+          hdiutil detach "$WORK/mnt" >/dev/null
+          XCOVER_UI_BOOT=1 XCOVER_HACKIOS_BOOT=1 XCOVER_M63_BOOT=1 python3 tools/check_hfs_owners.py out/root-hfs.img
+      - name: Hash build outputs
+        run: |
+          (cd out && shasum -a 256 root-hfs.img m39-probe init-mockfs.img m74-var-init libxcover-hackios.dylib libxcover-hackios-sb.dylib > M75_SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m75-userspace
+          path: out/
