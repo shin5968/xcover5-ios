@@ -1,0 +1,50 @@
+2026-10-31 M73 DISPLAY OBSERVATION / CONSOLE RECOVERY / CURRENT COREDUET MODEL PACKAGED
+
+M72 recording20261031_160134[1].mp4 SHA256
+8ae9f664ba4683f110a10b506762c7f02d9cae5eb628523744d25f302fcd3f1b
+shows backboardd startup complete, SpringBoard checkedIn YES, chronod NSURL nil
+path exception, then Display Set Blanked YES and framebuffer selector4/5 at157.75s.
+The subsequent black screen alone does not establish a global hang or UI readiness.
+See M73_M72_VIDEO_REVIEW.json for observations, inferred symbols and limitations.
+
+Kernel2bb7fa3df09ca3048312939950a2865b1895a920 CI41180264668 all jobs success.
+Userspace005513afc596f5c1a893da678c5179b6465fd934 CI41180896716 all jobs success.
+Native service adds root-only snapshot/recovery of actual counters using try-lock;
+standard frame completion still requires actual Samsung copy/readback success.
+Root observer polls every5s, restores saved console after a last successful RGB
+black frame has aged>=2s, and submits one virtual HID tap after a recovered blank.
+Colored frames keep panel ownership. No fabricated compositor completion or UI.
+Age is since the last successful frame; continuously resubmitted black frames may
+postpone recovery. This diagnostic does not repair a blocked CPU or compositor.
+Existing physical Samsung touch/power input backend remains unimplemented.
+
+Separate chronod inference: CoreDuet KnowledgeStorage calls bundleForClass,
+pathForResource:_DKDataModel ofType:momd, then NSURL fileURLWithPath at the
+observed return address. M72 has CoreDuet Info.plist but no model directory.
+Current original VersionInfo names _DKDataModel35. Three original current model
+files190863bytes restored locally; historical migration versions not staged.
+APFS parser vs independent7Zip original extraction and final HFS extraction PASS.
+Native lookup, actual CoreData initialization and exception resolution need hardware.
+REA open rejected Windows ARM64 Mach-O; static evidence uses local ipsw and raw
+cache data, not REA decompilation. Cache slide/low40 pointer values are inferred.
+
+New root preserves every M72 path/uid/gid/mode/file byte except owned observer;
+adds one physical model directory and three files, all root-owned0755/0644.
+All89 resource links retained. Original Apple bytes remain local only.
+Native owned observer CodeDirectory pages/ad-hoc signature/platform2 PASS.
+Actual kernel segments/entry, root mapping, exact old shim/stock DTB/cmdline,
+255MiB RAM, M72 identity except dynamic RAMDisk mapping, actual final C parser,
+boot-only tar header/member/MD5 PASS. No device flashing performed.
+
+Local ../artifacts/m73-display-recovery/AP_M73_BLANK_RECOVERY_REQUIRES_M72_CACHE.tar.md5
+AP bytes42158159 SHA256171782c38f5510ad5aebf07d3b6e15b27f784e7aaa752d88fd81453e82be3eae
+Boot bytes42153984 SHA2564174b09fa804adac6ba961697c3501cdabe10f618c10a5897b3fb8a3d4896248
+Kernel SHA256471d73a0601e3cc47c81f934e66723354e85af91de640a7bb5b6b021852564c7
+Root SHA256fb33ea603387e405e0b08ffb192a630984c04cab38ac2e45055d5197389d7d65
+Root24MiB free589824bytes; boot44MiB headroom3983360bytes.
+Member boot.img only. Reuse existing M72 userdata cache; no cache erase/update.
+
+Hardware PENDING. Actual iOS lockscreen rendering has not been established.
+Observe M73 DISPLAY/CONSOLE_RECOVER/WAKE_TAP/COREDUET and subsequent faults.
+COREDUET model_url=1 only establishes resource lookup, not store or UI readiness.
+exit77 remains the bounded observer's normal end, not a UI-success code.

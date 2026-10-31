@@ -1,0 +1,35 @@
+{
+  "recorded_build": "M72",
+  "video": "20261031_160134[1].mp4",
+  "video_bytes": 783438339,
+  "video_sha256": "8ae9f664ba4683f110a10b506762c7f02d9cae5eb628523744d25f302fcd3f1b",
+  "duration_seconds": 194.96,
+  "observations": [
+    "Frame150 shows backboardd startup complete and primary SpringBoard checkedIn YES; this is not proof of visible UI rendering.",
+    "Around156s chronod PID22 aborts with NSInvalidArgumentException, NSURL initFileURLWithPath nil string parameter; launchd starts PID29 afterward.",
+    "At157.75s visible backboardd Display Set Blanked YES precedes standard framebuffer selector4 and selector5 submission.",
+    "After the submission the panel is black through the end of the recording. No readable subsequent logs are available."
+  ],
+  "source_interpretation": "The retained native framebuffer masks console drawing after actual successful presentation until restore/client close; black video alone cannot distinguish global hang, display sleep or blank frame ownership.",
+  "chronod_static_analysis": {
+    "method": "local ipsw disassembly and dyld raw data; not REA decompilation or live task execution",
+    "rea_limitation": "Ghidra Windows P0 admits PE only; Mach-O ARM64 open_binary rejected as target_format_unsupported. Hopper unsupported on Windows; IDA not configured. No installation/configuration changes attempted.",
+    "inferred_slide": "0x25454000",
+    "caller": "_DASWidgetRefreshScheduler init -> _DKKnowledgeStore knowledgeStoreWithDirectReadWriteAccess -> _DKKnowledgeStorage initWithDirectory readOnly localOnly -> NSURL fileURLWithPath",
+    "exact_storage_return_address": "0x190b1b530",
+    "preceding_resource_lookup": "bundleForClass then pathForResource:_DKDataModel ofType:momd",
+    "pointer_limitation": "Selector and CFString values decoded using low40 cache-pointer candidates; not a full chained fixup/runtime replay.",
+    "root_evidence": "M72 inventory has CoreDuet framework Info.plist, but no _DKDataModel.momd folder or children.",
+    "original_version_info": "NSManagedObjectModel_CurrentVersionName=_DKDataModel35",
+    "repair": "Stage only the current original model (.mom/.omo) and original VersionInfo.plist; 3files190863bytes, APFS parser and independent7Zip outputs byte-identical.",
+    "unknown": "Native bundle resource lookup and storage startup after restoration require hardware verification; historical migration models are not staged."
+  },
+  "not_established": [
+    "Actual successful frame count, enabled-layer mask or RGB content in this M72 recording",
+    "Whether the CPU, compositor or SpringBoard became stuck after the visible submission",
+    "Whether blanking was an idle timeout or a different native display state transition",
+    "A functioning physical Samsung touch/power input driver",
+    "An actual rendered iOS lockscreen"
+  ],
+  "m73_hardware": "PENDING; no device flashing or hardware execution performed by this agent"
+}
