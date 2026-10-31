@@ -1,0 +1,57 @@
+name: M71 framework bundle metadata
+on:
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  userspace:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test metadata staging and substitution guards
+        run: python3 tools/test_m71_resources.py
+      - name: Download successful M67 synthetic root and owned libraries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run view 41162108737 --json status,conclusion,headSha,jobs > source-ci.json
+          python3 - <<'PY'
+          import json
+          s=json.load(open('source-ci.json'))
+          assert s['status']=='completed' and s['conclusion']=='success'
+          assert s['headSha']=='39202f7cf526eec9ceedd76f76ce7084a6e32314'
+          assert s['jobs'] and all(j['status']=='completed' and j['conclusion']=='success' for j in s['jobs'])
+          PY
+          gh run download 41162108737 --name m67-userspace --dir base
+          (cd base && shasum -a 256 -c M67_SHA256SUMS)
+          mkdir out
+          cp base/init.o base/init-mockfs.img base/libxcover-hackios*.dylib base/M63_LIB_SHA256SUMS out/
+          cp source-ci.json out/
+      - name: Build native guarded bundle observer
+        run: |
+          SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
+          xcrun clang -target arm64-apple-ios16.0 -isysroot "$SDK" -O1 -Wall -Wextra -Werror -DM63_RESOURCE_PROFILE -DM66_ICU_PROFILE -DM67_EVENTCFG_PROFILE -DM71_BUNDLE_PROFILE -framework CoreFoundation -Wl,-adhoc_codesign tools/ui-boot-observer.c -o out/m39-probe
+          codesign --verify --strict out/m39-probe
+          xcrun otool -L out/m39-probe > out/M71_LOADS.txt
+      - name: Add metadata placeholders and observer to synthetic M67 root
+        run: |
+          cp base/root-hfs.img out/root-hfs.img
+          WORK=$(mktemp -d)
+          trap 'hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true' EXIT
+          hdiutil attach -imagekey diskimage-class=CRawDiskImage -owners on -nobrowse -mountpoint "$WORK/mnt" out/root-hfs.img >/dev/null
+          sudo python3 tools/stage_m71_resources.py "$WORK/mnt"
+          sudo cp out/m39-probe "$WORK/mnt/sbin/m39-probe"
+          sudo chown 0:0 "$WORK/mnt/sbin/m39-probe"
+          sudo chmod 755 "$WORK/mnt/sbin/m39-probe"
+          sync
+          hdiutil detach "$WORK/mnt" >/dev/null
+          XCOVER_UI_BOOT=1 XCOVER_HACKIOS_BOOT=1 XCOVER_M63_BOOT=1 python3 tools/check_hfs_owners.py out/root-hfs.img
+      - name: Hash build outputs
+        run: |
+          (cd out && shasum -a 256 root-hfs.img m39-probe init-mockfs.img libxcover-hackios.dylib libxcover-hackios-sb.dylib > M71_SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m71-userspace
+          path: out/

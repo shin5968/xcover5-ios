@@ -8,6 +8,9 @@
 #if defined(M66_ICU_PROFILE)
 #include "m66-icu-probe.h"
 #endif
+#if defined(M71_BUNDLE_PROFILE)
+#include "m71-bundle-probe.h"
+#endif
 #if defined(M63_RESOURCE_PROFILE)
 #include <sys/mount.h>
 static void resource_status(unsigned elapsed){
@@ -33,6 +36,9 @@ int main(void){
 #endif
 #if defined(M66_ICU_PROFILE)
  m66_icu_probe();
+#endif
+#if defined(M71_BUNDLE_PROFILE)
+ m71_bundle_probe();
 #endif
  const char *paths[]={"/usr/libexec/backboardd","/System/Library/CoreServices/SpringBoard.app/SpringBoard"};
  const off_t sizes[]={1182960,112048};
