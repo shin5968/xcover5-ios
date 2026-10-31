@@ -1,0 +1,295 @@
+{
+  "repository": "https://github.com/oosexgang/hackios-xnu-kernel",
+  "commit": "a3384e031eb1e605cf37adaefc19991f04f6274b",
+  "files": [
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs.h",
+      "sha256": "4d1f575350df17244c854c7338793c7a61e8623a25f164f49ebe636a73632f02",
+      "bytes": 11771
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_deflate.c",
+      "sha256": "c3f11fc28c1247aa1b3d74b0666d3497ddc59dbf277e969e45624f3c3a6e860d",
+      "bytes": 1486
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_format.h",
+      "sha256": "0ac5524aad4f2eb0c33d8ae8b8d608e88dd4ce5d1f1a37c3c0e4db4f2b141b0a",
+      "bytes": 25971
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_lib.c",
+      "sha256": "d6b7f2855a030a9fc07385848a2d17c4b3fc63b5d14998f9e9724c294dcfac11",
+      "bytes": 107442
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_lib.h",
+      "sha256": "92bf9a7010f1559c808e07c96eae6a282f2858fd1d47c588b106ecf094a5348f",
+      "bytes": 26772
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_store.c",
+      "sha256": "7cae718e6254ca5156df29ea8e297bc4a98e47e227ec68b7b27d37843137805b",
+      "bytes": 14426
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_store.h",
+      "sha256": "1deb82b95d6c0ef594c027878ba1a8974506a9ef8101c8dee200c8af238e80fc",
+      "bytes": 4682
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_vfsops.c",
+      "sha256": "dbc3597901cce82f9257f553824b419b466f8497f69e1b18e8c1f0204775dbb9",
+      "bytes": 48605
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_vnops.c",
+      "sha256": "f3dcd203e6aa63b4d5f760f18a477ea22a6f9489e99db022a5a26ef15418a8ef",
+      "bytes": 37426
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_write.c",
+      "sha256": "71ab8382668b4172dd16e8cf4acaab5e58558c33c6dc142871824c7cc97a5260",
+      "bytes": 18095
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_write.h",
+      "sha256": "f05ceef111a380b17e8ee23033aacfe8d3d6f9d1857fa91e3b035b7bd9696d70",
+      "bytes": 1849
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/apfs_zbitmap.c",
+      "sha256": "a35fb93f094d4fcc1c5966aff1e7d5c9e87250480835660098e03762736679c8",
+      "bytes": 633
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/common_defs.h",
+      "sha256": "0702970eb23da9bca3be9f31fe71824b2f88c4fbac55c59cee8d42cdaec63b63",
+      "bytes": 21815
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/COPYING",
+      "sha256": "4ad69099cb4374836fd27583d9991e2838cd86b6e4666ab26b2d32582c91e73a",
+      "bytes": 1078
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/libdeflate.h",
+      "sha256": "957cda6906c2be6c8978cf19779f1aad9dd121af1147a10e184b137db353678d",
+      "bytes": 17098
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libzbitmap/libzbitmap.c",
+      "sha256": "37dc640d3c8b076e3ad2c4a889702fc3a918a3c17f72c575ea5f6ed36815c38b",
+      "bytes": 12120
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libzbitmap/libzbitmap.h",
+      "sha256": "0237307fb7376198a01ae74b21c5e656170b0992bf0c55c0eafb69a1f285ebda",
+      "bytes": 974
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/adler32.c",
+      "sha256": "63099826db3ddf84c15bfba30940f9689917185df8c30ff27a2bc2b7cb6a19f2",
+      "bytes": 5133
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/cpu_features_common.h",
+      "sha256": "f4eb0800558e9116dd14446ccfb9b1896f970aec6de42c18366a29bde73fd0da",
+      "bytes": 2788
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/decompress_template.h",
+      "sha256": "ade3034c1d5c840cb31bd9738a015be804862a8dfce03c14ac2f5b3a826792b8",
+      "bytes": 25048
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/deflate_constants.h",
+      "sha256": "72ea6e5f0abe53e781203e3f383603a765a768b860a09b3356be36bfd87c8af3",
+      "bytes": 1747
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/deflate_decompress.c",
+      "sha256": "bc16ab65325ce4ac14af830b2cf6c805770beab01fd2f09226dca3dfa3f8bb47",
+      "bytes": 49297
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/lib_common.h",
+      "sha256": "e7aa1f2750434e1019ffabda577dab0fdf5b95f010f6f20aa7e21323b3bcceea",
+      "bytes": 3624
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/zlib_constants.h",
+      "sha256": "562e16b83ac33ac6d351cdfdf1962750576080d65c22ab66cad0aaa33695bebb",
+      "bytes": 488
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/zlib_decompress.c",
+      "sha256": "704a57fb91c36c1c88b04a3482694de08c794ca0cb3904ac247a206802aa6ee0",
+      "bytes": 3138
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/arm/adler32_impl.h",
+      "sha256": "b7e43d7b91db98d774243cf29ee41941edf93e71b5a3f5cc3ede34d8b70a93d9",
+      "bytes": 12336
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/arm/cpu_features.h",
+      "sha256": "0cff5c0110021dc8b18511e328f913f1bad21f31ad927497d1f428db4e6ed239",
+      "bytes": 7107
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/arm/crc32_impl.h",
+      "sha256": "5a24f5087e665b30516f83c2e09a58ed01dab867895a6cefc2f1c833d12482d3",
+      "bytes": 21098
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/arm/crc32_pmull_helpers.h",
+      "sha256": "e469001ad29607cab992ae29c9eaac331427d6b103d11d58d37158b3aa0be95c",
+      "bytes": 5329
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/arm/crc32_pmull_wide.h",
+      "sha256": "c53a58d1e3dc5e75d23c1338fed6cc431ee6fbdfcd4ac94f576579258ac34a88",
+      "bytes": 7401
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/apfs/libdeflate/lib/arm/matchfinder_impl.h",
+      "sha256": "11cd6a9c47d2dadf746f7a944c72c672b40bc83b2ffb43356e0b7ced6b6b8038",
+      "bytes": 2463
+    },
+    {
+      "path": "xnu/files/bsd/miscfs/ramfs/ramfs.c",
+      "sha256": "14884af48b8d8de3d569df6cff59fafb9c6328d9a606bed27e24a69d4d2d98c4",
+      "bytes": 58655
+    },
+    {
+      "path": "tools/apfs/apfs-tool.c",
+      "sha256": "2332f89e388a4a564c5035ceea57f790abcdd8ff2d0d249b3cd6c688dc5505eb",
+      "bytes": 48122
+    },
+    {
+      "path": "tools/apfs/apfs.py",
+      "sha256": "a051520d0c1f4f9d783c484be3beaeb536a1b4364fd8ed2e6a9b5c2d98592588",
+      "bytes": 43900
+    },
+    {
+      "path": "tools/apfs/bench-phone.sh",
+      "sha256": "04fa9f78c5a438341f41d76a4051862b6e98942890bcd503ab90a8869a24ee82",
+      "bytes": 2706
+    },
+    {
+      "path": "tools/apfs/bench-qemu.sh",
+      "sha256": "14e87a59f86bd251b32a4bf07de9699e9227f2055b7182c90a84dcbdff1b8ae7",
+      "bytes": 2192
+    },
+    {
+      "path": "tools/apfs/build-tool.sh",
+      "sha256": "b2d7bf573055a7e4589f8c496718c710a3a0c767af8bc988c6c88524ff984d0a",
+      "bytes": 2571
+    },
+    {
+      "path": "tools/apfs/check-image.py",
+      "sha256": "5249142da9662b3ce74155fa956ed1fc841e68557ad5bc8864aa3c6d2ff5f4cf",
+      "bytes": 4588
+    },
+    {
+      "path": "tools/apfs/check-image.sh",
+      "sha256": "4206ebef2656924e0cff75f1c3367b58f4989e1052d79d670499ec3422b01bbd",
+      "bytes": 1974
+    },
+    {
+      "path": "tools/apfs/dmg.py",
+      "sha256": "d7aab6e514a3b6a63cc666bd6129529e315e04fb2eff897b6333ce8d2dba8423",
+      "bytes": 16349
+    },
+    {
+      "path": "tools/apfs/fmt_check.c",
+      "sha256": "67bcc97d9ebd884ac7fda1a38531b5190ac1cce69d5d337e05db72d6536e5ea0",
+      "bytes": 7516
+    },
+    {
+      "path": "tools/apfs/fnvsum.c",
+      "sha256": "c7603606acddeb68bf48e6972aea7a145a9ab11842b923b9d554ed54596bb3d7",
+      "bytes": 851
+    },
+    {
+      "path": "tools/apfs/mkapfs.py",
+      "sha256": "b8afe3d1bb17466e4654dca4b8a5c9ec13a21f70dd6f01512b810da39c1ffc33",
+      "bytes": 44169
+    },
+    {
+      "path": "tools/apfs/mksparse.py",
+      "sha256": "fa52f14304bd392163d72b854b4a7247fbecff8d09745b34c4443a213964961d",
+      "bytes": 6695
+    },
+    {
+      "path": "tools/apfs/mkstore.py",
+      "sha256": "6b13af9ea9f9be54c984c34a6694defc9b501d6be7222abe479b02e5f1ddc158",
+      "bytes": 4224
+    },
+    {
+      "path": "tools/apfs/run-tests.sh",
+      "sha256": "e2785e57c5d14bf599148a8271087a53087db14cbac96d3179a8f2d74371441d",
+      "bytes": 4857
+    },
+    {
+      "path": "tools/apfs/test_fetch.c",
+      "sha256": "102fc171c303dbf686fd93729ee0b96b1e9980231fe949634eba65dd6c83e55f",
+      "bytes": 3252
+    },
+    {
+      "path": "tools/apfs/test_format.py",
+      "sha256": "5950a6d42ab4ea4755ec7e00ceaadf3af71b6f73d637ed4f6e6a61b5704d42c5",
+      "bytes": 9147
+    },
+    {
+      "path": "tools/apfs/test_namehash.py",
+      "sha256": "8ab3384498a594517862a645db6bac901939a35eb3cc1b8969cc7e78a0ea224f",
+      "bytes": 2767
+    },
+    {
+      "path": "tools/apfs/test_namenorm.py",
+      "sha256": "dd3ef8e499871cde86002ca115aafe1d31ea6394d9710bcf3083bee43320fe37",
+      "bytes": 4447
+    },
+    {
+      "path": "tools/apfs/test_sparse.py",
+      "sha256": "1586ca3e148d4a67cd59e7d13bf4abc67ea7df79ceaae35860b5867a8d3c0113",
+      "bytes": 2895
+    },
+    {
+      "path": "tools/apfs/txn-probe.py",
+      "sha256": "579f7a7fd6436c488334d28766b3d9ca0ad309ea1ce49cf2e5de0c411ae5d69a",
+      "bytes": 22703
+    },
+    {
+      "path": "tools/apfs/verify.py",
+      "sha256": "a8848290add8209e5c8a3061b27481efbde9f58773bc3a86e5b862713e837d71",
+      "bytes": 17026
+    },
+    {
+      "path": "tools/apfs/write-tests.py",
+      "sha256": "56fb0e9d1a76dafc9f9da077e309f2b26d68ce220f728a031b3cb07173cae931",
+      "bytes": 40230
+    },
+    {
+      "path": "tools/apfs/write-tests.sh",
+      "sha256": "e8c836c0b4fb0741df5b963a5b5502fe254a5093e489ad4e4d0c7e5bbe990d8f",
+      "bytes": 1939
+    },
+    {
+      "path": "tools/apfs/host-shim/x86/adler32_impl.h",
+      "sha256": "92b7c48eef085849fb2cc05a266330fedb71a7ccf43c01f6c0e5f08a40df98c8",
+      "bytes": 228
+    },
+    {
+      "path": "tools/apfs/host-shim/x86/decompress_impl.h",
+      "sha256": "92b7c48eef085849fb2cc05a266330fedb71a7ccf43c01f6c0e5f08a40df98c8",
+      "bytes": 228
+    }
+  ],
+  "adaptations": [
+    "Applied separately in 0095; original vendored sources are byte-identical",
+    "APFS read-only, cache512 blocks; RAMFS per-mount32MiB file data limit; existing HFS boot retained"
+  ]
+}

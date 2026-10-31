@@ -1,0 +1,479 @@
+--- /dev/null
++++ b/iokit/Kernel/arm/XCoverNetworkStack.h
+@@ -0,0 +1,42 @@
++/* HackiOS MiniIONetworkStack a3384e031eb1e605cf37adaefc19991f04f6274b, APSL2.
++ * InterfaceNamer discovery/client protocol; BSD interfaces retain their names.
++ * This service does not advertise a NIC, Wi-Fi hardware or network connectivity.
++ */
++#ifndef XC72_NETWORK_H
++#define XC72_NETWORK_H
++#ifndef XC72_HOST_TEST
++#include <IOKit/IOKitKeys.h>
++#include <sys/proc.h>
++#endif
++class IONetworkStack:public IOService {
++ OSDeclareDefaultStructors(IONetworkStack);
++public:
++ bool start(IOService *provider) APPLE_KEXT_OVERRIDE {
++  if(!IOService::start(provider))return false;
++  setProperty(kIOUserClientClassKey,"IONetworkStackUserClient");setName("IONetworkStack");registerService();
++  IOLog("XCOVER5 M72 NETWORK_STACK path=IOService:/IOResources/IONetworkStack\n");return true;
++ }
++};
++OSDefineMetaClassAndStructors(IONetworkStack,IOService);
++class IONetworkStackUserClient:public IOUserClient {
++ OSDeclareDefaultStructors(IONetworkStackUserClient);
++public:
++ bool start(IOService *provider) APPLE_KEXT_OVERRIDE {
++  if(!IOUserClient::start(provider))return false;
++  IOLog("XCOVER5 M72 NETWORK_OPEN pid=%d\n",proc_selfpid());return true;
++ }
++ IOReturn clientClose(void) APPLE_KEXT_OVERRIDE {if(!isInactive())terminate();return kIOReturnSuccess;}
++ IOReturn setProperties(OSObject *) APPLE_KEXT_OVERRIDE {
++  static unsigned logs;if(__sync_fetch_and_add(&logs,1)<4)IOLog("XCOVER5 M72 NETWORK_NAME unsupported; no IOKit interface to rename\n");
++  return kIOReturnUnsupported;
++ }
++};
++OSDefineMetaClassAndStructors(IONetworkStackUserClient,IOUserClient);
++static void XCoverNetworkStackStart(void) {
++ IOService *resources=IOService::getResourceService();IONetworkStack *stack=OSTypeAlloc(IONetworkStack);
++ if(resources&&stack&&stack->init()&&stack->attach(resources)) {
++  if(!stack->start(resources))stack->detach(resources);
++ }else IOLog("XCOVER5 M72 NETWORK_START_FAILED resources=%u\n",resources!=NULL);
++ OSSafeReleaseNULL(stack);
++}
++#endif
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -485,6 +485,7 @@
+ 			}
+ 			p->width = dictNumber(pd, "IOSurfacePlaneWidth", width);
+ 			p->height = dictNumber(pd, "IOSurfacePlaneHeight", height);
++			if (p->width > MINISURF_MAX_DIMENSION || p->height > MINISURF_MAX_DIMENSION) { s->release(); return NULL; }
+ 			p->bytesPerElement = (uint16_t) dictNumber(pd, "IOSurfacePlaneBytesPerElement", bpe ? bpe : 1);
+ 			p->elementWidth = (uint8_t) pew;
+ 			p->elementHeight = (uint8_t) peh;
+@@ -494,7 +495,9 @@
+ 			}
+ 			p->size = dictNumber(pd, "IOSurfacePlaneSize", 0);
+ 			if (p->size == 0) {
+-				p->size = p->bytesPerRow * ((p->height + peh - 1) / peh);
++				uint64_t planeBytes = (uint64_t)p->bytesPerRow * ((p->height + peh - 1) / peh);
++				if (planeBytes > MINISURF_MAX_ALLOC) { s->release(); return NULL; }
++				p->size = (uint32_t)planeBytes;
+ 			}
+ 			p->offset = dictNumber(pd, "IOSurfacePlaneOffset", dictNumber(pd, "IOSurfacePlaneBase", (uint32_t) needed));
+ 			p->extendedPixels[0] = dictNumber(pd, "IOSurfacePlaneExtendedPixelsOnLeft", 0);
+@@ -568,6 +571,7 @@
+ 	} else {
+ 		/* (the memory is as big as its owner says, and not a byte of ours is added to it) */
+ 		alloc = dictNumber(props, "IOSurfaceAllocSize", (uint32_t) needed);
++		if (alloc < needed || alloc == 0 || alloc > MINISURF_MAX_ALLOC) { s->release(); return NULL; }
+ 	}
+ 
+ 	s->memory = surfaceMemory((vm_size_t) PAGE_SIZE + (wrapped ? 0 : alloc));
+@@ -2093,9 +2097,11 @@
+ OSDefineMetaClassAndStructors(XCoverDiagnosticFramebufferUserClient,IOUserClient);
+ #include "XCoverNativeFramebuffer.h"
+ #include "XCoverAppleKeyStore.h"
++#include "XCoverNetworkStack.h"
+ void XCoverFramebufferStart(IOService *provider){
+  XCoverNativeFramebufferStart(provider);
+  XCoverAppleKeyStoreStart();
++ XCoverNetworkStackStart();
+  XCoverDiagnosticFramebuffer *fb=OSTypeAlloc(XCoverDiagnosticFramebuffer);
+  if(fb && fb->init() && fb->attach(provider)){if(!fb->start(provider))fb->detach(provider);}
+  OSSafeReleaseNULL(fb);
+--- /dev/null
++++ b/bsd/dev/xcover_input.c
+@@ -0,0 +1,171 @@
++/* Adapted from HackiOS a3384e031eb1e605cf37adaefc19991f04f6274b, APSL-2.0. */
++/*
++ * /dev/hakios-touch: a queue of touch samples (see sys/hakios.input.h).
++ */
++#ifndef XC72_HOST_TEST
++#include <kern/clock.h>
++#include <kern/locks.h>
++#include <kern/thread_call.h>
++#include <libkern/libkern.h>
++#include <miscfs/devfs/devfs.h>
++#include <sys/conf.h>
++#include <sys/fcntl.h>
++#include <sys/vnode.h>
++#include <sys/errno.h>
++#include <sys/proc.h>
++#include <sys/systm.h>
++#include <sys/uio.h>
++#include <pexpert/pexpert.h>
++#endif
++#include "xcover_input.h"
++
++#define TOUCH_QUEUE     512             /* records; a power of two */
++
++/*
++ * Boot-arg touch_lat=1: for measuring how long a touch takes to reach the panel, a line for every
++ * sample posted ("tl: p TYPE FINGER X Y at US", the time in microseconds of mach_absolute_time),
++ * to be matched with the window server's lines about reading it (userland/src/inject.c), drawing
++ * (eagl.c) and the display driver's about the frame (MiniIOMobileFramebuffer.cpp): see
++ * tools/latency.py.
++ */
++static uint32_t touch_lat = 2;          /* 2: not yet looked up */
++
++static bool
++latency_lines(void)
++{
++	if (touch_lat == 2) {
++		uint32_t on = 0;
++
++		touch_lat = PE_parse_boot_argn("touch_lat", &on, sizeof(on)) && on != 0;
++	}
++	return touch_lat != 0;
++}
++
++static LCK_GRP_DECLARE(touch_lck_grp, "hakios-touch");
++static LCK_MTX_DECLARE(touch_lock, &touch_lck_grp);
++static struct hakios_touch touch_queue[TOUCH_QUEUE];
++static bool touch_reader;
++static uint32_t touch_head, touch_tail;        /* read from head, add at tail */
++
++static void
++touch_post(uint32_t type, uint32_t finger, uint32_t x, uint32_t y, __unused bool from_driver)
++{
++	struct hakios_touch *t;
++
++	lck_mtx_lock(&touch_lock);
++	if (touch_tail - touch_head == TOUCH_QUEUE) {
++		touch_head++;                   /* nobody reads: drop the oldest */
++	}
++	t = &touch_queue[touch_tail++ % TOUCH_QUEUE];
++	t->time = mach_absolute_time();
++	if (latency_lines()) {
++		uint64_t ns;
++
++		absolutetime_to_nanoseconds(t->time, &ns);
++		printf("tl: p %u %u %u %u at %llu\n", type, finger, x, y, ns / 1000);
++	}
++	t->type = type;
++	t->finger = finger;
++	t->x = x > 65535 ? 65535 : x;
++	t->y = y > 65535 ? 65535 : y;
++	lck_mtx_unlock(&touch_lock);
++	wakeup(&touch_queue);
++}
++
++void
++hakios_touch_post(uint32_t type, uint32_t finger, uint32_t x, uint32_t y)
++{
++	touch_post(type, finger, x, y, true);
++}
++
++static int
++touch_open(__unused dev_t dev, int flags, __unused int devtype, __unused struct proc *p)
++{
++ int error=0;lck_mtx_lock(&touch_lock);
++ if(flags & FREAD){if(touch_reader)error=EBUSY;else touch_reader=true;}
++ lck_mtx_unlock(&touch_lock);return error;
++}
++static int
++touch_close(__unused dev_t dev, int flags, __unused int devtype, __unused struct proc *p)
++{
++ lck_mtx_lock(&touch_lock);if(flags & FREAD)touch_reader=false;lck_mtx_unlock(&touch_lock);return 0;
++}
++
++static int
++touch_read(__unused dev_t dev, struct uio *uio, int ioflag)
++{
++	struct hakios_touch t;
++	int error = 0, moved = 0;
++
++	/* a buffer smaller than one record can never be served: say so, instead of blocking for data and then returning 0 (end of file) */
++	if (uio_resid(uio) == 0) {
++		return 0;
++	}
++	if (uio_resid(uio) < (user_ssize_t)sizeof(t)) {
++		return EINVAL;
++	}
++	lck_mtx_lock(&touch_lock);
++	while (touch_head == touch_tail) {
++		if (ioflag & IO_NDELAY) { lck_mtx_unlock(&touch_lock); return EWOULDBLOCK; }
++		error = msleep(&touch_queue, &touch_lock, PZERO | PCATCH, "hakios-touch", NULL);
++		if (error) {
++			lck_mtx_unlock(&touch_lock);
++			return error;
++		}
++	}
++	while (touch_head != touch_tail && uio_resid(uio) >= (user_ssize_t)sizeof(t)) {
++		t = touch_queue[touch_head++ % TOUCH_QUEUE];
++		lck_mtx_unlock(&touch_lock);
++		error = uiomove((caddr_t)&t, sizeof(t), uio);
++		lck_mtx_lock(&touch_lock);
++		if (error) {
++			/* the copy-out failed: put the record back at the head so a lost DOWN or UP does not leave a finger stuck (only if the ring still has room for it) */
++			if (touch_tail - touch_head < TOUCH_QUEUE) {
++				touch_queue[--touch_head % TOUCH_QUEUE] = t;
++			}
++			break;
++		}
++		moved++;
++	}
++	lck_mtx_unlock(&touch_lock);
++	return moved ? 0 : error;
++}
++
++static int
++touch_write(__unused dev_t dev, struct uio *uio, __unused int ioflag)
++{
++	struct hakios_touch t;
++	int error = 0;
++	if (uio_resid(uio) % sizeof(t)) return EINVAL;
++
++	while (uio_resid(uio) >= (user_ssize_t)sizeof(t)) {
++		error = uiomove((caddr_t)&t, sizeof(t), uio);
++		if (error) {
++			break;
++		}
++		if (t.type < HAKIOS_TOUCH_DOWN || t.type > HAKIOS_BUTTON_UP) {
++			return EINVAL;
++		}
++		touch_post(t.type, t.finger, t.x, t.y, false);
++	}
++	return error;
++}
++
++static const struct cdevsw touch_cdevsw = {
++	.d_open = touch_open, .d_close = touch_close, .d_read = touch_read, .d_write = touch_write,
++	.d_ioctl = eno_ioctl, .d_stop = eno_stop, .d_reset = eno_reset, .d_select = eno_select,
++	.d_mmap = eno_mmap, .d_strategy = eno_strat, .d_type = 0
++};
++
++void
++hakios_input_init(void)
++{
++ int major = cdevsw_add(-1, &touch_cdevsw);
++ if(major<0){printf("XCOVER5 M72 INPUT_FAILED cdev\n");return;}
++ void *primary=devfs_make_node(makedev(major,0),DEVFS_CHAR,UID_ROOT,GID_WHEEL,0644,"hakios-touch");
++ if(!primary){cdevsw_remove(major,&touch_cdevsw);printf("XCOVER5 M72 INPUT_FAILED devfs\n");return;}
++ /* Old vendored injection ABI consumes the same 24-byte record. */
++ if(!devfs_make_node(makedev(major,0),DEVFS_CHAR,UID_ROOT,GID_WHEEL,0644,"redwood-touch"))
++  printf("XCOVER5 M72 INPUT_ALIAS_FAILED\n");
++ printf("XCOVER5 M72 INPUT_READY virtual queue=512 record=24; physical backend pending\n");
++}
+--- /dev/null
++++ b/bsd/dev/xcover_input.h
+@@ -0,0 +1,42 @@
++/*
++ * /dev/hakios-touch: touch samples on their way from whoever produces them to the
++ * program that turns them into HID events for the window server.
++ *
++ * Darwin expects touches from Apple's multitouch driver through IOHIDFamily; neither exists
++ * here. Instead a producer -- a kernel driver for a real touch controller or for an emulated
++ * pointer, or a user program replaying a script -- posts samples, and code of ours running
++ * inside backboardd reads them and synthesizes the events. Both sides use the same record.
++ *
++ *   write(): one or more records (time is ignored; the kernel stamps them)
++ *   read():  blocks until there is at least one record, returns as many whole ones as fit
++ */
++#ifndef _SYS_HAKIOS_INPUT_H_
++#define _SYS_HAKIOS_INPUT_H_
++
++#include <stdint.h>
++
++#define HAKIOS_TOUCH_DEVICE    "/dev/hakios-touch"
++
++#define HAKIOS_TOUCH_DOWN      1       /* a finger has landed */
++#define HAKIOS_TOUCH_MOVE      2
++#define HAKIOS_TOUCH_UP        3       /* it has lifted (x, y: where it was last) */
++#define HAKIOS_BUTTON_DOWN     4       /* a hardware button; `finger` says which (HAKIOS_BUTTON_*), x and y are 0 */
++#define HAKIOS_BUTTON_UP       5
++
++#define HAKIOS_BUTTON_LOCK     1       /* the side button */
++#define HAKIOS_BUTTON_VOLUME_UP 2
++#define HAKIOS_BUTTON_VOLUME_DOWN 3
++#define HAKIOS_BUTTON_HOME     4
++
++struct hakios_touch {
++	uint64_t time;                  /* mach_absolute_time() when the sample was posted */
++	uint32_t type;                  /* HAKIOS_TOUCH_* or HAKIOS_BUTTON_DOWN/UP */
++	uint32_t finger;                /* which finger, from 0 (or which button) */
++	uint32_t x, y;                  /* position on the display, 0 = left/top edge, 65535 = right/bottom edge */
++};
++
++#ifdef KERNEL
++void hakios_touch_post(uint32_t type,uint32_t finger,uint32_t x,uint32_t y);
++void hakios_input_init(void);
++#endif
++#endif
+--- a/bsd/miscfs/apfs/apfs_vfsops.c
++++ b/bsd/miscfs/apfs/apfs_vfsops.c
+@@ -19,8 +19,6 @@
+ #include <sys/sysctl.h>
+ #include <sys/vnode_internal.h>
+ #include <sys/fcntl.h>
+-#include <sys/hakios.input.h>
+-#include <sys/hakios.virtio_blk.h>
+ #include <sys/proc.h>
+ #include <kern/thread.h>
+ #include <libkern/OSAtomic.h>
+@@ -458,22 +456,6 @@
+ 	}
+ }
+ 
+-/* kern.hakios_memory: the kernel's line about memory (osfmk/arm64/loader_return.c), for a job list to keep */
+-extern void hakios_memory_line(char *buf, size_t len);
+-
+-static int
+-sysctl_hakios_memory SYSCTL_HANDLER_ARGS
+-{
+-#pragma unused(oidp, arg1, arg2)
+-	char line[256];
+-
+-	hakios_memory_line(line, sizeof(line));
+-	return SYSCTL_OUT(req, line, strlen(line) + 1);
+-}
+-
+-SYSCTL_PROC(_kern, OID_AUTO, hakios_memory, CTLTYPE_STRING | CTLFLAG_RD | CTLFLAG_LOCKED,
+-    0, 0, sysctl_hakios_memory, "A", "where the memory is, in MB");
+-
+ SYSCTL_PROC(_kern, OID_AUTO, apfs_stats, CTLTYPE_STRING | CTLFLAG_RW | CTLFLAG_LOCKED,
+     0, 0, sysctl_apfs_stats, "A", "APFS: where the time goes; write to zero it");
+ 
+@@ -1120,7 +1102,7 @@
+ 		dev_t rdev = vnode_specrdev(devvp);
+ 		uint32_t cheap;
+ 
+-		am->am_nx.cheap_requests = !hakios_ufs_dev(rdev) && !hakios_virtio_blk_dev(rdev);
++		am->am_nx.cheap_requests = false /* Samsung MMC: prefer batched I/O, no Qualcomm dependency */;
+ 		if (PE_parse_boot_argn("apfs_cheap", &cheap, sizeof(cheap))) {
+ 			am->am_nx.cheap_requests = (cheap != 0);
+ 		}
+--- a/bsd/miscfs/apfs/apfs.h
++++ b/bsd/miscfs/apfs/apfs.h
+@@ -38,10 +38,10 @@
+  * 1 MB: 867 / 663 / 612 / 561 ms; four readers: 1429 / 1534 / 1747 / 2009 ms, and 1327
+  * with rounds of 64 or 128 KB and no helpers.
+  */
+-#define APFS_IOBUF_DEFAULT (1024 * 1024)
++#define APFS_IOBUF_DEFAULT (256 * 1024)
+ #define APFS_IOBUF_MAX     (2 * 1024 * 1024)
+ #define APFS_ROUND_SHARED  (128 * 1024)
+-#define APFS_IOBUF_KEEP    8
++#define APFS_IOBUF_KEEP    2
+ 
+ #define APFS_SYNTH_MAX     64
+ #define APFS_SYNTH_NAMELEN 96
+--- a/bsd/miscfs/apfs/apfs_lib.h
++++ b/bsd/miscfs/apfs/apfs_lib.h
+@@ -76,8 +76,8 @@
+  * with 2048 and 61831 with 8192.  Found through a hash of the address, the one to give up
+  * picked by a clock hand (a block used since the hand last passed gets another round).
+  */
+-#define APFS_CACHE_BLOCKS 2048
+-#define APFS_CACHE_HASH   4096          /* a power of two */
++#define APFS_CACHE_BLOCKS 512
++#define APFS_CACHE_HASH   1024          /* a power of two */
+ 
+ /* Room for a symbolic link's target (Darwin's own limit is 1024 bytes; it is kept in an xattr) */
+ #define APFS_LINK_MAX 4096
+--- a/bsd/miscfs/ramfs/ramfs.c
++++ b/bsd/miscfs/ramfs/ramfs.c
+@@ -1728,7 +1728,7 @@
+ 	rm->rm_mp = mp;
+ 	rm->rm_next_ino = RAMFS_ROOT_INO + 1;
+ 	/* a runaway writer must not be able to take the whole machine: a quarter of memory at most */
+-	rm->rm_max_pages = (max_mem / 4) / PAGE_SIZE;
++	rm->rm_max_pages = MIN(max_mem / 4, 32ULL * 1024 * 1024) / PAGE_SIZE;
+ 
+ 	rm->rm_hash = kalloc_type(struct ramfs_node *, RAMFS_HASH_SIZE, Z_WAITOK | Z_ZERO | Z_NOFAIL);
+ 	rm->rm_root = ramfs_node_alloc(rm, VDIR, NULL);
+--- a/bsd/miscfs/apfs/apfs_vnops.c
++++ b/bsd/miscfs/apfs/apfs_vnops.c
+@@ -27,7 +27,16 @@
+ /* How much is read out of a file at a time when copying into a uio. */
+ 
+ extern integer_t thread_kern_get_pri(thread_t thr);    /* the thread's base priority */
+-extern void thread_runnable_and_run_self(uint64_t *runnable, uint64_t *run);
++#include <kern/thread.h>
++#include <kern/recount.h>
++#include <machine/machine_routines.h>
++static void thread_runnable_and_run_self(uint64_t *runnable, uint64_t *run)
++{
++ thread_t th=current_thread();boolean_t old=ml_set_interrupts_enabled(FALSE);
++ uint64_t now=mach_absolute_time();
++ *runnable=th->runnable_timer.all_bits+(now-th->runnable_timer.tstamp);
++ *run=recount_current_thread_time_mach();ml_set_interrupts_enabled(old);
++}
+ 
+ /* The statistics of the calling process (with the lock held) */
+ static struct apfs_lock_proc *
+--- /dev/null
++++ b/bsd/dev/xcover_filesystems.c
+@@ -0,0 +1,23 @@
++/* HackiOS portable APFS/ramfs registration; HFS remains the boot filesystem. */
++#include <sys/systm.h>
++#include <sys/mount_internal.h>
++#include <sys/vnode_internal.h>
++extern struct vfsops apfs_vfsops,ramfs_vfsops;
++extern const struct vnodeopv_desc apfs_vnodeop_opv_desc,ramfs_vnodeop_opv_desc;
++void xcover_filesystems_register(void);
++void xcover_filesystems_register(void) {
++ static vfstable_t handles[2];
++ struct vfsops *ops[]={&apfs_vfsops,&ramfs_vfsops};
++ const struct vnodeopv_desc *descs[]={&apfs_vnodeop_opv_desc,&ramfs_vnodeop_opv_desc};
++ const char *names[]={"apfs","ramfs"};
++ for(unsigned i=0;i<2;i++){
++  struct vnodeopv_desc *list[]={(struct vnodeopv_desc *)descs[i]};
++  struct vfs_fsentry entry={.vfe_vfsops=ops[i],.vfe_vopcnt=1,.vfe_opvdescs=list,
++   .vfe_flags=VFS_TBLNOTYPENUM|VFS_TBL64BITREADY|
++   VFS_TBLTHREADSAFE|VFS_TBLNATIVEXATTR|VFS_TBLREADDIR_EXTENDED|
++   VFS_TBLVNOP_PAGEINV2|VFS_TBLVNOP_PAGEOUTV2};
++  strlcpy(entry.vfe_fsname,names[i],sizeof(entry.vfe_fsname));
++  int rc=vfs_fsadd(&entry,&handles[i]);
++  printf("XCOVER5 M72 FILESYSTEM name=%s register=%d; boot=hfs\n",names[i],rc);
++ }
++}
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -695,6 +695,8 @@
+ 	/* HFS is built in on SWEET: register it like its kext would, before mounting root. */
+ 	extern void sweet_hfs_register(void);
+ 	sweet_hfs_register();
++	extern void xcover_filesystems_register(void);
++	xcover_filesystems_register();
+ #endif
+ 
+ #if CONFIG_PROC_UUID_POLICY
+@@ -998,6 +1000,8 @@
+ #if defined(SWEET)
+ 	extern void xcover5_mmc_dev_init(void);
+ 	xcover5_mmc_dev_init();
++	extern void hakios_input_init(void);
++	hakios_input_init();
+ #if defined(XCOVER5)
+ 	extern void xcover5_bootdiag_init(void);
+ 	xcover5_bootdiag_init();
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -648,3 +648,13 @@
+ bsd/skywalk/packet/pbufpool.c			optional skywalk
+ bsd/skywalk/packet/pbufpool_kern.c		optional skywalk
+ bsd/dev/cpu_copy_in_cksum_gen.c			optional skywalk
++
++# M72 portable HackiOS services and filesystems (SWEET only).
++bsd/dev/xcover_input.c optional sweet_hfs
++bsd/dev/xcover_filesystems.c optional sweet_hfs
++bsd/miscfs/ramfs/ramfs.c optional sweet_hfs
++bsd/miscfs/apfs/apfs_deflate.c optional sweet_hfs
++bsd/miscfs/apfs/apfs_zbitmap.c optional sweet_hfs
++bsd/miscfs/apfs/apfs_lib.c optional sweet_hfs
++bsd/miscfs/apfs/apfs_vfsops.c optional sweet_hfs
++bsd/miscfs/apfs/apfs_vnops.c optional sweet_hfs
+--- a/bsd/conf/Makefile.template
++++ b/bsd/conf/Makefile.template
+@@ -60,6 +60,7 @@
+ # HFSEncodings is a separate kext on Apple with its own allocation counter.
+ hfs_encodings.o_CFLAGS_ADD += -Dhfs_allocated=hfs_encodings_allocated
+ hfs_encodinghint.o_CFLAGS_ADD += -Dhfs_allocated=hfs_encodings_allocated
++apfs_deflate.o_CFLAGS_ADD += -idirafter $(shell $(CC) -print-resource-dir)/include
+ endif
+ 
+ #

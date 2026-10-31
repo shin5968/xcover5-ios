@@ -1,3 +1,6 @@
 *.patch text eol=lf -whitespace
 *.py text eol=lf
 *.yml text eol=lf
+
+/tools/compat/** text eol=lf
+/third_party/hackios-portable/** text eol=lf

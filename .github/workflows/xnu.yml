@@ -31,6 +31,9 @@ on:
       - "tools/test_m68_graphics.py"
       - "tools/test_m69_breakpoint.py"
       - "tools/ui-breakpoint-evidence.h"
+      - "tools/compat/**"
+      - "tools/test_m72_portable.py"
+      - "third_party/hackios-portable/**"
       - "tools/keystore/**"
       - "tools/test_m70_keystore.py"
       - "tools/mkhfsroot.sh"
@@ -89,6 +92,15 @@ env:
   MACHINE_CONFIG: ${{ inputs.machine_config || 'SWEET' }}
 
 jobs:
+  portable:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Actual HackiOS portable driver and parser contracts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y zlib1g-dev libssl-dev
+          python3 tools/test_m72_portable.py
   build:
     # macos-14 still ships Xcode 15.x: its iig matches the xnu-8796 IORPC ABI
     # (Xcode 16's iig emits IORPC.kernelContent, which this xnu lacks)
@@ -147,7 +159,7 @@ jobs:
           p=Path('dxb/build.sh');s=p.read_text()
           anchor='        done\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()'
           assert s.count(anchor)==1,'pinned patch-phase boundary changed'
-          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m56_ui_platform.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m57_chrono.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m58_execdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m61_ui_lookup.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m62_kernel.py" "${WORK_DIR}/xnu"\n        python3 "${WORK_DIR}/../tools/test_m65_initdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m68_graphics.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m69_breakpoint.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m70_keystore.py" "${WORK_DIR}/xnu" --source-only\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
+          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m56_ui_platform.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m57_chrono.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m58_execdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m61_ui_lookup.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m62_kernel.py" "${WORK_DIR}/xnu"\n        python3 "${WORK_DIR}/../tools/test_m65_initdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m68_graphics.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m69_breakpoint.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m70_keystore.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m72_portable.py" "${WORK_DIR}/xnu" --source-only\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
           p.write_text(s)
           PY
 
@@ -205,6 +217,18 @@ jobs:
                   output=subprocess.check_output(['cc','-E','-P','-x','c','-']+flags,input=snippet,text=True).strip()
                   assert int(output.rstrip('u'))==want,(name,flags,output)
           print('Applied early/normal XCover5 font8x16 PASS; fallback16x32 retained;720x1480 grid90x92')
+          PY
+
+      - name: Verify M72 portable services in linked kernel
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          ks=list(Path('dxb/fakeroot/System/Library/Kernels').glob('kernel.*'))
+          assert ks
+          for p in ks:
+              data=p.read_bytes()
+              for marker in (b'XCOVER5 M72 NETWORK_STACK',b'XCOVER5 M72 INPUT_READY',b'XCOVER5 M72 FILESYSTEM',b'XCOVER5 M70 AKS_READY',b'XCOVER5 M68 NATIVE_FB'):
+                  assert marker in data,(p,marker)
           PY
 
       - name: Verify M64 boot-root view size contract
