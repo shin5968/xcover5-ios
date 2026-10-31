@@ -120,6 +120,7 @@ jobs:
           python3 tools/test_m57_chrono.py
           python3 tools/test_m61_ui_lookup.py
           python3 tools/test_m58_execdiag.py
+          python3 tools/test_m65_initdiag.py
 
       - name: Fetch build script
         run: |
@@ -137,7 +138,7 @@ jobs:
           p=Path('dxb/build.sh');s=p.read_text()
           anchor='        done\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()'
           assert s.count(anchor)==1,'pinned patch-phase boundary changed'
-          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m56_ui_platform.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m57_chrono.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m58_execdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m61_ui_lookup.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m62_kernel.py" "${WORK_DIR}/xnu"\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
+          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m56_ui_platform.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m57_chrono.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m58_execdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m61_ui_lookup.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m62_kernel.py" "${WORK_DIR}/xnu"\n        python3 "${WORK_DIR}/../tools/test_m65_initdiag.py" "${WORK_DIR}/xnu" --source-only\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
           p.write_text(s)
           PY
 
@@ -200,6 +201,10 @@ jobs:
       - name: Verify M64 boot-root view size contract
         run: |
           python3 tools/test_m64_kernel.py dxb/xnu dxb/fakeroot/System/Library/Kernels
+
+      - name: Verify M65 native PID1 initialization observation
+        run: |
+          python3 tools/test_m65_initdiag.py dxb/xnu --kernels dxb/fakeroot/System/Library/Kernels
 
       - name: Verify preferences request trace
         run: |

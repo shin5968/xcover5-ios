@@ -1,0 +1,144 @@
+--- a/osfmk/arm64/sleh.c
++++ b/osfmk/arm64/sleh.c
+@@ -1,3 +1,5 @@
+ #if defined(XCOVER5)
+ extern void xcover5_bootdiag_svc(arm_saved_state_t *,unsigned);
++extern void xcover5_initdiag_svc(arm_saved_state_t *);
++extern void xcover5_initdiag_irq(arm_saved_state_t *);
+ #endif
+--- a/osfmk/arm64/sleh.c
++++ b/osfmk/arm64/sleh.c
+@@ -1,3 +1,4 @@
+ #if defined(XCOVER5)
+ 	if(trap_no!=MACH_ARM_TRAP_ABSTIME && trap_no!=MACH_ARM_TRAP_CONTTIME)xcover5_bootdiag_svc(state,1);
++	if(trap_no!=MACH_ARM_TRAP_ABSTIME && trap_no!=MACH_ARM_TRAP_CONTTIME)xcover5_initdiag_svc(state);
+ #endif
+--- a/osfmk/arm64/sleh.c
++++ b/osfmk/arm64/sleh.c
+@@ -1,3 +1,6 @@
+ 	if (intid == sweet_vtimer_intid) {
+ 		sleh_interrupt_handler_prologue(state, DBG_INTR_TYPE_TIMER);
++#if defined(XCOVER5)
++		xcover5_initdiag_irq(state);
++#endif
+ 		cdp->cpu_decrementer = -1; /* Large */
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -1,2 +1,4 @@
+ 	xcover5_bootdiag_init();
++	extern void xcover5_initdiag_init(void);
++	xcover5_initdiag_init();
+ 	extern void xcover5_autolog_init(void);
+--- a/bsd/conf/files
++++ b/bsd/conf/files
+@@ -1 +1,2 @@
+ bsd/kern/xcover5_bootdiag.c		standard
++bsd/kern/xcover5_initdiag.c		standard
+--- /dev/null
++++ b/bsd/kern/xcover5_initdiag.c
+@@ -0,0 +1,105 @@
++/* M65: bounded PID1 scheduler/timer-IRQ observation. No user memory reads. */
++#include <pexpert/arm64/board_config.h>
++#if defined(XCOVER5)
++#include <sys/proc_internal.h>
++#include <sys/systm.h>
++#include <kern/thread.h>
++#include <kern/thread_call.h>
++#include <kern/clock.h>
++#include <kern/locks.h>
++#include <arm/thread.h>
++#include <arm/proc_reg.h>
++#include <arm/machine_routines.h>
++#define XC_INIT_TICKS 12U
++struct xc_init_irq {uint64_t count,tid,at,pc,lr,sp,args[4];};
++struct xc_init_state {
++ thread_t target; uint64_t generation,svc,svc_pc; int trap;
++ unsigned armed,ticks,done;
++ struct xc_init_irq user,kernel;
++};
++static struct xc_init_state xc_init;
++static thread_call_t xc_init_call;
++static LCK_GRP_DECLARE(xc_init_group,"xcover5_initdiag");
++static LCK_SPIN_DECLARE(xc_init_lock,&xc_init_group);
++void xcover5_initdiag_init(void);
++void xcover5_initdiag_svc(arm_saved_state_t *);
++void xcover5_initdiag_irq(arm_saved_state_t *);
++static boolean_t xc_init_enter(void) {
++ boolean_t irq=ml_set_interrupts_enabled(FALSE);
++ lck_spin_lock(&xc_init_lock);return irq;
++}
++static void xc_init_leave(boolean_t irq) {
++ lck_spin_unlock(&xc_init_lock);(void)ml_set_interrupts_enabled(irq);
++}
++static void xc_init_tick(thread_call_param_t unused0,thread_call_param_t unused1) {
++ (void)unused0;(void)unused1;
++ struct xc_init_state copy;thread_t target=NULL,drop=NULL;unsigned tick=0,done;
++ boolean_t irq=xc_init_enter();done=xc_init.done;
++ if(!done && xc_init.ticks<XC_INIT_TICKS) {
++  tick=++xc_init.ticks;copy=xc_init;target=xc_init.target;
++  if(target)thread_reference(target);
++  if(tick==XC_INIT_TICKS){xc_init.done=2;drop=xc_init.target;xc_init.target=NULL;}
++ }
++ xc_init_leave(irq);
++ if(done){printf("XCOVER5 M65 END reason=%s\n",done==1?"observer_started":"limit");return;}
++ if(!tick)return;
++ uint64_t tid=0,wait=0,continuation=0;int state=0,result=0;
++ if(target) {
++  tid=thread_tid(target);
++  irq=ml_set_interrupts_enabled(FALSE);thread_lock(target);
++  state=target->state;wait=target->wait_event;result=target->wait_result;
++  continuation=(uintptr_t)target->continuation;
++  thread_unlock(target);(void)ml_set_interrupts_enabled(irq);
++  thread_deallocate_safe(target);
++ }
++ printf("XCOVER5 M65 INIT tick=%u gen=%llu tid=%llu svc=%llu last_trap=%d last_svc_pc=%llx\n",tick,copy.generation,tid,copy.svc,copy.trap,copy.svc_pc);
++ printf("M65 STATE present=%u bits=%x run=%u wait=%u suspend=%u terminate=%u event=%llx result=%d continuation=%llx\n",tid!=0,state,(state&TH_RUN)!=0,(state&TH_WAIT)!=0,(state&TH_SUSP)!=0,(state&TH_TERMINATE)!=0,wait,result,continuation);
++ printf("M65 USER_IRQ n=%llu tid=%llu at=%llx pc=%llx lr=%llx sp=%llx\n",copy.user.count,copy.user.tid,copy.user.at,copy.user.pc,copy.user.lr,copy.user.sp);
++ printf("M65 USER_ARGS x0=%llx x1=%llx x2=%llx x3=%llx\n",copy.user.args[0],copy.user.args[1],copy.user.args[2],copy.user.args[3]);
++ printf("M65 KERNEL_IRQ n=%llu tid=%llu at=%llx pc=%llx lr=%llx sp=%llx\n",copy.kernel.count,copy.kernel.tid,copy.kernel.at,copy.kernel.pc,copy.kernel.lr,copy.kernel.sp);
++ if(drop)thread_deallocate_safe(drop);
++ if(tick<XC_INIT_TICKS) {
++  uint64_t deadline;clock_interval_to_deadline(5,NSEC_PER_SEC,&deadline);
++  (void)thread_call_enter_delayed(xc_init_call,deadline);
++ } else printf("XCOVER5 M65 END reason=limit\n");
++}
++void xcover5_initdiag_init(void) {
++ xc_init_call=thread_call_allocate_with_priority(xc_init_tick,NULL,THREAD_CALL_PRIORITY_KERNEL);
++ printf("XCOVER5 M65 INIT_DIAG %s interval=5s limit=12; timer IRQ PCs and scheduler state only\n",xc_init_call?"ready":"unavailable");
++}
++void xcover5_initdiag_svc(arm_saved_state_t *regs) {
++ if(!regs || !is_saved_state64(regs) || !xc_init_call)return;
++ thread_t thread=current_thread();proc_t p=(proc_t)get_bsdthreadtask_info(thread);
++ if(!p || proc_getuid(p)!=0)return;
++ int pid=proc_getpid(p);
++ if(pid!=1 && !(proc_ppid(p)==1 && !strcmp(p->p_comm,"m39-probe")))return;
++ if(pid==1 && strcmp(p->p_comm,"launchd.ios") && strcmp(p->p_comm,"launchd"))return;
++ unsigned arm=0;thread_t drop=NULL;boolean_t irq=xc_init_enter();
++ if(!xc_init.done) {
++  if(pid!=1){xc_init.done=1;drop=xc_init.target;xc_init.target=NULL;}
++  else {
++   if(xc_init.target!=thread) {
++    thread_reference(thread);drop=xc_init.target;xc_init.target=thread;
++    xc_init.generation++;memset(&xc_init.user,0,sizeof(xc_init.user));memset(&xc_init.kernel,0,sizeof(xc_init.kernel));
++   }
++   xc_init.svc++;xc_init.trap=get_saved_state_svc_number(regs);xc_init.svc_pc=get_saved_state_pc(regs);
++   if(!xc_init.armed){xc_init.armed=1;arm=1;}
++  }
++ }
++ xc_init_leave(irq);
++ if(drop)thread_deallocate_safe(drop);
++ if(arm){uint64_t deadline;clock_interval_to_deadline(5,NSEC_PER_SEC,&deadline);(void)thread_call_enter_delayed(xc_init_call,deadline);}
++}
++void xcover5_initdiag_irq(arm_saved_state_t *regs) {
++ if(!regs || !is_saved_state64(regs))return;
++ /* No credentials, references, allocation, scheduling or printing in IRQ. */
++ thread_t thread=current_thread();boolean_t irq=xc_init_enter();
++ if(!xc_init.done && xc_init.target==thread) {
++  struct xc_init_irq *sample=PSR64_IS_USER64(get_saved_state_cpsr(regs))?&xc_init.user:&xc_init.kernel;
++  sample->count++;sample->tid=thread_tid(thread);sample->at=mach_absolute_time();
++  sample->pc=get_saved_state_pc(regs);sample->lr=get_saved_state_lr(regs);sample->sp=get_saved_state_sp(regs);
++  for(unsigned i=0;i<4;i++)sample->args[i]=get_saved_state_reg(regs,i);
++ }
++ xc_init_leave(irq);
++}
++#endif
