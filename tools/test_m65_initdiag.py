@@ -97,6 +97,7 @@ static int diag_printf(const char*fmt,...){assert(!in_irq&&!spin&&!threadlocked&
 test = r'''
 int main(void){
  arm_saved_state_t regs={.bits=64,.trap=73,.pc=0x1f932c2a4,.lr=0x1f92db0f8,.sp=0x160000000,.args={1,2,3,4,5,6}},before=regs;
+ actor=NULL;interrupts=0;in_irq=1;xcover5_initdiag_irq(&regs);assert(!spin&&!interrupts);actor=&first;interrupts=1;in_irq=0;
  xcover5_initdiag_init();assert(xc_init_call&&printed==1&&!scheduled);
  xcover5_initdiag_svc(NULL);regs.bits=32;xcover5_initdiag_svc(&regs);regs.bits=64;
  pid1.uid=501;xcover5_initdiag_svc(&regs);pid1.uid=0;pid1.p_comm="other";xcover5_initdiag_svc(&regs);pid1.p_comm="launchd";

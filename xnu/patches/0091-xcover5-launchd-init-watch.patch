@@ -130,7 +130,7 @@
 + if(arm){uint64_t deadline;clock_interval_to_deadline(5,NSEC_PER_SEC,&deadline);(void)thread_call_enter_delayed(xc_init_call,deadline);}
 +}
 +void xcover5_initdiag_irq(arm_saved_state_t *regs) {
-+ if(!regs || !is_saved_state64(regs))return;
++ if(!regs || !is_saved_state64(regs) || !xc_init_call)return;
 + /* No credentials, references, allocation, scheduling or printing in IRQ. */
 + thread_t thread=current_thread();boolean_t irq=xc_init_enter();
 + if(!xc_init.done && xc_init.target==thread) {
