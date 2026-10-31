@@ -1,0 +1,19 @@
+{
+  "repository": "https://github.com/oosexgang/hackios-xnu-kernel",
+  "commit": "a3384e031eb1e605cf37adaefc19991f04f6274b",
+  "source": "xnu/files/iokit/Kernel/MiniAppleKeyStore.cpp",
+  "sha256": "e8e9efcd8db6027d88eefdb88b9fb9270a71798429c6008695568f9d23722bc5",
+  "license": "APSL-2.0; LICENSE retained",
+  "adopted": [
+    "AppleKeyStore class/name attached to IOResources; AppleKeyStoreUserClient name",
+    "base notification interest support; user-client notification-port release",
+    "fixed no-passcode volatile test profile and DER initial status/configuration fields",
+    "system handle/generation/UUID/first-unlock-notification query protocol"
+  ],
+  "adaptations": [
+    "bounded arguments, inline/OOL output validation, failed descriptor preparation/write handling",
+    "key wrapping/unwrapping, lock/unlock and persistent bag operations return Unsupported",
+    "task-based client initialization and bounded selector diagnostics"
+  ],
+  "hardware": "PENDING; exact M69 trap resolves to MKBEventsRegister.cold.2 after missing AppleKeyStore match"
+}
