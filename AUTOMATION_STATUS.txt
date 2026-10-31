@@ -1,3 +1,51 @@
+2026-10-31 M72 BROAD HACKIOS PORT + ORIGINAL FONTS/UI CACHE PACKAGED / HARDWARE PENDING
+
+Reference oosexgang/hackios-xnu-kernel a3384e031eb1e605cf37adaefc19991f04f6274b.
+Kernel source bc150b7fe275289ea9e741591f7138fa261e9982; CI41176612838 completed/success,
+all build and portable-test jobs completed/success.
+Native userspace1574d357062d6adf451100c5cf43279d656c68fa CI41175658002 success.
+Extended resource image2773dd23ff2b4eaeec7546a295fc5ebd047372a2 CI41177731583 success.
+
+New: IONetworkStack discovery, standard input queue with old/new ABI nodes,
+read-only APFS and RAMFS registration, upstream IOSurface bounds, demand-start
+configd/fontservicesd, local D22AP UI identity metadata (product-id20 bytes),
+256 original Fonts files +186 UI bundle files (403413560 bytes) on the existing
+read-only3GiB HFS cache format.89 root links retain original framework namespaces.
+M71's2692 framework Info.plists and M70 fixed-profile KeyStore events retained.
+M68 native framebuffer/actual copy-readback completion and M69 BRK evidence retained.
+
+All487 cache/ICU/new resource original file hashes and independent HFS extraction PASS.
+Font/UI442 files also matched independent7Zip extraction of the original APFS.
+Actual source-body driver/parser tests, strict patch/source identity, native codesign,
+old root file/owner/mode preservation, actual kernel segments/entry/root mapping,
+Samsung hardware DT data/stock DTB/shim/cmdline/RAM geometry, final C boot parser,
+full3GiB simg2img roundtrip, RAW/FILL-only coverage, LZ4 roundtrip, tar members/MD5 PASS.
+Apple original bytes remain local; new public code/CI inputs contain hashes and placeholders only.
+
+Local ../artifacts/m72-hackios-portable/AP_M72_HACKIOS_FONTS_ERASE_USERDATA_CACHE.tar.md5
+AP SHA256 4cc6e3364f2e2b2c605b7112a15592236d085393aa8d522a85b2c35d74001341
+AP bytes1785661520; members boot.img + userdata.img.lz4.
+Replaces boot + userdata cache; no PIT/other partition; no automatic flash performed.
+Boot SHA256 be12ba698eec6ecd7e4ac74353c93dbb48d71c444ddd0b523099778f92bf61de
+Boot42153984 bytes;44MiB headroom3983360 bytes.
+Kernel SHA256 41d2394ebef40f4ab17b78625ff5c1f78c1de8ba9b3999b04b85931b6ab3e598
+Root SHA256 3a821dc4b5f32e70f6185b12ac6f30d6e3bcc72fa69420a1da8fb0ffbd244ba4;24MiB; free786432 bytes before boot.
+Userdata SHA256 1430aa2fa44212869635b32682a332e81f06601f81a45ee1e9abe9301cc5f5a3;3GiB; free46956544 bytes.
+Installed M66 cache/ICU file contents remain identical inside the NEW M72 cache image.
+The boot-only archive requires this matched M72 cache; old M66 lacks fonts/UI pool.
+
+Hardware pending: M72 SERVICE found=1, IDENTITY product_node=1/model_product_id_bytes=20,
+M71 bundle observations, and actual M68 FRAME/native SpringBoard display.
+exit77 means observation ended only, not UI readiness. No lockscreen success claimed.
+GPU acceleration, physical Samsung input/network/audio/camera and the complete stock
+service/root graph are not established. APFS/RAMFS are registered, not mounted over
+this boot's HFS root/var. KeyStore remains a volatile no-passcode development profile,
+without SEP/persistent key bags/secure wrapping. Earlier intermittent boot stabilization
+was intentionally deferred at the user's request. Preexisting local change to
+ tools/sweet-bootstrap-exec.S was preserved and never staged.
+See HACKIOS_PORT_MATRIX.md for subsystem boundaries.
+
+Previous status follows:
 2026-10-31 M71 FRAMEWORK BUNDLE METADATA PACKAGED / HARDWARE PENDING
 
 M70 video141346 confirms AKS_OPEN, then new SpringBoard SIGSEGV PC1abe6a74c,

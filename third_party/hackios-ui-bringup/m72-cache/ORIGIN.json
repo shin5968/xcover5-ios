@@ -1,0 +1,13 @@
+{
+  "source": "local iPhone10,3 iOS16.5 20F66 original APFS volume",
+  "reference_commit": "a3384e031eb1e605cf37adaefc19991f04f6274b",
+  "files": 442,
+  "bytes": 403413560,
+  "fonts_directory_files": 256,
+  "ui_bundle_files": 186,
+  "root_links": 89,
+  "source_verification": "bounded kernel APFS reader and independent7Zip source extraction agreed",
+  "public_contents": "paths/sizes/SHA256 only; original bytes are injected locally",
+  "cache_format": "existing3GiB read-only case-sensitive HFS+ with unchanged43 cache and2 ICU file contents",
+  "runtime": "complete Fonts folder and selected UI resource links; original framework namespaces retained"
+}
