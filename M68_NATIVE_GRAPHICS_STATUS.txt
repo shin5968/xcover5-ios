@@ -3,7 +3,8 @@
 Kernel source a88b32c4ece4d993411c67a1b44a1bf85e3d3b11
 Kernel CI41165837463: completed/success; all jobs success.
 Package: AP_M68_NATIVE_GRAPHICS.tar.md5, boot.img only; verified locally.
-Hardware: PENDING. Real lockscreen rendering is not yet established.
+Hardware video131327 reviewed: native mode/mobile client progress confirmed;
+SpringBoard SIGTRAP/restarts persist. Real lockscreen rendering not established.
 
 M67 video120051 confirms native backboardd PID10 Startup Complete. SpringBoard
 still SIGTRAPs: failed to find the main CADisplay, FBSDisplayMonitor.m:56.
@@ -53,3 +54,9 @@ PASS: actual final boot C parser, complete loaded MachO segments/entry vs CI
 kernel, byte-identical M67 root/shim/DTB/cmdline,255MiB RAM interval bounds,
 exact actual RAMDisk physical mapping/other ADT properties, deterministic
 boot-only tar metadata/member bytes and Odin MD5. Original bytes local only.
+
+HARDWARE FOLLOWUP video131327: mobile501 FB_OPEN pid27; primary CADisplay LCD
+tracked; main/framebuffer750x1624 scale2; backboardd PID10 Startup Complete.
+SpringBoard10 consecutive SIGTRAPs by200sec. Terminal PC/LR absent, exact cause
+unknown. Backboardd Wait0 receives NotReady; M69 adds idle-only compatibility and
+bounded terminal breakpoint evidence. See M69_UI_BREAKPOINT_STATUS.txt.

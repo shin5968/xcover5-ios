@@ -1,0 +1,51 @@
+2026-10-31 M69 UI BREAKPOINT EVIDENCE / IDLE WAIT COMPATIBILITY
+
+Source593d1ef699c976f6ec568c6c8371c118abc1db6c; kernel CI41168707875 completed/success.
+All nonempty CI jobs succeeded. Local boot-only Odin package verified.
+
+M68 video131327 (208.07sec, SHA
+02e79c0396c281d31de33d3b9d1bda3d8b107a8c0fa0aac8d24b01bab42bca80)
+shows M68 NATIVE_FB registration; native mobile501 MobileGestaltHelper FB_OPEN;
+IOMobileFramebufferCreateDisplayList FB Count1; backboardd tracking primary LCD;
+main750x1624 scale2 and Startup Complete. SpringBoard SIGTRAP/restarts persist,
+10 consecutive crashes by video200sec. No rendered lockscreen established.
+The old main CADisplay assertion is not visible in reviewed frames; that alone
+does not prove all native display setup succeeds. Current kernel does not log
+SpringBoard terminal breakpoint registers, so the precise trap cause is unknown.
+
+Backboardd selector6 request [0,0x80000003,0] receives NotReady. M69 accepts ID0
+only if no submission is pending, without completing a frame. Nonzero IDs still
+require successful panel completion; failed/pending submissions cannot become
+complete through ID0. Host tests cover both paths. HackiOS succeeds all waits;
+M69 adopts idle compatibility while retaining actual completion checks.
+This is not claimed as the SpringBoard crash fix.
+
+Existing iOS16.5 SwapWait body0x1af1c0648..0x1af1c06b7 was replayed with Unicorn
+using owned IOConnect/stack-guard replacements. Frame0/7 and success/NotReady
+four cases confirm selector6, three scalars, unchanged driver return value.
+112-byte code SHA5c15f0a648b01fc146c04100220d02d7dea5f8f55de8c0f8e72fd70beed77fd3.
+This is controlled CPU replay, not live iOS/panel execution or REA provider
+evidence. Connected Windows Ghidra provider does not admit ARM64 MachO analysis.
+Local script/report: ../research/m69-ui-breakpoint/replay_wait.py / wait-replay.json.
+
+New register-only terminal breakpoint logger: exact SpringBoard/backboardd
+names;4 events per name. PC/LR/SP/MAIN/cache slide/CPSR/FP/X0-X28; no user memory
+reads or changes to saved state/task. Original exception_triage flow retained.
+Host actual logger test with UBSAN proves filtering/cap/raw values and unchanged
+state/task. CI also checks actual applied header and retained exception flow.
+
+Native graphics retained from M68; M67 root reused byte-for-byte; installed M66
+ICU cache required. Apple program/resource bytes remain local, signatures kept.
+No device flash. Capture M69 WAIT_IDLE / BRK and following register lines.
+Hardware test and rendered lockscreen status remain PENDING.
+
+Local AP ../artifacts/m69-ui-breakpoint/AP_M69_UI_BREAKPOINT.tar.md5
+Kernel SHA a32cc6e2fab93c8c89ec4c0ed376b9b5893406491ea2ae689e1b7aad1fc7fcaa
+Root SHA 26271bf468d7cd0c0714aaed2a51d01755059769f5f1caec6f5b5b8e8e34f555
+Boot SHA 33771c1d4429a8afa439d0af739103326e349fa63b261599d2792c09f8d63287
+AP SHA 6981211d779eb2be6cd93a5d1c1bd9903205fffb462007dde342dfa635fe269b
+AP42025019 bytes; boot42020864 bytes;44MiB partition headroom4116480 bytes.
+PASS: loaded CI MachO segments/entry, retained root/shim/DTB/cmdline/RAM,
+actual final boot C parser including negative cases, ADT actual root mapping
+at0xa21c8000 with all other properties exact M67, boot-only deterministic tar
+metadata/member bytes and Odin MD5. No device flash performed by agent.

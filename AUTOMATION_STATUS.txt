@@ -1,3 +1,25 @@
+2026-10-31 M69 IDLE DISPLAY WAIT / TERMINAL UI BREAKPOINT EVIDENCE PACKAGED
+
+M68 hardware video131327 confirms native mobile501 framebuffer clients and
+main750x1624 scale2 display; backboardd Startup Complete. SpringBoard still
+SIGTRAPs/restarts,10 consecutive crashes by200sec. Exact trap location unknown.
+M69 accepts Wait0 only with no pending submission, with actual frame completion
+checks retained. Logs first4 terminal SpringBoard/backboardd breakpoints per
+name: PC/LR/SP/MAIN/cache slide/registers; normal exception triage retained.
+Source593d1ef699c976f6ec568c6c8371c118abc1db6c; CI41168707875 completed/success.
+Host actual logger/native service UBSAN tests, full CI and local final boot
+C-parser/kernel/root/ADT/RAM/Odin checks PASS. Hardware test remains PENDING.
+Local ../artifacts/m69-ui-breakpoint/AP_M69_UI_BREAKPOINT.tar.md5
+AP SHA6981211d779eb2be6cd93a5d1c1bd9903205fffb462007dde342dfa635fe269b
+AP42025019 bytes; boot42020864 bytes;44MiB headroom4116480 bytes.
+Verified M67 userspace/root retained byte-for-byte; installed M66 ICU cache
+required. Boot only, no userdata replacement. No device flash by agent.
+No actual lockscreen rendering proven. Next capture: M69 WAIT_IDLE / BRK and
+following PC/LR/MAIN/CACHE_SLIDE lines, plus any preceding assertion.
+Details M69_UI_BREAKPOINT_STATUS.txt and local video/hardware-review evidence.
+
+PREVIOUS STATUS RECORD
+
 2026-10-31 M68 NATIVE HACKIOS GRAPHICS PACKAGED / HARDWARE PENDING
 
 Kernel source a88b32c4ece4d993411c67a1b44a1bf85e3d3b11; CI41165837463 completed/success.
