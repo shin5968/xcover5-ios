@@ -1,0 +1,25 @@
+{
+  "recorded_build": "M73",
+  "video": "20261031_163546[1].mp4",
+  "video_sha256": "4899a046b8ddceb6e48737a778f530ef7dc9e4356bf288af9ce5dde392371092",
+  "video_bytes": 1341757336,
+  "duration_seconds": 336.72,
+  "observed": [
+    "Around140s, all three restored CoreDuet model resources stat successfully with expected sizes27596/54163/109104.",
+    "Frame152 shows M73 COREDUET bundle=1 model_url=1; this establishes native bundle resource lookup, not complete CoreData startup.",
+    "Frames152/156 show chronod seekAndWrite/unixWrite on /private/var/mobile/Library/chronod/chrono.sql returning28 No space left on device, followed by SQLite extended error13 database or disk is full.",
+    "Frame156 shows M63 SPACE elapsed=0 statfs=0 total=6144 free=61 available=0 block=4096 on root, a24MiB filesystem with no ordinary-user available space.",
+    "SpringBoard PID6 reports unable to open /private/var/mobile/Library/FrontBoard/applicationState.db-journal, SQLite extended error14 and missing application_identifier_tab after failed schema creation.",
+    "Subsequent M73 DISPLAY observations show frames=1 layers=0 rgb=0 empty=1 black=1 rejected=0 last=0 presented=0 restored=1 capture=1. A successful empty black submission was followed by actual console recovery.",
+    "SpringBoard PID6 and other services continue to log after restoration. lsd and analyticsd repeatedly SIGSEGV through the end of the video; this is not a global kernel stop."
+  ],
+  "root_inventory_check": "FrontBoard already exists as mobile501:501 mode0700, and /private/var/db/lsd already exists501:501 mode0755. No missing-directory-only fix is justified by this evidence.",
+  "interpretation": "The current24MiB writable boot root is also carrying runtime databases. Its available space is exhausted; separate writable var is the next confirmed bottleneck to repair.",
+  "unknown": [
+    "Exact lsd/analyticsd crash causes; their SIGSEGV is not proved to be solely caused by ENOSPC",
+    "Whether fixing var space is sufficient for first nonempty SpringBoard output",
+    "Actual rendered iOS lockscreen and physical Samsung input"
+  ],
+  "m74_change": "Before Apple launchd, mount the already registered bounded RAMFS on /private/var; restore133 original fresh-var metadata/seed records, redirect/tmp there, require native mobile1MiB write/readback success, then exec original launchd. Existing M72 userdata/cache unchanged.",
+  "m74_hardware": "PENDING; native mount, copy, mobile probe and UI behavior require device validation. No device flashing performed by this agent."
+}

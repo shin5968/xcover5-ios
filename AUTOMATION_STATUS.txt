@@ -1,3 +1,57 @@
+2026-10-31 M74 PRE-LAUNCHD RAMFS VAR PACKAGED / HARDWARE PENDING
+
+M73 video20261031_163546[1].mp4 SHA256
+4899a046b8ddceb6e48737a778f530ef7dc9e4356bf288af9ce5dde392371092
+confirms model resources and native COREDUET bundle=1/model_url=1, plus actual
+console recovery: frames1/layers0/rgb0/empty1/black1/restored1/rejected0.
+The native frame is empty, not a rendered lockscreen. Kernel/services continue logging.
+
+Next confirmed blocker: chronod reports ENOSPC28 and SQLite disk-full13 writing
+chrono.sql; SpringBoard cannot open applicationState.db-journal and create schema.
+Root24MiB statfs at observerelapsed0: total6144/free61/available0/block4096.
+FrontBoard folder already501:501/0700; no missing-directory-only fix is indicated.
+lsd/analyticsd SIGSEGV still needs its own attribution; ENOSPC is not asserted as
+the sole cause. See M74_M73_VIDEO_REVIEW.json for evidence and limitations.
+
+M74 retains the M73 kernel2bb7fa3df09ca3048312939950a2865b1895a920,
+kernelCI41180264668 all jobs success; no kernel change needed.
+Owned userspace3df37b86b6fbc1fc7504eb1747ef7dc6343aacd0,
+nativeCI41182354779 completed/success, all jobs success.
+The static init assembly changes only its final PID1 destination to owned prep.
+Prep uses HackiOS init.c's mount("ramfs","/private/var",0,NULL) policy, restores
+the existing133 fresh-var records with exact uid/gid/modes/seeds/links, then
+requires actual1MiB mobile write/readback before execing original launchd. On
+failure PID1 logs and stops handoff. No manufactured boot/UI success.
+Kernel RAMFS file-data quota32MiB; metadata additional. Var resets every boot.
+/tmp targets private/var/tmp; M72 read-only cache and userdata are unchanged.
+
+Actual prep body tests: normal/short I/O/mount failure/low space/traversal/
+duplicate/blank/NUL/truncation/missing file/symlink-parent failure paths PASS.
+All133 final CI seed records also restored by the actual C body on a real host
+filesystem, checking path/type/uid/gid/file bytes/links and file/directory modes.
+Host mount/space are shims, not native RAMFS; Linux symlink modes differ from
+native0755 and are explicitly outside that host permission comparison.
+Native helper/observer codesign/platform2/CD pages, rebuilt static init identity,
+raw HFS seed/old metadata comparisons, independent extraction of15 owned files,
+unchanged original Apple bytes/libraries, entire payload outside root, actual
+kernel segments/entry/root mapping, final C parser and Odin tar/member/MD5 PASS.
+Apple original bytes remain local; public CI uses hashes/placeholders only.
+
+Local ../artifacts/m74-writable-var/AP_M74_WRITABLE_VAR_REQUIRES_M72_CACHE.tar.md5
+AP bytes42158157 SHA256373df723d8c3683e859d1cbeab1b24710190e2137a0085668dbbaf1c7f677c3e
+Boot bytes42153984 SHA256b4489472b5cb63558af9db540fa6a25f737382d99b59e5d670b60a9487b82f5a
+Root SHA25611532fe253427f80baefedba5049c356dd5c3f0ef855db2dbd7748c69902cf55
+Root24MiB/free495616bytes before boot; runtime var moves to separate RAMFS.
+Kernel SHA256471d73a0601e3cc47c81f934e66723354e85af91de640a7bb5b6b021852564c7
+Boot44MiB headroom3983360bytes; RAM255MiB preserved. Member boot.img only.
+No flash writes or automatic flashing. Keep existing M72 font/UI cache installed.
+
+Native mount/copy/MOBILE_IO status0, actual DB creation, lsd behavior and first
+nonempty framebuffer submission all need hardware validation. Actual lockscreen
+rendering remains unestablished. Physical Samsung input remains unimplemented.
+Preexisting tools/sweet-bootstrap-exec.S change was preserved and not staged.
+
+Previous status follows:
 2026-10-31 M73 DISPLAY OBSERVATION / CONSOLE RECOVERY / CURRENT COREDUET MODEL PACKAGED
 
 M72 recording20261031_160134[1].mp4 SHA256
