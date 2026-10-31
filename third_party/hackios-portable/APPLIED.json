@@ -7,7 +7,7 @@
   "bsd/miscfs/apfs/apfs_store.c": "7cae718e6254ca5156df29ea8e297bc4a98e47e227ec68b7b27d37843137805b",
   "bsd/miscfs/apfs/apfs_store.h": "1deb82b95d6c0ef594c027878ba1a8974506a9ef8101c8dee200c8af238e80fc",
   "bsd/miscfs/apfs/apfs_vfsops.c": "731e33b4d7046f74d6bfa16e2b32b073690c5021c2004e04b72689a618477e63",
-  "bsd/miscfs/apfs/apfs_vnops.c": "382c7ea0b8838e09f15176a9c8c3bb6437498261685c3b35b0919cf3b95b1dc9",
+  "bsd/miscfs/apfs/apfs_vnops.c": "f3dcd203e6aa63b4d5f760f18a477ea22a6f9489e99db022a5a26ef15418a8ef",
   "bsd/miscfs/apfs/apfs_write.c": "71ab8382668b4172dd16e8cf4acaab5e58558c33c6dc142871824c7cc97a5260",
   "bsd/miscfs/apfs/apfs_write.h": "f05ceef111a380b17e8ee23033aacfe8d3d6f9d1857fa91e3b035b7bd9696d70",
   "bsd/miscfs/apfs/apfs_zbitmap.c": "a35fb93f094d4fcc1c5966aff1e7d5c9e87250480835660098e03762736679c8",

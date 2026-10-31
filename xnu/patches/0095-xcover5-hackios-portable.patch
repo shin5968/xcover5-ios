@@ -385,26 +385,6 @@
  
  	rm->rm_hash = kalloc_type(struct ramfs_node *, RAMFS_HASH_SIZE, Z_WAITOK | Z_ZERO | Z_NOFAIL);
  	rm->rm_root = ramfs_node_alloc(rm, VDIR, NULL);
---- a/bsd/miscfs/apfs/apfs_vnops.c
-+++ b/bsd/miscfs/apfs/apfs_vnops.c
-@@ -27,7 +27,16 @@
- /* How much is read out of a file at a time when copying into a uio. */
- 
- extern integer_t thread_kern_get_pri(thread_t thr);    /* the thread's base priority */
--extern void thread_runnable_and_run_self(uint64_t *runnable, uint64_t *run);
-+#include <kern/thread.h>
-+#include <kern/recount.h>
-+#include <machine/machine_routines.h>
-+static void thread_runnable_and_run_self(uint64_t *runnable, uint64_t *run)
-+{
-+ thread_t th=current_thread();boolean_t old=ml_set_interrupts_enabled(FALSE);
-+ uint64_t now=mach_absolute_time();
-+ *runnable=th->runnable_timer.all_bits+(now-th->runnable_timer.tstamp);
-+ *run=recount_current_thread_time_mach();ml_set_interrupts_enabled(old);
-+}
- 
- /* The statistics of the calling process (with the lock held) */
- static struct apfs_lock_proc *
 --- /dev/null
 +++ b/bsd/dev/xcover_filesystems.c
 @@ -0,0 +1,23 @@
@@ -477,3 +457,32 @@
  endif
  
  #
+--- a/osfmk/kern/thread.c
++++ b/osfmk/kern/thread.c
+@@ -3065,6 +3065,26 @@ thread_get_tag(thread_t th)
+ 	return thread_get_tag_internal(th);
+ }
+ 
++/*
++ * For apfs's lock statistics (bsd/miscfs/apfs/apfs_vnops.c): how long the current thread has
++ * been runnable (running included) and how long it has run, in mach_absolute_time() units.
++ * Taken before and after a wait for a lock, the two tell the wait apart: blocked, queued for
++ * a processor, or spinning on one.
++ */
++void thread_runnable_and_run_self(uint64_t *runnable, uint64_t *run);
++
++void
++thread_runnable_and_run_self(uint64_t *runnable, uint64_t *run)
++{
++	thread_t thread = current_thread();
++	boolean_t istate = ml_set_interrupts_enabled(FALSE);
++	uint64_t now = mach_absolute_time();
++
++	*runnable = thread->runnable_timer.all_bits + (now - thread->runnable_timer.tstamp);
++	*run = recount_current_thread_time_mach();
++	ml_set_interrupts_enabled(istate);
++}
++
+ uint64_t
+ thread_last_run_time(thread_t th)
+ {
