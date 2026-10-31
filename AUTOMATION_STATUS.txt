@@ -1,3 +1,22 @@
+2026-10-31 M68 NATIVE HACKIOS GRAPHICS PACKAGED / HARDWARE PENDING
+
+Kernel source a88b32c4ece4d993411c67a1b44a1bf85e3d3b11; CI41165837463 completed/success.
+Native UI task clients, framebuffer modes/current/default-surface queries,
+750x1624 fbscale2 geometry, timer vsync notifications and IOSurface dispatch
+matched to HackiOS with bounded synchronous Samsung panel copy/readback.
+Verified M67 root retained byte-for-byte. Existing M66 ICU userdata required.
+Final boot42004480 bytes, partition headroom4132864; AP42014781 bytes, boot only.
+AP SHA448d9646efe94dddb118164c7ee96df63e895752b52b1d92c84fc7cf4aa258b4.
+Local ../artifacts/m68-native-graphics/AP_M68_NATIVE_GRAPHICS.tar.md5.
+Host actual service/ABI tests with UBSAN, all CI checks, final boot C parser,
+loaded kernel/entry, root, ADT mapping, tar member and MD5 checks PASS.
+ADT RAMDisk placement moves16KiB with kernel growth; all other properties match.
+Hardware remains PENDING: main CADisplay assertion and actual rendered lockscreen
+must be checked on device. No device flash performed by agent.
+Details M68_NATIVE_GRAPHICS_STATUS.txt and third_party/hackios-framebuffer/M68_ORIGIN.json.
+
+PREVIOUS STATUS RECORD
+
 2026-10-31 M67 HARDWARE: BACKBOARDD STARTUP COMPLETE / SPRINGBOARD MAIN CADISPLAY FAILURE
 
 Video120051 proves the BackBoard config restoration advances PID10 to Startup

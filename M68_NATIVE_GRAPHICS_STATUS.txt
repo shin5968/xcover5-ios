@@ -1,0 +1,55 @@
+2026-10-31 M68 NATIVE HACKIOS GRAPHICS COMPATIBILITY
+
+Kernel source a88b32c4ece4d993411c67a1b44a1bf85e3d3b11
+Kernel CI41165837463: completed/success; all jobs success.
+Package: AP_M68_NATIVE_GRAPHICS.tar.md5, boot.img only; verified locally.
+Hardware: PENDING. Real lockscreen rendering is not yet established.
+
+M67 video120051 confirms native backboardd PID10 Startup Complete. SpringBoard
+still SIGTRAPs: failed to find the main CADisplay, FBSDisplayMonitor.m:56.
+M68 targets the confirmed native framebuffer admission/mode/query gaps.
+
+Matched to HackiOS a3384e031eb1e605cf37adaefc19991f04f6274b:
+- IOMobileFramebuffer / IOMobileFramebufferUserClient; task-based UI clients
+- TimingElements / ColorElements, mode IDs1/1, logical750x1624 fbscale2, DPI305
+- Default IOSurface port, swap1132-byte/four-layer request ABI, current-mode query
+- Timer60Hz vsync callback/refcon notification layout and zero feature replies
+- IOAcceleratorES discovery service without GPU plugin properties
+- Existing IOSurface ownership/attachment/purgeability/timestamp dispatch
+
+Samsung adaptations: bounded synchronous CPU composition and validated physical
+panel copy/readback at720x1480. Only a successful real copy completes a frame.
+Client close restores console. No upstream platform MMIO/GPU/recording buffers.
+Surface limits8MiB each/32MiB wired retained. Shared panel buffers8,524,800 bytes.
+Original selector90 diagnostic root/parent1/m39-probe caller check retained.
+
+Host checks: actual service and ABI bodies compiled against owned mocks with
+UBSAN; mobile501 admission/mode metadata/default-surface/feature replies;
+allocation-failure cleanup, invalid later-layer no partial panel overwrite,
+failed copy cannot complete, notification cancellation and console restoration.
+Strict applied-source/header identity and original diagnostic body checks pass.
+
+Verified M67 root reused byte-for-byte; userspace source39202f7cf526eec9ceedd76f76ce7084a6e32314,
+CI41162108737. Original Apple files remain local. No device flash by agent.
+Shim/DTB/cmdline/RAM unchanged. ADT properties match M67 except the validated
+RAMDisk physical address follows kernel growth from0xa21c0000 to0xa21c4000.
+Installed M66 ICU userdata cache required.
+Model/compatible identity and missing product DT node are not changed in M68.
+Native framebuffer changes display scale to2 on existing DT nodes at runtime.
+
+Next hardware evidence: M68 NATIVE_FB / FB_OPEN / selector logs, disappearance
+of main CADisplay assertion, M68 FRAME panel_readback=PASS and actual visible UI.
+Touch/backlight/product-identity and unrelated service diagnostics remain
+separate unresolved observations until hardware evidence identifies a blocker.
+
+See third_party/hackios-framebuffer/M68_ORIGIN.json and LICENSE for source origin.
+Local output: ../artifacts/m68-native-graphics/.
+Kernel SHA af896d41b4560c3fd67bcb9c68d862d6c3899c7ac8d38d612be0d9ba9030ebbb
+Root SHA 26271bf468d7cd0c0714aaed2a51d01755059769f5f1caec6f5b5b8e8e34f555
+Boot SHA b253982f35a70224230bf466fc0fcfdfae4f471a742c5d56d67299a8d73a9fe1
+AP SHA 448d9646efe94dddb118164c7ee96df63e895752b52b1d92c84fc7cf4aa258b4
+AP42014781 bytes; boot42004480 bytes;44MiB partition headroom4132864 bytes.
+PASS: actual final boot C parser, complete loaded MachO segments/entry vs CI
+kernel, byte-identical M67 root/shim/DTB/cmdline,255MiB RAM interval bounds,
+exact actual RAMDisk physical mapping/other ADT properties, deterministic
+boot-only tar metadata/member bytes and Odin MD5. Original bytes local only.

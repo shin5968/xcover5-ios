@@ -1,0 +1,22 @@
+{
+  "repository": "https://github.com/oosexgang/hackios-xnu-kernel",
+  "reviewed_commit": "a3384e031eb1e605cf37adaefc19991f04f6274b",
+  "source": "xnu/files/iokit/Kernel/MiniIOMobileFramebuffer.cpp",
+  "source_sha256": "3ef4cbd0f9d86937dde5be3b0676570dcef3c6ce3e101463d466205e52e555f3",
+  "license": "APSL-2.0; LICENSE retained in this directory",
+  "adapted": [
+    "Native framebuffer service and client names; task based initialization",
+    "TimingElements and ColorElements; modes1/1; fbscale2 logical750x1624",
+    "Default IOSurface port, swap1132-byte layout, current mode and DPI queries",
+    "Timer vsync notification layout and zero-filled feature replies",
+    "IOAcceleratorES discovery without graphics plugin properties",
+    "Existing IOSurface attachment and ownership method dispatch"
+  ],
+  "platform_adaptations": [
+    "Samsung panel copy/readback and bounded CPU composition",
+    "Completion only after successful presentation",
+    "Retained8MiB surface and32MiB wired budget",
+    "Console restoration on client close"
+  ],
+  "hardware_validation": "pending"
+}
