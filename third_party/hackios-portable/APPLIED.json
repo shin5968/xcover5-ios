@@ -30,5 +30,6 @@
   "bsd/miscfs/apfs/libdeflate/lib/arm/crc32_impl.h": "5a24f5087e665b30516f83c2e09a58ed01dab867895a6cefc2f1c833d12482d3",
   "bsd/miscfs/apfs/libdeflate/lib/arm/crc32_pmull_helpers.h": "e469001ad29607cab992ae29c9eaac331427d6b103d11d58d37158b3aa0be95c",
   "bsd/miscfs/apfs/libdeflate/lib/arm/crc32_pmull_wide.h": "c53a58d1e3dc5e75d23c1338fed6cc431ee6fbdfcd4ac94f576579258ac34a88",
-  "bsd/miscfs/apfs/libdeflate/lib/arm/matchfinder_impl.h": "11cd6a9c47d2dadf746f7a944c72c672b40bc83b2ffb43356e0b7ced6b6b8038"
+  "bsd/miscfs/apfs/libdeflate/lib/arm/matchfinder_impl.h": "11cd6a9c47d2dadf746f7a944c72c672b40bc83b2ffb43356e0b7ced6b6b8038",
+  "bsd/dev/xcover_filesystems.c": "9370f5d7c8007d189bbe92d91bbc74cd26451da28cb65075ab46e4a8563ff067"
 }

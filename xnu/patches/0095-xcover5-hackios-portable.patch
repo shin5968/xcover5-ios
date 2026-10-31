@@ -403,7 +403,7 @@
 + for(unsigned i=0;i<2;i++){
 +  struct vnodeopv_desc *list[]={(struct vnodeopv_desc *)descs[i]};
 +  struct vfs_fsentry entry={.vfe_vfsops=ops[i],.vfe_vopcnt=1,.vfe_opvdescs=list,
-+   .vfe_flags=VFS_TBLNOTYPENUM|VFS_TBL64BITREADY|
++   .vfe_flags=VFS_TBLNOTYPENUM|VFS_TBL64BITREADY|VFS_TBLLOCALVOL|VFS_TBLGENERICMNTARGS|
 +   VFS_TBLTHREADSAFE|VFS_TBLNATIVEXATTR|VFS_TBLREADDIR_EXTENDED|
 +   VFS_TBLVNOP_PAGEINV2|VFS_TBLVNOP_PAGEOUTV2};
 +  strlcpy(entry.vfe_fsname,names[i],sizeof(entry.vfe_fsname));
