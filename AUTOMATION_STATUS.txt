@@ -1,3 +1,25 @@
+2026-10-31 M63 camera093153: PRE-UI M20 MOUNT FAILURE / RESOURCE PROFILE NOT REACHED
+
+Video preserved locally ../artifacts/m63-resources/video-093153/source.mp4,
+264425083bytes/65.66sec, SHA256
+466eb827dda775b98b6f44c28b79768802bd423c742b90ebea89971ae2554f2b.
+Frame001 shows M62 HACKIOS_POLICIES registration and kernel eMMC GPT PASS.
+Frame009 shows md0/HFS root mount and diagnostic PID1 init startup.
+Frame012/exact065: M19 GPT/boot/16KiB repeat PASS; M20 USER FAIL stage00000015
+and errno00000002; M50B probe_started0 and repeated init:still alive to end.
+Source tools/sweet-init.S:495-510 identifies stage21 as read-only mount
+of /dev/xchfs at /emmc. errno2 is ENOENT; exact missing component not captured.
+On failure m20 returns0; line105 goes directly to tick before m28/m34/m35.
+The tick loop contains no mount retry or Apple launchd handoff. This is an
+intentional diagnostic wait after failure, not evidence of a kernel panic.
+No native UI jobs/M63 RESOURCE/SPACE observation reached in this boot.
+Restored UI resources neither passed nor failed here; no lockscreen shown.
+User previously deferred intermittent early boot stalls. Retain same M63 AP
+and obtain boot reaching native launchd/M63 observer before UI modifications.
+No claim of identical root cause to previous intermittent failures.
+No new image/build/code change or device flash in this media review.
+Local review.json/contact/exact frames and M20 failure crop preserved.
+
 2026-10-31 M63 LIFECYCLE RESOURCES/NATIVE VAR PACKAGED / HARDWARE PENDING
 
 M62 camera224701 missing FrontBoard LifecyclePolicy, installd/analyticsd home
