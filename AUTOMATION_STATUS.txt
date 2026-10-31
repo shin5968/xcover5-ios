@@ -1,3 +1,44 @@
+2026-10-31 M65 NATIVE PID1 IRQ/SCHEDULER WATCH PACKAGED / HARDWARE PENDING
+
+M64 camera100324 proved storage/cache/IPC and native PID1 load/earlycalls,
+but no observer/UI. Last syscall success and M50B three-tick stop do not
+localize current execution. M65 observes the latest root PID1 launchd thread
+seen in non-clock SVC entry; target TID/generation printed, not all threads.
+SWEET timer IRQ copies actual interrupted PC/LR/SP/args and raw time/count,
+separately user/kernel mode, only when current thread is tracked target.
+No credentials/refcalls/allocation/scheduling/console/user-memory access in
+IRQ; early IRQ returns before monitor initialization. IRQ masks restored.
+5second worker holds a thread reference and obtains locked state/wait/event/
+continuation through a small Mach-private OSFMK helper. BSD uses opaque
+handles/scalar wire flags, not private thread layout. Old/final refs released
+via deferred-safe API. No foreign saved-user-state access or syscall/register/
+scheduler/security-policy mutation. Bound12 ticks (~60sec plus scheduling/
+console overhead), early stop on root m39 observer. END reason=limit/observer.
+IRQ timestamps/counts may be stale; state snapshots are not a full stack trace.
+
+Source 52d128b4e251ada0b340e75f14c0fcc1073fff86; full kernelCI41156046841 all jobs SUCCESS.
+Exact applied source/hooks, actual combined BSD/Mach host body, IRQ masking,
+refbalance/replacement, mode separation, state locking, unchangedregs, observer
+stop/bounds/allocationfail and preinit-null-thread PASS. M50B regression PASS.
+Native compile/marker checks and final boot C parser/strategy/rejection tests
+PASS. Successful kernelSHA256 d5fab15762b575fc9792def0c480ef5e5d43708282941fbab354665fe6ba5e45.
+Entire verified M63/M64 userspace/root remains byte-identical; rootSHA256
+0d0c0b17cb755bdfd79461a058881bcfaf6a5994af456ed6db4a3ffe32b58f50. M64 boot-view16/24MiB correction retained.
+Independent loaded kernel bytes/VM sizes/entry, unchanged root/shim/DTB/cmdline,
+255MiB and ADT, boot.img-only tar/MD5 PASS. RAMDisk0xa21c0000..0xa39c0000.
+Boot41975808B/AP41984056B;44MiB headroom4161536B.
+AP ../artifacts/m65-init-watch/AP_M65_INIT_WATCH.tar.md5
+SHA256 ff9be48bce4202cae2f80224fbdcd9d62a16d86c815f3903a099da773b4e4048
+Local CIstatus/log/provenance/verifiers/README/SHA256SUMS preserved. No flash.
+Capture M65 INIT/STATE/USER_IRQ/USER_ARGS/KERNEL_IRQ through M65 END; if observer
+starts, retain subsequent native resource/UI/fatal evidence too. Real UI pending.
+
+Failed CIs NEVER packaged:41154465919/41154674710 strict patch context rejected;
+41154938618 caught integrated M62 build-list context;41155185113 native compile
+caught BSD access to Mach-private fields/missing task.h. Final splits the
+scheduler reads into OSFMK and verifies actual applied sources before compile.
+No failed-run artifacts used. Unrelated sweet-bootstrap-exec.S untouched.
+
 2026-10-31 M64 camera100324: BOOT-VIEW/MOUNT FIX HARDWARE PASS; NATIVE PID1 PRE-OBSERVER
 
 Video preserved ../artifacts/m64-root-view/video-100324/source.mp4,
