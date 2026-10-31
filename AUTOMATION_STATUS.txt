@@ -1,3 +1,26 @@
+2026-10-31 M70 APPLEKEYSTORE INITIAL SERVICE PACKAGED / HARDWARE PENDING
+
+M69 video134427 captures SpringBoard PC=LR0x1b47098c0, cache slide06364000.
+MobileKeyBag _MKBEventsRegister.cold.2 at0x1ae3a58c0 BRK1 follows a missing
+AppleKeyStore service match. Local symbols/instructions and controlled original
+code replay identify this precise branch. No rendered lockscreen established.
+M70 adopts HackiOS AppleKeyStore/AppleKeyStoreUserClient under IOResources,
+standard interest notifications, fixed no-passcode volatile initial queries.
+Key wrapping/lock/unlock/persistent bag operations unsupported. M69 graphics,
+idle waits and terminal breakpoint evidence retained. M67 root byte-identical.
+Source8d5143615fcff1007316f039d572cb2b09442d04; CI41170880207 completed/success.
+Host actual service tests with UBSAN, strict applied-source identity, all CI and
+final boot C-parser/kernel/root/ADT/RAM/Odin checks PASS. Hardware remains PENDING.
+Local ../artifacts/m70-keystore-events/AP_M70_KEYSTORE_EVENTS.tar.md5
+AP SHAed99d285629e12aea1c563661f20a9e03e1be91f9fac50854685576075a309ba
+AP42055741 bytes; boot42045440 bytes;44MiB headroom4091904 bytes.
+Boot only; installed M66 ICU cache required. No Apple byte upload or device flash.
+Next capture: M70 AKS_READY / AKS_OPEN, whether old MKB trap disappears, any new
+M69 BRK registers and actual M68 FRAME/visible UI. Full boot still unproven.
+Details M70_KEYSTORE_EVENTS_STATUS.txt and local M69 hardware-review/replay evidence.
+
+PREVIOUS STATUS RECORD
+
 2026-10-31 M69 IDLE DISPLAY WAIT / TERMINAL UI BREAKPOINT EVIDENCE PACKAGED
 
 M68 hardware video131327 confirms native mobile501 framebuffer clients and
