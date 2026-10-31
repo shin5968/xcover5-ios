@@ -1,3 +1,28 @@
+2026-10-31 M64 camera100324: BOOT-VIEW/MOUNT FIX HARDWARE PASS; NATIVE PID1 PRE-OBSERVER
+
+Video preserved ../artifacts/m64-root-view/video-100324/source.mp4,
+313103562bytes/77.86sec, SHA2564abe45a6460544fdd86a20578710a5ee799de6e20e9a1a577ec52f3d91ae77a4.
+Frame007/crops show xchfs size25165824 and M64BOOT_HFS marker; M20 actual
+read-only eMMC HFS mount/file proof PASS and M28 userdata cache proof PASS.
+Frame008: M34 cross-process Mach parent/child exit55 PASS; M35 RAMwrite,
+M59 console0666, Apple launchd handoff and native launchd.ios/dyld load/exec
+ret0 onPID1. Early native BSD calls recorded. M64 size regression resolved
+on hardware; do not return to M63 mount/reboot diagnosis for this video.
+
+M50B tick1/2/3 events296 probe_started0, same retained output to last frame.
+Last TID171 calls BSD73 munmap, Mach-10 allocate, Mach-14 protect all return0.
+Last sequence296 pc1f92d89c0 lr1f932fac0. No native fatal/panic recovered.
+Monitor prints only three5second ticks by design; stale last screen does
+not establish current PC, a particular failed call or permanent kernel halt.
+Native launchd main/job loading loop not established; no M63 RESOURCE/SPACE
+observer, SpringBoard/backboardd injection or actual UI frame shown here.
+Trust-cache warnings also precede successful M34 IPC; not proved causal.
+Next diagnostic target: native PID1 launchd/dyld initialization after last
+successful call, user PC/thread wait state before jobs/observer start.
+M63 resources/var/space runtime result remains unassessed. New local
+hardware-review.json/review/contact/crops preserved. No new code/image/flash
+in this media review; original M64 AP unchanged, UI/lockscreen pending.
+
 2026-10-31 M64 FIXED M63 24MiB BOOT-VIEW SIZE REGRESSION / PACKAGED / HARDWARE PENDING
 
 User reports repeated identical M63 boot failure. Corrected earlier advice to
