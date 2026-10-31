@@ -22,7 +22,12 @@ def prune(root):
     for path in jobs.glob('*.plist'):
         if path in deletions:continue
         job=plistlib.loads(path.read_bytes())
-        referenced=[job.get('Program','')]+job.get('ProgramArguments',[])
+        def strings(value):
+            if isinstance(value,str):return [value]
+            if isinstance(value,dict):return [s for v in value.values() for s in strings(v)]
+            if isinstance(value,list):return [s for v in value for s in strings(v)]
+            return []
+        referenced=strings(job.get('Program',''))+strings(job.get('ProgramArguments',[]))
         if set(referenced)&PROGRAMS:
             raise ValueError('retained job uses a proposed removal: '+path.name)
     for name in sorted(PROGRAMS):
