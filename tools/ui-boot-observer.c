@@ -8,6 +8,9 @@
 #if defined(M66_ICU_PROFILE)
 #include "m66-icu-probe.h"
 #endif
+#if defined(M72_PORTABLE_PROFILE)
+#include "m72-portable-probe.h"
+#endif
 #if defined(M71_BUNDLE_PROFILE)
 #include "m71-bundle-probe.h"
 #endif
@@ -39,6 +42,9 @@ int main(void){
 #endif
 #if defined(M71_BUNDLE_PROFILE)
  m71_bundle_probe();
+#endif
+#if defined(M72_PORTABLE_PROFILE)
+ m72_portable_probe();
 #endif
  const char *paths[]={"/usr/libexec/backboardd","/System/Library/CoreServices/SpringBoard.app/SpringBoard"};
  const off_t sizes[]={1182960,112048};

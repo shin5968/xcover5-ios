@@ -1,0 +1,158 @@
+{
+  "usr/libexec/configd": [
+    561312,
+    "f25e8bc506e1632e424062f23b32582c2b8ac12db4d39c34a0fb1c5de6f3081b"
+  ],
+  "System/Library/SystemConfiguration/CaptiveNetworkSupport.bundle/Info.plist": [
+    1108,
+    "747ccda51ab14f58aa23b12abfccc8765d04a14df0648bc3606c8835cdeb141c"
+  ],
+  "System/Library/SystemConfiguration/CaptiveNetworkSupport.bundle/Localizable.loctable": [
+    18249,
+    "50517fdfc47abe67843fc602cfe5e23133173ce1320f04b9ef1a61bda93ce904"
+  ],
+  "System/Library/SystemConfiguration/CaptiveNetworkSupport.bundle/Settings.plist": [
+    699,
+    "3249eaf174e4aa20d30ffa3208720efa1fe273ada6aa5cd8b5059f54fac32b45"
+  ],
+  "System/Library/SystemConfiguration/InterfaceNamer.bundle/Info.plist": [
+    833,
+    "f6f2907760e483c17f993d55e4c22bc50668402f5191964f4f6f8bed15f7153e"
+  ],
+  "System/Library/SystemConfiguration/IPConfiguration.bundle/Info.plist": [
+    2260,
+    "7a9426a2e2300f4e263b79ceedce61cc93e8208cc4ad178415ae125d5d6ba6c5"
+  ],
+  "System/Library/SystemConfiguration/IPConfiguration.bundle/IPConfiguration": [
+    537264,
+    "4ec5e91a9573074ed24a695c54757f3551fa090a10902fca4e9f2cd61c4f2896"
+  ],
+  "System/Library/SystemConfiguration/IPMonitor.bundle/Info.plist": [
+    1089,
+    "9d1fcfb7050bfda6af2b674db886eddf6b3190d27bf1e53a86f9588b2e45665b"
+  ],
+  "System/Library/SystemConfiguration/KernelEventMonitor.bundle/Info.plist": [
+    843,
+    "20052a7c714bec6d184641282f72d03485ae83627372f3a2b2f16e23f32c5be4"
+  ],
+  "System/Library/SystemConfiguration/LinkConfiguration.bundle/Info.plist": [
+    841,
+    "f591519f6847671f92e1120e6f0a7f0e79f6b70011e5d6067ac79bfd2a8bcb7e"
+  ],
+  "System/Library/SystemConfiguration/PreferencesMonitor.bundle/Info.plist": [
+    843,
+    "dbe74336a5cd50fb1d425e8cf51b80e2c6794da4b495bf271ecb884f90728a17"
+  ],
+  "System/Library/SystemConfiguration/QoSMarking.bundle/Info.plist": [
+    957,
+    "6fb6bb002b917a6ae0931c1f4287bb160c29101b5133077fe1e6d77c5a31c139"
+  ],
+  "System/Library/SystemConfiguration/QoSMarking.bundle/_CodeSignature/CodeDirectory": [
+    169,
+    "c3aa8bd8a8ca9652a2366ebdb6fe7bbe4732fb30d7f053d2d19121e8577950a1"
+  ],
+  "System/Library/SystemConfiguration/QoSMarking.bundle/_CodeSignature/CodeRequirements": [
+    12,
+    "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986"
+  ],
+  "System/Library/SystemConfiguration/QoSMarking.bundle/_CodeSignature/CodeRequirements-1": [
+    217,
+    "a30a70df50964d9959953196aadce1b8dd13ed8c0a32838065ada4e03d659277"
+  ],
+  "System/Library/SystemConfiguration/QoSMarking.bundle/_CodeSignature/CodeResources": [
+    1716,
+    "3de9ed42ab92f66b2c6033b59ccfa441b1d050c319daeeb557551b4da513147e"
+  ],
+  "System/Library/SystemConfiguration/PreferencesMonitor.bundle/_CodeSignature/CodeDirectory": [
+    177,
+    "b57bdb4fbee724fd893ac0034315bfbe748c64b159ba82cb996dffcad5ccfcf8"
+  ],
+  "System/Library/SystemConfiguration/PreferencesMonitor.bundle/_CodeSignature/CodeRequirements": [
+    12,
+    "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986"
+  ],
+  "System/Library/SystemConfiguration/PreferencesMonitor.bundle/_CodeSignature/CodeRequirements-1": [
+    225,
+    "0a49586a3c5d47c2be11aefea56800f91c72fba1c13d2b0446094e7d15457435"
+  ],
+  "System/Library/SystemConfiguration/PreferencesMonitor.bundle/_CodeSignature/CodeResources": [
+    1716,
+    "3de9ed42ab92f66b2c6033b59ccfa441b1d050c319daeeb557551b4da513147e"
+  ],
+  "System/Library/SystemConfiguration/LinkConfiguration.bundle/_CodeSignature/CodeDirectory": [
+    176,
+    "69321120e45c423afe965e5464a03219c0a05538a83ece5b961fc5be1b7e3ca0"
+  ],
+  "System/Library/SystemConfiguration/LinkConfiguration.bundle/_CodeSignature/CodeRequirements": [
+    12,
+    "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986"
+  ],
+  "System/Library/SystemConfiguration/LinkConfiguration.bundle/_CodeSignature/CodeRequirements-1": [
+    224,
+    "7b77e9e5605d09e75dd69d0d1ab28e47231db1b8293628e095649598bb66c215"
+  ],
+  "System/Library/SystemConfiguration/LinkConfiguration.bundle/_CodeSignature/CodeResources": [
+    1716,
+    "3de9ed42ab92f66b2c6033b59ccfa441b1d050c319daeeb557551b4da513147e"
+  ],
+  "System/Library/SystemConfiguration/KernelEventMonitor.bundle/_CodeSignature/CodeDirectory": [
+    177,
+    "00bb0ab1e35614b4e951cef08e2604893abea9a4a2cac94d1a6a3d21dfcdd33c"
+  ],
+  "System/Library/SystemConfiguration/KernelEventMonitor.bundle/_CodeSignature/CodeRequirements": [
+    12,
+    "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986"
+  ],
+  "System/Library/SystemConfiguration/KernelEventMonitor.bundle/_CodeSignature/CodeRequirements-1": [
+    225,
+    "65054744dbbe14fd4edab26d4ca9d410ea0fbbb1acdfe82658a1d8839cce6a7c"
+  ],
+  "System/Library/SystemConfiguration/KernelEventMonitor.bundle/_CodeSignature/CodeResources": [
+    1716,
+    "3de9ed42ab92f66b2c6033b59ccfa441b1d050c319daeeb557551b4da513147e"
+  ],
+  "System/Library/SystemConfiguration/IPMonitor.bundle/_CodeSignature/CodeDirectory": [
+    168,
+    "05a55f54342b39a4b93466c49b0e27e6b3decb43216756edeb8f75cb58e3e3a9"
+  ],
+  "System/Library/SystemConfiguration/IPMonitor.bundle/_CodeSignature/CodeRequirements": [
+    12,
+    "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986"
+  ],
+  "System/Library/SystemConfiguration/IPMonitor.bundle/_CodeSignature/CodeRequirements-1": [
+    216,
+    "8d01d6274112750009aa4763192b70c5ba1d4706fcd5ceb3e4e160118725b61d"
+  ],
+  "System/Library/SystemConfiguration/IPMonitor.bundle/_CodeSignature/CodeResources": [
+    1716,
+    "3de9ed42ab92f66b2c6033b59ccfa441b1d050c319daeeb557551b4da513147e"
+  ],
+  "System/Library/SystemConfiguration/IPConfiguration.bundle/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/SystemConfiguration/InterfaceNamer.bundle/_CodeSignature/CodeDirectory": [
+    173,
+    "18c2c517d8ac15ffe6891dfff51dccd3acd41d3ce3b4609ef6cab182d2ec3062"
+  ],
+  "System/Library/SystemConfiguration/InterfaceNamer.bundle/_CodeSignature/CodeRequirements": [
+    12,
+    "987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986"
+  ],
+  "System/Library/SystemConfiguration/InterfaceNamer.bundle/_CodeSignature/CodeRequirements-1": [
+    221,
+    "246f9e6a7bbdfb0f81375d9008dd07439d4a4f9c3929f6991e5423ec80633265"
+  ],
+  "System/Library/SystemConfiguration/InterfaceNamer.bundle/_CodeSignature/CodeResources": [
+    1716,
+    "3de9ed42ab92f66b2c6033b59ccfa441b1d050c319daeeb557551b4da513147e"
+  ],
+  "System/Library/SystemConfiguration/CaptiveNetworkSupport.bundle/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/FontServices.framework/Support/fontservicesd": [
+    150528,
+    "8b582e77ef5eda5198e67883b89fb2792bdf5f9784d1f805fcc9c4f6cab22bff"
+  ]
+}
