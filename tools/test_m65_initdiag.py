@@ -6,8 +6,15 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 patch = (ROOT / 'xnu/patches/0091-xcover5-launchd-init-watch.patch').read_text()
-source = ''.join(line[1:] for line in patch.split('+++ b/bsd/kern/xcover5_initdiag.c\n')[1].splitlines(True)
-                 if line.startswith('+'))
+def added_source(name):
+    section = patch.split('+++ b/' + name + '\n', 1)[1].split('\n--- ', 1)[0]
+    text = ''.join(line[1:] for line in section.splitlines(True) if line.startswith('+'))
+    return text if text.endswith('\n') else text + '\n'
+
+source = added_source('bsd/kern/xcover5_initdiag.c')
+mach_source = added_source('osfmk/kern/xcover5_initstate.c')
+assert 'target->' not in source, 'BSD code must use the Mach-private snapshot interface'
+assert '#include <kern/task.h>' in source
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('tree', nargs='?', type=Path)
 parser.add_argument('--source-only', action='store_true')
@@ -15,6 +22,7 @@ parser.add_argument('--kernels', type=Path)
 args = parser.parse_args()
 if args.tree and args.tree.is_dir():
     assert (args.tree / 'bsd/kern/xcover5_initdiag.c').read_text() == source
+    assert (args.tree / 'osfmk/kern/xcover5_initstate.c').read_text() == mach_source
     sleh = (args.tree / 'osfmk/arm64/sleh.c').read_text()
     assert sleh.count('xcover5_initdiag_svc(state);') == 1
     assert sleh.count('xcover5_initdiag_irq(state);') == 1
@@ -22,6 +30,7 @@ if args.tree and args.tree.is_dir():
     assert sleh.index('xcover5_initdiag_svc(state);') < sleh.index('if (trap_no == (int)PLATFORM_SYSCALL_TRAP_NO)')
     assert (args.tree / 'bsd/kern/bsd_init.c').read_text().count('xcover5_initdiag_init();') == 1
     assert (args.tree / 'bsd/conf/files').read_text().count('bsd/kern/xcover5_initdiag.c') == 1
+    assert (args.tree / 'osfmk/conf/files').read_text().count('osfmk/kern/xcover5_initstate.c') == 1
 elif args.tree:
     assert args.kernels, 'applied source missing without source-keyed kernel cache'
 if args.kernels:
@@ -33,6 +42,7 @@ if args.source_only:
     print('M65 applied implementation/SVC/timer IRQ/initialization hooks PASS before compilation')
     raise SystemExit(0)
 body = source[source.index('#define XC_INIT_TICKS'):source.rindex('#endif')]
+mach_body = mach_source[mach_source.index('void xcover5_initdiag_state(thread_t target'):mach_source.rindex('#endif')]
 irq_body = body[body.index('void xcover5_initdiag_irq(arm_saved_state_t *regs)'):]
 for forbidden in ('printf(', 'thread_reference(', 'thread_deallocate', 'proc_get', 'thread_call_'):
     assert forbidden not in irq_body, 'unsafe IRQ operation: ' + forbidden
@@ -122,7 +132,7 @@ int main(void){
 }
 '''
 with tempfile.TemporaryDirectory() as temporary:
-    d = Path(temporary);c = d / 'diag.c';c.write_text(prefix + body + test)
+    d = Path(temporary);c = d / 'diag.c';c.write_text(prefix + mach_body + body + test)
     subprocess.run(['cc', '-std=c11', '-O1', '-Wall', '-Wextra', '-Werror',
                     '-Wno-misleading-indentation', '-fsanitize=undefined', str(c), '-o', str(d / 'diag')], check=True)
     subprocess.run([str(d / 'diag')], check=True)

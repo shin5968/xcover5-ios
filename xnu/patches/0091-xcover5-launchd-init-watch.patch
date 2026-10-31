@@ -50,13 +50,14 @@
  OPTIONS/config_macf			optional config_macf
 --- /dev/null
 +++ b/bsd/kern/xcover5_initdiag.c
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,104 @@
 +/* M65: bounded PID1 scheduler/timer-IRQ observation. No user memory reads. */
 +#include <pexpert/arm64/board_config.h>
 +#if defined(XCOVER5)
 +#include <sys/proc_internal.h>
 +#include <sys/systm.h>
 +#include <kern/thread.h>
++#include <kern/task.h>
 +#include <kern/thread_call.h>
 +#include <kern/clock.h>
 +#include <kern/locks.h>
@@ -77,6 +78,7 @@
 +void xcover5_initdiag_init(void);
 +void xcover5_initdiag_svc(arm_saved_state_t *);
 +void xcover5_initdiag_irq(arm_saved_state_t *);
++void xcover5_initdiag_state(thread_t,int *,int *,uint64_t *,uint64_t *,unsigned *);
 +static boolean_t xc_init_enter(void) {
 + boolean_t irq=ml_set_interrupts_enabled(FALSE);
 + lck_spin_lock(&xc_init_lock);return irq;
@@ -96,17 +98,14 @@
 + xc_init_leave(irq);
 + if(done){printf("XCOVER5 M65 END reason=%s\n",done==1?"observer_started":"limit");return;}
 + if(!tick)return;
-+ uint64_t tid=0,wait=0,continuation=0;int state=0,result=0;
++ uint64_t tid=0,wait=0,continuation=0;int state=0,result=0;unsigned flags=0;
 + if(target) {
 +  tid=thread_tid(target);
-+  irq=ml_set_interrupts_enabled(FALSE);thread_lock(target);
-+  state=target->state;wait=target->wait_event;result=target->wait_result;
-+  continuation=(uintptr_t)target->continuation;
-+  thread_unlock(target);(void)ml_set_interrupts_enabled(irq);
++  xcover5_initdiag_state(target,&state,&result,&wait,&continuation,&flags);
 +  thread_deallocate_safe(target);
 + }
 + printf("XCOVER5 M65 INIT tick=%u gen=%llu tid=%llu svc=%llu last_trap=%d last_svc_pc=%llx\n",tick,copy.generation,tid,copy.svc,copy.trap,copy.svc_pc);
-+ printf("M65 STATE present=%u bits=%x run=%u wait=%u suspend=%u terminate=%u event=%llx result=%d continuation=%llx\n",tid!=0,state,(state&TH_RUN)!=0,(state&TH_WAIT)!=0,(state&TH_SUSP)!=0,(state&TH_TERMINATE)!=0,wait,result,continuation);
++ printf("M65 STATE present=%u bits=%x run=%u wait=%u suspend=%u terminate=%u event=%llx result=%d continuation=%llx\n",tid!=0,state,(flags&1U)!=0,(flags&2U)!=0,(flags&4U)!=0,(flags&8U)!=0,wait,result,continuation);
 + printf("M65 USER_IRQ n=%llu tid=%llu at=%llx pc=%llx lr=%llx sp=%llx\n",copy.user.count,copy.user.tid,copy.user.at,copy.user.pc,copy.user.lr,copy.user.sp);
 + printf("M65 USER_ARGS x0=%llx x1=%llx x2=%llx x3=%llx\n",copy.user.args[0],copy.user.args[1],copy.user.args[2],copy.user.args[3]);
 + printf("M65 KERNEL_IRQ n=%llu tid=%llu at=%llx pc=%llx lr=%llx sp=%llx\n",copy.kernel.count,copy.kernel.tid,copy.kernel.at,copy.kernel.pc,copy.kernel.lr,copy.kernel.sp);
@@ -154,5 +153,33 @@
 +  for(unsigned i=0;i<4;i++)sample->args[i]=get_saved_state_reg(regs,i);
 + }
 + xc_init_leave(irq);
++}
++#endif
+--- a/osfmk/conf/files
++++ b/osfmk/conf/files
+@@ -184,6 +184,7 @@
+ osfmk/kern/thread.c			standard
+ osfmk/kern/thread_act.c		standard
+ osfmk/kern/thread_call.c	standard
++osfmk/kern/xcover5_initstate.c	standard
+ osfmk/kern/thread_group.c	standard
+ osfmk/kern/thread_policy.c	standard
+ osfmk/kern/timer.c			standard
+--- /dev/null
++++ b/osfmk/kern/xcover5_initstate.c
+@@ -0,0 +1,15 @@
++/* M65 Mach-private scheduler snapshot for the BSD observation worker. */
++#include <pexpert/arm64/board_config.h>
++#if defined(XCOVER5)
++#include <kern/thread.h>
++#include <arm/machine_routines.h>
++void xcover5_initdiag_state(thread_t,int *,int *,uint64_t *,uint64_t *,unsigned *);
++void xcover5_initdiag_state(thread_t target,int *state,int *result,uint64_t *wait,uint64_t *continuation,unsigned *flags) {
++ boolean_t irq=ml_set_interrupts_enabled(FALSE);thread_lock(target);
++ *state=target->state;*wait=target->wait_event;*result=target->wait_result;
++ *continuation=(uintptr_t)target->continuation;
++ /* Local wire flags: RUN, WAIT, SUSPEND, TERMINATE; BSD sees no Mach internals. */
++ *flags=((*state&TH_RUN)?1U:0U)|((*state&TH_WAIT)?2U:0U)|((*state&TH_SUSP)?4U:0U)|((*state&TH_TERMINATE)?8U:0U);
++ thread_unlock(target);(void)ml_set_interrupts_enabled(irq);
 +}
 +#endif
