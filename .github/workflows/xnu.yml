@@ -29,6 +29,8 @@ on:
       - "xnu/patches/**"
       - "tools/framebuffer/native_*"
       - "tools/test_m68_graphics.py"
+      - "tools/test_m69_breakpoint.py"
+      - "tools/ui-breakpoint-evidence.h"
       - "tools/mkhfsroot.sh"
       - "tools/mkinit.py"
       - "tools/sweet-init.S"
@@ -124,6 +126,7 @@ jobs:
           python3 tools/test_m58_execdiag.py
           python3 tools/test_m65_initdiag.py
           python3 tools/test_m68_graphics.py
+          python3 tools/test_m69_breakpoint.py
 
       - name: Fetch build script
         run: |
@@ -141,7 +144,7 @@ jobs:
           p=Path('dxb/build.sh');s=p.read_text()
           anchor='        done\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()'
           assert s.count(anchor)==1,'pinned patch-phase boundary changed'
-          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m56_ui_platform.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m57_chrono.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m58_execdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m61_ui_lookup.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m62_kernel.py" "${WORK_DIR}/xnu"\n        python3 "${WORK_DIR}/../tools/test_m65_initdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m68_graphics.py" "${WORK_DIR}/xnu" --source-only\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
+          s=s.replace(anchor,'        done\n        python3 "${WORK_DIR}/../tools/test_m50b_bootdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m56_ui_platform.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m57_chrono.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m58_execdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m61_ui_lookup.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m62_kernel.py" "${WORK_DIR}/xnu"\n        python3 "${WORK_DIR}/../tools/test_m65_initdiag.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m68_graphics.py" "${WORK_DIR}/xnu" --source-only\n        python3 "${WORK_DIR}/../tools/test_m69_breakpoint.py" "${WORK_DIR}/xnu" --source-only\n        cd "${WORK_DIR}"\n    fi\n}\n\nbuild_bootstrap_cmds()')
           p.write_text(s)
           PY
 

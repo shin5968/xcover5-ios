@@ -114,6 +114,9 @@ int main(){
  a.scalarOutputCount=1;assert(!call(c,28,a)&&output[0]==305);
  assert(!call(c,7,a)&&output[0]==1);assert(!call(c,77,a)&&output[0]==mach_absolute_time());
  a.scalarOutputCount=0;assert(call(c,8,a)==kIOReturnBadArgument);assert(!call(c,95,a)&&!presenting);
+ // BackBoard's bootstrap Wait(0,0x80000003,0) succeeds without presenting a frame.
+ a.scalarInputCount=3;input[0]=0;input[1]=0x80000003;input[2]=0;
+ assert(!call(c,6,a)&&!presenting&&begins==0);a.scalarInputCount=0;
  a.scalarOutputCount=1;output[0]=~0ULL;assert(!call(c,25,a)&&output[0]==0);assert(!call(c,3,a)&&output[0]>100);unsigned sid=(unsigned)output[0]-100;
  auto*s=surfaces[sid];assert(s&&s->info.width==750&&s->info.height==1624);
  for(uint32_t y=0;y<1624;y++){auto*row=(uint32_t*)(s->kpixels+y*s->info.bytesPerRow);for(uint32_t x=0;x<750;x++)row[x]=0xff000000U|(y<<12)|x;}
@@ -123,7 +126,8 @@ int main(){
  assert(!call(c,4,a));uint32_t id=(uint32_t)output[0];assert(id);
  uint8_t swap[0x46c]={0};auto put=[&](unsigned off,uint32_t value){memcpy(swap+off,&value,4);};
  put(0x50,id);put(0x54,sid);put(0x6c,750);put(0x70,1624);put(0xcc,750);put(0xd0,1624);put(0x104,1);
- a.scalarOutputCount=0;a.scalarInputCount=1;input[0]=id;assert(call(c,6,a)==kIOReturnNotReady);
+ a.scalarOutputCount=0;a.scalarInputCount=1;input[0]=0;assert(call(c,6,a)==kIOReturnNotReady);
+ input[0]=id;assert(call(c,6,a)==kIOReturnNotReady);
  a.scalarInputCount=0;a.structureInput=swap;a.structureInputSize=sizeof(swap);
  alloc_fail_at=alloc_calls+2;assert(call(c,5,a)==kIOReturnNoMemory&&!presenting&&live_allocations==0);alloc_fail_at=0;
  put(0x6c,751);assert(call(c,5,a)==kIOReturnBadArgument&&!presenting);put(0x6c,750);
@@ -135,7 +139,8 @@ int main(){
  // Completion does not advance when the actual panel update fails.
  a.scalarInputCount=0;a.scalarOutputCount=1;assert(!call(c,4,a));id=(uint32_t)output[0];put(0x50,id);
  a.scalarOutputCount=0;a.structureInput=swap;a.structureInputSize=sizeof(swap);fail_update=true;assert(call(c,5,a)==kIOReturnError);fail_update=false;
- a.structureInput=nullptr;a.structureInputSize=0;a.scalarInputCount=1;input[0]=id;assert(call(c,6,a)==kIOReturnNotReady);
+ a.structureInput=nullptr;a.structureInputSize=0;a.scalarInputCount=1;input[0]=0;assert(call(c,6,a)==kIOReturnNotReady);
+ input[0]=id;assert(call(c,6,a)==kIOReturnNotReady);
  a.scalarInputCount=0;a.structureInput=swap;a.structureInputSize=sizeof(swap);assert(!call(c,5,a)&&updates==1);
  // A malformed later layer may not partially overwrite the panel.
  a.structureInput=nullptr;a.structureInputSize=0;a.scalarOutputCount=1;assert(!call(c,4,a));put(0x50,(uint32_t)output[0]);

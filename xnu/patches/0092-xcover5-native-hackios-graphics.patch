@@ -99,7 +99,7 @@
 +#endif
 --- /dev/null
 +++ b/iokit/Kernel/arm/XCoverNativeFramebuffer.h
-@@ -0,0 +1,244 @@
+@@ -0,0 +1,249 @@
 +/* HackiOS iOS16.5 framebuffer protocol adapted to the validated XCover5 copy path.
 + * Original modes/selector/notification layouts: oosexgang/hackios-xnu-kernel
 + * a3384e031eb1e605cf37adaefc19991f04f6274b, MiniIOMobileFramebuffer.cpp (APSL2.0).
@@ -305,7 +305,12 @@
 +   }
 +   case 6: {
 +    if(a->scalarInputCount<1)return kIOReturnBadArgument;
-+    IOLockLock(fLock);bool done=in[0]&&in[0]==fCompleted;IOLockUnlock(fLock);return done?kIOReturnSuccess:kIOReturnNotReady;
++    IOLockLock(fLock);bool idle=in[0]==0&&fPending==0;
++    bool done=in[0]&&in[0]==fCompleted;IOLockUnlock(fLock);
++    /* Native BackBoard calls SwapWait(0,flags) before any SwapBegin. An idle
++     * query completes no frame; a failed or pending real submission still waits. */
++    if(idle){static unsigned idle_logs;if(__sync_fetch_and_add(&idle_logs,1)<3)IOLog("XCOVER5 M69 WAIT_IDLE pid=%d; no pending submission\n",proc_selfpid());}
++    return idle||done?kIOReturnSuccess:kIOReturnNotReady;
 +   }
 +   case 52:case 81:
 +    IOLockLock(fLock);fPending=0;IOLockUnlock(fLock);return kIOReturnSuccess;
