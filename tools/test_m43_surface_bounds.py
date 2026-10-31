@@ -11,7 +11,11 @@ if len(sys.argv)>1:
  c=(t/'iokit/Kernel/arm/MiniIOSurface.cpp').read_text()
  assert 'loader_log_line(' not in c and 'gSurfaceClearing' not in c
  assert 'if (!xcSurfaceValidateProps(props)) return NULL;' in c
- assert 'if (proc_getuid(current_proc_EXTERNAL()) != 0) return false;' in c
+ if 'XCoverNativeFramebuffer.h' in c:
+  assert 'same task-based user client as HackiOS' in c
+  assert 'if (proc_getuid(current_proc_EXTERNAL()) != 0) return false;' not in c
+ else:
+  assert 'if (proc_getuid(current_proc_EXTERNAL()) != 0) return false;' in c
  assert 'if (fRefCount >= 64) return NULL;' in c
  assert 'gSurfaceWired += bytes;' in c and 'gSurfaceWired-=bytes;' in c
  assert 's->memory = surfaceMemory(' in c

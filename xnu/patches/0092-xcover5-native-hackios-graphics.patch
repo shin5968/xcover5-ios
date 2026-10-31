@@ -1,0 +1,347 @@
+--- a/iokit/Kernel/arm/MiniIOSurface.cpp
++++ b/iokit/Kernel/arm/MiniIOSurface.cpp
+@@ -880,7 +880,7 @@
+ bool
+ IOSurfaceRootUserClient::initWithTask(task_t owningTask, void * securityID, UInt32 type, OSDictionary * properties)
+ {
+-	if (proc_getuid(current_proc_EXTERNAL()) != 0) return false; /* root-only bring-up, no Sandbox bypass */
++	/* M68: same task-based user client as HackiOS; normal mobile UI needs IOSurface. */
+ 	if (!IOUserClient::initWithTask(owningTask, securityID, type, properties)) {
+ 		return false;
+ 	}
+@@ -1543,6 +1543,9 @@
+     /* M45 diagnostic ABI90, deliberately separate from Apple's framebuffer ABI.
+      * A prior lookup on THIS connection is required; no arbitrary global ID access. */
+     if (selector == 90) {
++        proc_t diagnostic=current_proc_EXTERNAL();char diagnostic_name[32];bzero(diagnostic_name,sizeof(diagnostic_name));
++        proc_name(proc_pid(diagnostic),diagnostic_name,sizeof(diagnostic_name));
++        if(proc_getuid(diagnostic)!=0||proc_ppid(diagnostic)!=1||strcmp(diagnostic_name,"m39-probe"))return kIOReturnNotPrivileged;
+         proc_t caller = current_proc_EXTERNAL();
+         char name[32]; bzero(name, sizeof(name)); proc_name(proc_pid(caller), name, sizeof(name));
+         if (proc_getuid(caller) != 0 || proc_ppid(caller) != 1 ||
+@@ -1583,9 +1586,7 @@
+         IOLog("XCOVER5 M45 SUBMIT_PASS seq=%llu hash=%llx restored=0 source=user_IOSurface\n",sequence,hash);
+         return kIOReturnSuccess;
+     }
+-    if (selector != kSurfaceMethodCreate && selector != kSurfaceMethodLookup &&
+-        selector != kSurfaceMethodInit && selector != kSurfaceMethodLookupFromPort &&
+-        selector != kSurfaceMethodCreatePort) return kIOReturnUnsupported;
++    /* M68: expose the existing upstream attachment/purgeability/ownership methods. */
+ 
+ 	const uint8_t * in = (const uint8_t *) args->structureInput;
+ 	size_t inSize = args->structureInputSize;
+@@ -1948,19 +1949,19 @@
+   gExpectedPanelUnique && gExpectedPanelUnique==proc_uniqueid(p);IOLockUnlock(gSurfaceLock);return expected;
+ }
+ 
+-class IOMobileFramebuffer : public IOService {
+- OSDeclareDefaultStructors(IOMobileFramebuffer);
++class XCoverDiagnosticFramebuffer : public IOService {
++ OSDeclareDefaultStructors(XCoverDiagnosticFramebuffer);
+ public:
+  bool start(IOService *provider) APPLE_KEXT_OVERRIDE {
+   if(!IOService::start(provider))return false;
+-  setProperty(kIOUserClientClassKey,"IOMobileFramebufferUserClient");
+-  setName("disp0");registerService();
++  setProperty(kIOUserClientClassKey,"XCoverDiagnosticFramebufferUserClient");
++  setName("xc-diag0");registerService();
+   IOLog("XCOVER5 M46 FB SERVICE registered standard selectors4/5/6/8\n");return true;
+  }
+ };
+-OSDefineMetaClassAndStructors(IOMobileFramebuffer,IOService);
+-class IOMobileFramebufferUserClient : public IOUserClient {
+- OSDeclareDefaultStructors(IOMobileFramebufferUserClient);
++OSDefineMetaClassAndStructors(XCoverDiagnosticFramebuffer,IOService);
++class XCoverDiagnosticFramebufferUserClient : public IOUserClient {
++ OSDeclareDefaultStructors(XCoverDiagnosticFramebufferUserClient);
+  IOLock *fLock;uint32_t fIssued,fCompleted,fOwner;XCPersistentPanel fPersistent;
+ public:
+  bool initWithTask(task_t task,void *security,UInt32 type,OSDictionary *properties) APPLE_KEXT_OVERRIDE {
+@@ -2092,9 +2093,11 @@
+   IOLockUnlock(fLock);return result;
+  }
+ };
+-OSDefineMetaClassAndStructors(IOMobileFramebufferUserClient,IOUserClient);
++OSDefineMetaClassAndStructors(XCoverDiagnosticFramebufferUserClient,IOUserClient);
++#include "XCoverNativeFramebuffer.h"
+ void XCoverFramebufferStart(IOService *provider){
+- IOMobileFramebuffer *fb=OSTypeAlloc(IOMobileFramebuffer);
++ XCoverNativeFramebufferStart(provider);
++ XCoverDiagnosticFramebuffer *fb=OSTypeAlloc(XCoverDiagnosticFramebuffer);
+  if(fb && fb->init() && fb->attach(provider)){if(!fb->start(provider))fb->detach(provider);}
+  OSSafeReleaseNULL(fb);
+ }
+--- /dev/null
++++ b/iokit/Kernel/arm/XCoverNativeFBABI.h
+@@ -0,0 +1,33 @@
++/* M68: HackiOS swap layout and fbscale=2 geometry; Samsung panel backend. */
++#ifndef XC68_NATIVE_ABI_H
++#define XC68_NATIVE_ABI_H
++#define XC68_WIDTH 750U
++#define XC68_HEIGHT 1624U
++#define XC68_PANEL_W 720U
++#define XC68_PANEL_H 1480U
++#define XC68_PANEL_BYTES (XC68_PANEL_W*XC68_PANEL_H*4U)
++static uint32_t xc68word(const uint8_t *p,unsigned off){uint32_t v;memcpy(&v,p+off,4);return v;}
++static bool xc68_layer(uint32_t *panel,const uint8_t *pixels,uint64_t alloc,
++ uint32_t width,uint32_t height,uint32_t stride,const uint8_t *src,const uint8_t *dst) {
++ int64_t sx=(int32_t)xc68word(src,0),sy=(int32_t)xc68word(src,4);
++ int64_t sw=(int32_t)xc68word(src,8),sh=(int32_t)xc68word(src,12);
++ int64_t dx=(int32_t)xc68word(dst,0),dy=(int32_t)xc68word(dst,4);
++ int64_t dw=(int32_t)xc68word(dst,8),dh=(int32_t)xc68word(dst,12);
++ if(!panel||!pixels||!width||!height||width>2048||height>2048||stride<(uint64_t)width*4||
++    stride>8192||(stride&3)||alloc<(uint64_t)stride*height||alloc>(8ULL<<20)||
++    sx<0||sy<0||sw<=0||sh<=0||sx>=width||sy>=height||sw>width-sx||sh>height-sy||dw<=0||dh<=0)return false;
++ /* Same destination-to-panel mapping as HackiOS drawLayer(fb_filter=0).
++  * All coordinate arithmetic stays64-bit until clipped to the actual panel. */
++ int64_t x0=dx*XC68_PANEL_W/XC68_WIDTH,y0=dy*XC68_PANEL_H/XC68_HEIGHT;
++ int64_t x1=(dx+dw)*XC68_PANEL_W/XC68_WIDTH,y1=(dy+dh)*XC68_PANEL_H/XC68_HEIGHT;
++ if(x1<=x0||y1<=y0)return true;
++ int64_t left=x0<0?0:x0,right=x1>XC68_PANEL_W?XC68_PANEL_W:x1;
++ int64_t top=y0<0?0:y0,bottom=y1>XC68_PANEL_H?XC68_PANEL_H:y1;
++ for(int64_t y=top;y<bottom;y++) {
++  int64_t source_y=sy+(y-y0)*sh/(y1-y0);
++  const uint32_t *row=(const uint32_t *)(pixels+source_y*stride);
++  for(int64_t x=left;x<right;x++)panel[y*XC68_PANEL_W+x]=row[sx+(x-x0)*sw/(x1-x0)];
++ }
++ return true;
++}
++#endif
+--- /dev/null
++++ b/iokit/Kernel/arm/XCoverNativeFramebuffer.h
+@@ -0,0 +1,235 @@
++/* HackiOS iOS16.5 framebuffer protocol adapted to the validated XCover5 copy path.
++ * Original modes/selector/notification layouts: oosexgang/hackios-xnu-kernel
++ * a3384e031eb1e605cf37adaefc19991f04f6274b, MiniIOMobileFramebuffer.cpp (APSL2.0).
++ * Synchronous CPU presentation; completion is recorded only after panel readback.
++ */
++#ifndef XC68_NATIVE_SERVICE_H
++#define XC68_NATIVE_SERVICE_H
++#ifndef XC68_HOST_TEST
++#include <IOKit/IODeviceTreeSupport.h>
++#include <kern/clock.h>
++#endif
++#include "XCoverNativeFBABI.h"
++static void xc68number(OSDictionary *d,const char *key,uint32_t value) {
++ OSNumber *n=OSNumber::withNumber(value,32);if(n){d->setObject(key,n);n->release();}
++}
++class IOMobileFramebuffer:public IOService {
++ OSDeclareDefaultStructors(IOMobileFramebuffer);
++ IOLock *fLock;MiniIOSurface *fDefaultSurface;
++ uint32_t *fCanvas,*fSaved;IOUserClient *fPresenter;bool fPresented;
++ uint32_t fSwapID,fFrames,fTrace[128];
++public:
++ void publishModes(void) {
++  OSDictionary *timing=OSDictionary::withCapacity(8),*horizontal=OSDictionary::withCapacity(4);
++  OSDictionary *vertical=OSDictionary::withCapacity(4),*color=OSDictionary::withCapacity(8);
++  OSArray *timings=OSArray::withCapacity(1),*colors=OSArray::withCapacity(1);
++  if(timing&&horizontal&&vertical&&color&&timings&&colors) {
++   xc68number(color,"ID",1);xc68number(color,"PixelEncoding",0);xc68number(color,"Depth",8);
++   xc68number(color,"Colorimetry",1);xc68number(color,"EOTF",1);xc68number(color,"DynamicRange",0);xc68number(color,"Score",1);
++   color->setObject("IsVirtual",kOSBooleanFalse);colors->setObject(color);
++   xc68number(horizontal,"Active",XC68_WIDTH);xc68number(horizontal,"Total",XC68_WIDTH);
++   xc68number(horizontal,"SyncRate",60U<<16);xc68number(horizontal,"PreciseSyncRate",60U<<16);
++   xc68number(vertical,"Active",XC68_HEIGHT);xc68number(vertical,"Total",XC68_HEIGHT);
++   xc68number(vertical,"SyncRate",60U<<16);xc68number(vertical,"PreciseSyncRate",60U<<16);
++   xc68number(timing,"ID",1);xc68number(timing,"Score",1);
++   timing->setObject("IsVirtual",kOSBooleanFalse);timing->setObject("IsOverscanned",kOSBooleanFalse);
++   timing->setObject("HorizontalAttributes",horizontal);timing->setObject("VerticalAttributes",vertical);
++   timing->setObject("ColorModes",colors);timings->setObject(timing);
++   setProperty("TimingElements",timings);setProperty("ColorElements",colors);
++  }
++  OSSafeReleaseNULL(timings);OSSafeReleaseNULL(colors);OSSafeReleaseNULL(timing);
++  OSSafeReleaseNULL(horizontal);OSSafeReleaseNULL(vertical);OSSafeReleaseNULL(color);
++ }
++ bool start(IOService *provider) APPLE_KEXT_OVERRIDE {
++  fLock=NULL;fDefaultSurface=NULL;fCanvas=fSaved=NULL;fPresenter=NULL;fPresented=false;
++  fSwapID=fFrames=0;bzero(fTrace,sizeof(fTrace));
++  if(!IOService::start(provider))return false;
++  fLock=IOLockAlloc();if(!fLock)return false;
++  publishModes();
++  if(!getProperty("TimingElements")||!getProperty("ColorElements"))return false;
++  const char *paths[]={"/chosen","/product"},*keys[]={"display-scale","artwork-scale-factor"};
++  for(unsigned i=0;i<2;i++) {
++   IORegistryEntry *node=IORegistryEntry::fromPath(paths[i],gIODTPlane);
++   if(node){uint32_t scale=2;node->setProperty(keys[i],&scale,sizeof(scale));node->release();}
++  }
++  setProperty(kIOUserClientClassKey,"IOMobileFramebufferUserClient");setName("disp0");registerService();
++  IOLog("XCOVER5 M68 NATIVE_FB logical=%ux%u panel=720x1480 modes=1/1 scale=2; HackiOS protocol CPU backend\n",XC68_WIDTH,XC68_HEIGHT);
++  return true;
++ }
++ void trace(uint32_t selector,IOExternalMethodArguments *a) {
++  if(selector<128&&__sync_fetch_and_add(&fTrace[selector],1)<3)
++   IOLog("XCOVER5 M68 FB pid=%d selector=%u in=%u out=%u struct=%u/%u\n",proc_selfpid(),selector,a->scalarInputCount,a->scalarOutputCount,a->structureInputSize,a->structureOutputSize);
++ }
++ uint32_t nextID(void){IOLockLock(fLock);if(!++fSwapID)++fSwapID;uint32_t id=fSwapID;IOLockUnlock(fLock);return id;}
++ mach_port_name_t defaultPort(task_t task) {
++  IOLockLock(fLock);
++  if(!fDefaultSurface)fDefaultSurface=MiniIOSurfaceCreateSimple(XC68_WIDTH,XC68_HEIGHT,'BGRA');
++  mach_port_name_t port=fDefaultSurface?MiniIOSurfaceMakeSendRight(task,fDefaultSurface):0;
++  IOLockUnlock(fLock);return port;
++ }
++ IOReturn present(IOUserClient *client,const uint8_t *swap,size_t size) {
++  if(!swap||size<0x46c)return kIOReturnBadArgument;
++  IOLockLock(fLock);MiniIOSurface *layers[4]={NULL,NULL,NULL,NULL};IOReturn result=kIOReturnBadArgument;
++  uint32_t enabled=0;bool valid=true;
++  if(!fCanvas)fCanvas=(uint32_t *)IOMalloc(XC68_PANEL_BYTES);
++  if(!fSaved)fSaved=(uint32_t *)IOMalloc(XC68_PANEL_BYTES);
++  if(!fCanvas||!fSaved){result=kIOReturnNoMemory;valid=false;}
++  if(valid) {
++   /* A zero layer ID clears that layer, as in HackiOS. Layer0 is the composed
++    * software frame; additional layers use the same source/destination ABI. */
++   bzero(fCanvas,XC68_PANEL_BYTES);
++   for(unsigned i=0;i<4&&valid;i++) {
++    uint32_t sid=xc68word(swap,0x54+4*i);if(!sid)continue;
++    layers[i]=MiniIOSurfaceCopy(sid);MiniIOSurface *s=layers[i];
++    valid=s&&s->kpixels&&!s->client&&s->info.pixelFormat=='BGRA'&&s->info.bytesPerElement==4&&s->info.planeCount==0;
++    if(valid)valid=xc68_layer(fCanvas,s->kpixels,s->info.allocSize,s->info.width,s->info.height,s->info.bytesPerRow,swap+0x64+16*i,swap+0xc4+16*i);
++    if(valid)enabled|=1U<<i;
++   }
++   if(valid) {
++    int rc=fPresented?xcover5_full_present_update(fCanvas):xcover5_full_present_begin(fCanvas,fSaved);
++    result=rc?kIOReturnError:kIOReturnSuccess;
++    if(!rc){fPresented=true;fPresenter=client;fFrames++;
++     if(fFrames<=8||fFrames%60==0)IOLog("XCOVER5 M68 FRAME id=%u layers=%x shown=%u panel_readback=PASS\n",xc68word(swap,0x50),enabled,fFrames);
++    }
++   }
++  }
++  for(unsigned i=0;i<4;i++)if(layers[i])MiniIOSurfaceDrop(layers[i]);
++  IOLockUnlock(fLock);return result;
++ }
++ void clientGone(IOUserClient *client) {
++  IOLockLock(fLock);
++  if(fPresented&&fPresenter==client) {
++   int rc=xcover5_full_present_end(fSaved);
++   IOLog("XCOVER5 M68 RESTORE client_closed rc=%d\n",rc);
++   if(!rc){fPresented=false;fPresenter=NULL;}
++  }
++  IOLockUnlock(fLock);
++ }
++ void free(void) APPLE_KEXT_OVERRIDE {
++  if(fLock){IOLockLock(fLock);if(fPresented)(void)xcover5_full_present_end(fSaved);IOLockUnlock(fLock);IOLockFree(fLock);}
++  if(fDefaultSurface)MiniIOSurfaceDrop(fDefaultSurface);
++  if(fCanvas)IOFree(fCanvas,XC68_PANEL_BYTES);if(fSaved)IOFree(fSaved,XC68_PANEL_BYTES);
++  IOService::free();
++ }
++};
++OSDefineMetaClassAndStructors(IOMobileFramebuffer,IOService);
++class IOMobileFramebufferUserClient:public IOUserClient {
++ OSDeclareDefaultStructors(IOMobileFramebufferUserClient);
++ IOMobileFramebuffer *fOwner;task_t fTask;IOLock *fLock;
++ thread_call_t fVSyncCall;uint64_t fVSyncTime,fVSyncCount;
++ mach_port_t fPorts[8];io_user_reference_t fCallbacks[8],fRefcons[8];
++ bool fClosed,fVSyncRunning;uint32_t fPending,fCompleted;
++ static void fired(thread_call_param_t self,thread_call_param_t){((IOMobileFramebufferUserClient *)self)->vsync();}
++ void armVSync(void) {
++  uint64_t period,now=mach_absolute_time();nanoseconds_to_absolutetime(NSEC_PER_SEC/60,&period);
++  fVSyncTime+=period;if(fVSyncTime<=now||fVSyncTime>now+2*period)fVSyncTime=now+period;
++  thread_call_enter_delayed(fVSyncCall,fVSyncTime);
++ }
++ void vsync(void) {
++  OSAsyncReference64 ref;io_user_reference_t args[6];bool send=false;
++  IOLockLock(fLock);uint64_t now=fVSyncTime;
++  if(fClosed||!fCallbacks[5]||!fPorts[5])fVSyncRunning=false;
++  else {
++   ++fVSyncCount;setAsyncReference64(ref,fPorts[5],fCallbacks[5],fRefcons[5],fTask);
++   args[0]=(uint32_t)now;args[1]=now>>32;args[2]=(uint32_t)now;args[3]=now>>32;
++   args[4]=(uint32_t)fVSyncCount;args[5]=fVSyncCount>>32;send=true;armVSync();
++  }
++  IOLockUnlock(fLock);if(send)sendAsyncResult64WithOptions(ref,kIOReturnSuccess,args,6,kIOUserNotifyOptionCanDrop);
++ }
++public:
++ bool initWithTask(task_t task,void *security,UInt32 type,OSDictionary *properties) APPLE_KEXT_OVERRIDE {
++  fOwner=NULL;fTask=task;fLock=NULL;fVSyncCall=NULL;fClosed=fVSyncRunning=false;
++  fVSyncTime=fVSyncCount=0;fPending=fCompleted=0;
++  bzero(fPorts,sizeof(fPorts));bzero(fCallbacks,sizeof(fCallbacks));bzero(fRefcons,sizeof(fRefcons));
++  return IOUserClient::initWithTask(task,security,type,properties);
++ }
++ bool start(IOService *provider) APPLE_KEXT_OVERRIDE {
++  fOwner=OSDynamicCast(IOMobileFramebuffer,provider);
++  if(!fOwner||!IOUserClient::start(provider)){fOwner=NULL;return false;}
++  fOwner->retain();fLock=IOLockAlloc();fVSyncCall=thread_call_allocate(&IOMobileFramebufferUserClient::fired,this);
++  IOLog("XCOVER5 M68 FB_OPEN pid=%d uid=%u\n",proc_selfpid(),proc_getuid(current_proc_EXTERNAL()));
++  return fLock&&fVSyncCall;
++ }
++ IOReturn registerNotificationPort(mach_port_t port,UInt32 type,io_user_reference_t) APPLE_KEXT_OVERRIDE {
++  if(type>=8)return kIOReturnBadArgument;IOLockLock(fLock);mach_port_t old=fPorts[type];fPorts[type]=port;IOLockUnlock(fLock);
++  if(old)releaseNotificationPort(old);return kIOReturnSuccess;
++ }
++ IOReturn clientClose(void) APPLE_KEXT_OVERRIDE {
++  if(fLock){IOLockLock(fLock);fClosed=true;IOLockUnlock(fLock);}
++  if(fVSyncCall)thread_call_cancel_wait(fVSyncCall);
++  if(fOwner)fOwner->clientGone(this);
++  if(!isInactive())terminate();return kIOReturnSuccess;
++ }
++ void free(void) APPLE_KEXT_OVERRIDE {
++  if(fLock){IOLockLock(fLock);fClosed=true;IOLockUnlock(fLock);}
++  if(fVSyncCall){thread_call_cancel_wait(fVSyncCall);thread_call_free(fVSyncCall);fVSyncCall=NULL;}
++  if(fOwner)fOwner->clientGone(this);
++  for(unsigned i=0;i<8;i++)if(fPorts[i])releaseNotificationPort(fPorts[i]);
++  if(fLock)IOLockFree(fLock);OSSafeReleaseNULL(fOwner);IOUserClient::free();
++ }
++ IOReturn externalMethod(uint32_t selector,IOExternalMethodArguments *a,IOExternalMethodDispatch *,OSObject *,void *) APPLE_KEXT_OVERRIDE {
++  if(!a||!fOwner||!fLock||fClosed)return kIOReturnNotOpen;
++  if((a->scalarInputCount&&!a->scalarInput)||(a->scalarOutputCount&&!a->scalarOutput)||
++     a->structureInputDescriptor||a->structureOutputDescriptor||a->scalarInputCount>16||a->scalarOutputCount>16||
++     a->structureInputSize>65536||a->structureOutputSize>65536||
++     (a->structureOutputSize&&!a->structureOutput))return kIOReturnBadArgument;
++  fOwner->trace(selector,a);const uint64_t *in=a->scalarInput;uint64_t *out=a->scalarOutput;
++  switch(selector) {
++   case 7:case 8:case 28:case 77:
++    if(a->scalarOutputCount<(selector==8?2U:1U))return kIOReturnBadArgument;
++    out[0]=selector==8?XC68_WIDTH:selector==28?458U*XC68_WIDTH/1125U:selector==77?mach_absolute_time():1;
++    if(selector==8)out[1]=XC68_HEIGHT;a->scalarOutputCount=selector==8?2:1;return kIOReturnSuccess;
++   case 3:
++    if(a->scalarOutputCount<1)return kIOReturnBadArgument;out[0]=fOwner->defaultPort(fTask);a->scalarOutputCount=1;
++    return out[0]?kIOReturnSuccess:kIOReturnNoMemory;
++   case 4:
++    if(a->scalarOutputCount<1)return kIOReturnBadArgument;IOLockLock(fLock);
++    fPending=fOwner->nextID();out[0]=fPending;IOLockUnlock(fLock);a->scalarOutputCount=1;return kIOReturnSuccess;
++   case 5: {
++    if(!a->structureInput||a->structureInputSize<0x46c)return kIOReturnBadArgument;
++    IOLockLock(fLock);uint32_t id=xc68word((const uint8_t *)a->structureInput,0x50);IOReturn result=kIOReturnBadArgument;
++    if(id&&id==fPending){result=fOwner->present(this,(const uint8_t *)a->structureInput,a->structureInputSize);if(!result){fCompleted=id;fPending=0;}}
++    IOLockUnlock(fLock);return result;
++   }
++   case 6: {
++    if(a->scalarInputCount<1)return kIOReturnBadArgument;
++    IOLockLock(fLock);bool done=in[0]&&in[0]==fCompleted;IOLockUnlock(fLock);return done?kIOReturnSuccess:kIOReturnNotReady;
++   }
++   case 52:case 81:
++    IOLockLock(fLock);fPending=0;IOLockUnlock(fLock);return kIOReturnSuccess;
++   case 72:
++    if(a->scalarInputCount<3||in[2]>=8)return kIOReturnBadArgument;IOLockLock(fLock);
++    fCallbacks[in[2]]=in[0];fRefcons[in[2]]=in[1];
++    if(in[2]==5&&in[0]&&!fVSyncRunning){fVSyncRunning=true;armVSync();}IOLockUnlock(fLock);return kIOReturnSuccess;
++   case 74:
++    if(a->scalarOutputCount){out[0]=0;a->scalarOutputCount=1;}
++    if(a->structureOutput&&a->structureOutputSize)bzero(a->structureOutput,a->structureOutputSize);return kIOReturnSuccess;
++   case 79:
++    if(!a->structureOutput||!a->scalarInputCount)return kIOReturnBadArgument;
++    bzero(a->structureOutput,a->structureOutputSize);
++    if(in[0]==0x40&&a->structureOutputSize>=12){uint32_t ids[2]={1,1};memcpy((uint8_t *)a->structureOutput+4,ids,sizeof(ids));}
++    return kIOReturnSuccess;
++   case 12:case 20:case 73:return kIOReturnSuccess; /* HackiOS compatibility: boot display stays powered, fixed60Hz. */
++   default:
++    /* Same HackiOS compatibility replies for unnamed feature queries/setters.
++     * SwapEnd/SwapWait never reach this path and require actual presentation. */
++    if(selector>=90)return kIOReturnUnsupported;
++    if(a->scalarOutputCount)bzero(out,a->scalarOutputCount*sizeof(out[0]));
++    if(a->structureOutputSize)bzero(a->structureOutput,a->structureOutputSize);
++    return kIOReturnSuccess;
++  }
++ }
++};
++OSDefineMetaClassAndStructors(IOMobileFramebufferUserClient,IOUserClient);
++class IOAcceleratorES:public IOService {OSDeclareDefaultStructors(IOAcceleratorES);};
++OSDefineMetaClassAndStructors(IOAcceleratorES,IOService);
++static void XCoverNativeFramebufferStart(IOService *provider) {
++ IOMobileFramebuffer *fb=OSTypeAlloc(IOMobileFramebuffer);
++ if(fb&&fb->init()&&fb->attach(provider)){if(!fb->start(provider))fb->detach(provider);}OSSafeReleaseNULL(fb);
++ IOAcceleratorES *accel=OSTypeAlloc(IOAcceleratorES);
++ if(accel&&accel->init()&&accel->attach(provider)) {
++  if(accel->start(provider)){accel->setName("sgx");accel->registerService();}else accel->detach(provider);
++ }
++ OSSafeReleaseNULL(accel);
++}
++#endif
