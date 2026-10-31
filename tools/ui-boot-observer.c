@@ -26,6 +26,11 @@ static void resource_status(unsigned elapsed){
 int main(void){
  setvbuf(stdout,NULL,_IONBF,0);setvbuf(stderr,NULL,_IONBF,0);
  printf("XCOVER5 M55 BEGIN observer pid=%d ppid=%d uid=%d; real launchd mobile UI jobs; no graphics baseline delay\n",getpid(),getppid(),getuid());
+#if defined(M67_EVENTCFG_PROFILE)
+ struct stat event_config;errno=0;
+ int event_rc=stat("/System/Library/BackBoard/EventProcessorConfiguration.plist",&event_config),event_errno=errno;
+ printf("XCOVER5 M67 EVENTCFG stat=%d errno=%d bytes=%lld expected=1313; inspect real backboardd event processor startup\n",event_rc,event_errno,event_rc?-1LL:(long long)event_config.st_size);
+#endif
 #if defined(M66_ICU_PROFILE)
  m66_icu_probe();
 #endif
