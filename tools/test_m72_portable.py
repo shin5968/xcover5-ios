@@ -12,7 +12,7 @@ if len(sys.argv)>1:
     tree=Path(sys.argv[1])
     for path,digest in expected.items():
         assert hashlib.sha256((tree/path).read_bytes()).hexdigest()==digest,path
-    for src,dst in [('input.c','bsd/dev/xcover_input.c'),('input.h','bsd/dev/xcover_input.h'),('network.h','iokit/Kernel/arm/XCoverNetworkStack.h')]:
+    for src,dst in [('input.c','bsd/dev/xcover_input.c'),('input.h','bsd/dev/xcover_input.h'),('network.h','iokit/Kernel/arm/XCoverNetworkStack.h'),('filesystems.c','bsd/dev/xcover_filesystems.c')]:
         assert (R/'tools/compat'/src).read_bytes()==(tree/dst).read_bytes(),dst
     source=(tree/'iokit/Kernel/arm/MiniIOSurface.cpp').read_text()
     assert source.count(' XCoverNetworkStackStart();')==1
@@ -23,6 +23,41 @@ if len(sys.argv)>1:
         print('M72 applied source identities, retained safety/lifetime fixes, startup PASS');sys.exit(0)
 with tempfile.TemporaryDirectory() as tmp:
     d=Path(tmp)
+    # The actual registration body must match the two drivers' directory ABI.
+    body=(R/'tools/compat/filesystems.c').read_text()
+    body='\n'.join(line for line in body.splitlines() if not line.startswith('#include'))
+    fixture='''
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+struct vfsops{int id;}apfs_vfsops={1},ramfs_vfsops={2};
+struct vnodeopv_desc{int id;};
+const struct vnodeopv_desc apfs_vnodeop_opv_desc={1},ramfs_vnodeop_opv_desc={2};
+typedef int vfstable_t;
+#define VFS_TBLNOTYPENUM 1
+#define VFS_TBL64BITREADY 2
+#define VFS_TBLLOCALVOL 4
+#define VFS_TBLGENERICMNTARGS 8
+#define VFS_TBLTHREADSAFE 16
+#define VFS_TBLNATIVEXATTR 32
+#define VFS_TBLREADDIR_EXTENDED 64
+#define VFS_TBLVNOP_PAGEINV2 128
+#define VFS_TBLVNOP_PAGEOUTV2 256
+struct vfs_fsentry{struct vfsops*vfe_vfsops;int vfe_vopcnt;struct vnodeopv_desc**vfe_opvdescs;unsigned vfe_flags;char vfe_fsname[32];};
+static int registered;
+static void strlcpy(char*d,const char*s,size_t n){snprintf(d,n,"%s",s);}
+static int vfs_fsadd(struct vfs_fsentry*e,int*h){
+ assert(e->vfe_vopcnt==1&&e->vfe_flags==(447U|(registered==0?64U:0U)));
+ assert(e->vfe_vfsops==(registered==0?&apfs_vfsops:&ramfs_vfsops));
+ assert(e->vfe_opvdescs[0]==(registered==0?&apfs_vnodeop_opv_desc:&ramfs_vnodeop_opv_desc));
+ assert(!strcmp(e->vfe_fsname,registered==0?"apfs":"ramfs"));*h=++registered;return 0;
+}
+'''+body+'''
+int main(){xcover_filesystems_register();assert(registered==2);puts("M75 actual registration: APFS extended, RAMFS classic dirent, other flags unchanged PASS");}
+'''
+    (d/'registration.c').write_text(fixture)
+    subprocess.run(['cc','-std=c11','-O1','-Wall','-Wextra','-Werror','-fsanitize=undefined',str(d/'registration.c'),'-o',str(d/'registration-test')],check=True)
+    subprocess.run([str(d/'registration-test')],check=True)
     for src,dst in [('input.c','input.c'),('input.h','xcover_input.h'),('input_host.c','test.c')]:
         (d/dst).write_bytes((R/'tools/compat'/src).read_bytes())
     subprocess.run(['cc','-std=c11','-D_DEFAULT_SOURCE','-O1','-Wall','-Wextra','-Wno-format','-Wno-unused-variable','-fsanitize=undefined',str(d/'test.c'),'-o',str(d/'input-test')],check=True)

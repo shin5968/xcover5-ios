@@ -387,7 +387,7 @@
  	rm->rm_root = ramfs_node_alloc(rm, VDIR, NULL);
 --- /dev/null
 +++ b/bsd/dev/xcover_filesystems.c
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,25 @@
 +/* HackiOS portable APFS/ramfs registration; HFS remains the boot filesystem. */
 +#include <sys/systm.h>
 +#include <sys/mount_internal.h>
@@ -404,11 +404,13 @@
 +  struct vnodeopv_desc *list[]={(struct vnodeopv_desc *)descs[i]};
 +  struct vfs_fsentry entry={.vfe_vfsops=ops[i],.vfe_vopcnt=1,.vfe_opvdescs=list,
 +   .vfe_flags=VFS_TBLNOTYPENUM|VFS_TBL64BITREADY|VFS_TBLLOCALVOL|VFS_TBLGENERICMNTARGS|
-+   VFS_TBLTHREADSAFE|VFS_TBLNATIVEXATTR|VFS_TBLREADDIR_EXTENDED|
++   VFS_TBLTHREADSAFE|VFS_TBLNATIVEXATTR|
++   (i==0?VFS_TBLREADDIR_EXTENDED:0)|
 +   VFS_TBLVNOP_PAGEINV2|VFS_TBLVNOP_PAGEOUTV2};
 +  strlcpy(entry.vfe_fsname,names[i],sizeof(entry.vfe_fsname));
 +  int rc=vfs_fsadd(&entry,&handles[i]);
 +  printf("XCOVER5 M72 FILESYSTEM name=%s register=%d; boot=hfs\n",names[i],rc);
++  printf("XCOVER5 M75 READDIR name=%s extended=%u register=%d\n",names[i],i==0,rc);
 + }
 +}
 --- a/bsd/kern/bsd_init.c
