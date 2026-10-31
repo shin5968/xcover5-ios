@@ -1,3 +1,28 @@
+2026-10-31 M71 FRAMEWORK BUNDLE METADATA PACKAGED / HARDWARE PENDING
+
+M70 video141346 confirms AKS_OPEN, then new SpringBoard SIGSEGV PC1abe6a74c,
+LR1abe7c6ec FAR8 X0=0. Paired instruction match/controlled replay points to
+CFBundleGetInfoDictionary(NULL) under inferred slide25014000. Exact parent
+caller/missing bundle identity unknown. No actual lockscreen rendering proven.
+M71 restores2692 missing original framework Info.plists (2687952 bytes) and3151
+directories;5 existing original framework Info.plists retained. Guarded observer
+records real CFBundle create/info/identifier for8 UI frameworks. Original bytes
+injected locally only; CI receives hash-pinned synthetic placeholders.
+Userspace447c17fa4ffabd232f6bdfed38d4fddfdf0fcd32 CI41173283979 completed/success.
+Exact M70 kernel8d5143615fcff1007316f039d572cb2b09442d04 CI41170880207 retained.
+Full staging/guards/native codesign, old root preservation, all new source hash/
+plist/owner/mode checks, independent7zip extraction, final C parser, unchanged
+M70 kernel/payload outside root and boot-only tar/MD5 checks PASS.
+Local ../artifacts/m71-bundle-metadata/AP_M71_BUNDLE_METADATA.tar.md5
+AP SHA545e7be7126f33b7ca2733362b1c0acce5fe0b9b639ecd4bc4fc454b4f166888
+AP42055741 bytes; boot42045440 bytes;44MiB headroom4091904 bytes.
+24MiB HFS root free2777088 bytes before boot. Installed M66 ICU cache retained.
+No device flash. Hardware must confirm M71 BUNDLE create/info and UI progress;
+metadata restoration alone is not proof of this caller's repair or lockscreen.
+Details M71_BUNDLE_METADATA_STATUS.txt; local M70 hardware-review/replay evidence.
+
+PREVIOUS STATUS RECORD
+
 2026-10-31 M70 APPLEKEYSTORE INITIAL SERVICE PACKAGED / HARDWARE PENDING
 
 M69 video134427 captures SpringBoard PC=LR0x1b47098c0, cache slide06364000.

@@ -1,0 +1,48 @@
+2026-10-31 M71 ORIGINAL FRAMEWORK BUNDLE METADATA PACKAGED / HARDWARE PENDING
+
+Userspace source447c17fa4ffabd232f6bdfed38d4fddfdf0fcd32; CI41173283979 completed/success.
+Exact M70 kernel8d5143615fcff1007316f039d572cb2b09442d04, CI41170880207 retained.
+
+M70 video141346:265.01sec,1065056149 bytes, SHA
+68e587fc448d855a0d4e5e43166b7ef9dd9173f4d3c0d1aa223d88f30319c8d9.
+M70 AKS_OPEN observed for SpringBoard. New failure is SIGSEGV with
+PC0x1abe6a74c LR0x1abe7c6ec FAR8 X0=0;21 repeated crashes visible at video end.
+Matching the pair to original iOS16.5 instructions gives inferred slide25014000:
+CFGetNonObjCTypeID at0x186e5674c reads NULL+8, called by
+CFBundleGetInfoDictionary at0x186e686e8 (saved LR0x186e686ec).
+Controlled original-code replay with NULL reproduces this exact PC/LR/FAR.
+84-byte CFBundle getter SHA1f74aaf41311d17f3a0074b9c7af6c3f0861f4aad6a323c398a8d2c76ead6c9e.
+Slide inferred from paired instructions, not read from this abort task. Exact
+parent caller and missing bundle identity are not established. This evidence is
+local symbol/instruction inspection and controlled CPU replay, not live bundle
+creation or REA ARM64 provider execution. Local ../research/m71-null-object/.
+
+Original rootfs framework inventory2697 Info.plists. Current root contains only5
+of these, all byte-identical. M71 restores missing2692 original metadata files,
+2687952 bytes,3151 directories. UIKit/UIKitCore/QuartzCore/CoreUI/SpringBoard/
+SpringBoardHome/SpringBoardFoundation metadata are among restored paths.
+This restores the shared prerequisite; hardware must establish whether it fixes
+the specific NULL-bundle caller. Original resources injected locally only.
+Git/CI contain file paths/sizes/hashes and synthetic placeholders, no Apple bytes.
+
+New owned observer safely probes8 real CFBundle paths, logging stat/bytes/create/
+info/identifier. CFBundleGetInfoDictionary is never called with a NULL bundle.
+Existing ICU/BackBoard/resource observation remains; exit77 is capture only.
+M70 kernel, graphics, initial KeyStore profile, shim/DTB/cmdline/ADT/root mapping/
+255MiB RAM and installed M66 ICU userdata cache retained. No device flash.
+
+PASS: complete metadata staging/modes, overwrite/path/symlink/source/placeholder
+guards; native compile/strict codesign; actual CodeDirectory13 page hashes;
+every prior root file/owner/mode except owned observer preserved; all2692 new
+files match original bytes and required0:0/0644 metadata and parse; all new files independently
+extracted with7zip and hashed; kernel/payload outside root exact M70; actual
+final boot C parser/negative cases; deterministic boot-only tar/member/MD5.
+
+Root SHA1f5a989da0a5d43d26ffb08ae1c72c6e32ad8431e01c7205625c40e42be4e7f5
+Boot SHAc9335cee26721867a989835c9a1f7d938d9459c26c9468963d8a28c48a6eb25c
+AP SHA545e7be7126f33b7ca2733362b1c0acce5fe0b9b639ecd4bc4fc454b4f166888
+AP42055741 bytes; boot42045440 bytes;44MiB partition headroom4091904 bytes.
+24MiB HFS root has678 free4096-byte blocks (2777088 bytes) before boot.
+Local ../artifacts/m71-bundle-metadata/AP_M71_BUNDLE_METADATA.tar.md5
+Next capture: M71 BUNDLE create/info results; whether SpringBoard progresses;
+any terminal PC/LR/FAR, and actual M68 FRAME/visible UI. Lockscreen not proven.
