@@ -5,6 +5,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#if defined(M74_VAR_PROFILE)
+#include "m74-var-observer.h"
+#endif
 #if defined(M66_ICU_PROFILE)
 #include "m66-icu-probe.h"
 #endif
@@ -63,6 +66,9 @@ int main(void){
  m73_start();
 #endif
  for(unsigned elapsed=0;elapsed<OBSERVATION_SECONDS;elapsed++){
+#if defined(M74_VAR_PROFILE)
+  if(elapsed%30==0)m74_var_status(elapsed);
+#endif
 #if defined(M73_DISPLAY_PROFILE)
   if(elapsed%5==0)m73_observe(elapsed);
 #endif
@@ -75,6 +81,9 @@ int main(void){
 
 #if defined(M73_DISPLAY_PROFILE)
  m73_finish();
+#endif
+#if defined(M74_VAR_PROFILE)
+ m74_var_status(OBSERVATION_SECONDS);
 #endif
 #if defined(M63_RESOURCE_PROFILE)
  resource_status(OBSERVATION_SECONDS);
