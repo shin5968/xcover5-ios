@@ -1,0 +1,51 @@
+2026-10-31 M66 ICU RESOURCE RESTORATION PACKAGED / HARDWARE PENDING
+
+M65 video104734 runs 428.47 seconds and reaches native SpringBoard/backboardd
+process starts and the observer. It does not prove a rendered lock screen.
+containermanagerd repeatedly faults at PC19444e74c LR19443a6a4 FAR8 X0=0;
+backboardd retries interrupted container XPC connections. Shared-cache slide
+0xd5f8000 is derived from workq_kernreturn syscall368 return PC1cee4b4b0
+minus original1c18534b0. Unslid186e5674c is __CFGetNonObjCTypeID+88:
+ldar after add x8,x0,#8. LR186e426a4 is CFDateFormatterSetFormat+52.
+M65 latest-worker wait/generation changes do not establish a main-thread hang.
+The upstream no-personas hook log is not proof persona allocation is needed.
+
+M66 restores missing original ICU70 common data30447056 bytes and3-byte timezone
+format metadata. They reside alongside all43 original shared-cache files on
+3GiB read-only userdata HFS; /usr/share/icu has two symlinks to that mount.
+The guarded observer prints ICU stat, CFDateFormatterCreate and a fixed UTC
+2001-01-01 formatting result. NULL/failure paths remain diagnostic, not success.
+The missing data is a concrete dependency gap; its causal role and actual
+containermanagerd crash resolution remain HARDWARE PENDING.
+
+M66 source94358ffc46c1bd9db78d0ff7a63306030956ab38
+M66 userspace CI41159924646: completed/success, all nonempty jobs success.
+Retains exact M65 kernel52d128b4e251ada0b340e75f14c0fcc1073fff86 CI41156046841.
+Kernel SHA d5fab15762b575fc9792def0c480ef5e5d43708282941fbab354665fe6ba5e45
+Root SHA ec4cc56d4e2a177dac945329babc8bc348e27bfff88a94cd30bc29272fdf8f2d
+Boot SHA 925ef93090e39297c2f99c5eb8654848ec51157e234e272c0964f0383250b961
+Userdata SHA 24be79bc37386fb9bffb80160c7eface394de195905938dc5f99aef318d1eac9
+AP SHA 60e0926b60dff975388842a35512a725c2c6b5536741a2fbe4803e6873d31fc2
+AP1447188550 bytes, boot41975808, boot44MiB headroom4161536.
+
+Local package: ../artifacts/m66-icu/AP_M66_ICU_ERASE_USERDATA_CACHE.tar.md5
+Contains ONLY boot.img + userdata.img.lz4. Replaces userdata cache volume;
+any Android data on userdata is overwritten. Odin AP, Re-Partition/Nand Erase OFF.
+No device flash was performed. No original Apple bytes uploaded to CI.
+
+PASS: staging/path rejection and observer NULL/failure guards; native iOS build
+and strict codesign; local CodeDirectory pages; all original M63 paths, owners,
+modes and bytes retained except owned observer, one directory/two links added;
+M65 loaded kernel segments/header/ADT/RAM-root address and size/shim/DTB/cmdline
+byte-identical; actual final boot C-parser tests; 43 cache and2 ICU files
+independently extracted by7zz and full hashes matched; full3GiB simg2img
+roundtrip; explicit RAW/FILL complete coverage, no DONT_CARE; Samsung LZ4
+roundtrip; two tar member hashes and Odin MD5. Exit77 is observation completion.
+Next hardware check: ICU stat0 bytes30447056, DATE create1/pass1, then whether
+containermanagerd FAR8 stops and real backboardd/SpringBoard advance/render.
+
+Prior97-file cleanup completed via manual script:22720675840 bytes reclaimed;
+all97 paths absent and latestM65 link archive preserved. New M66 scratch3-file
+cleanup was rejected by automatic review (blocked by policy; no detailed reason).
+No retry/alternate deletion was attempted; those9,117,473,900 bytes remain.
+All previous Odin packages and canonical M28 userdata image remain preserved.
