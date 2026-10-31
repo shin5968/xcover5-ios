@@ -1,3 +1,21 @@
+2026-10-31 M67 HARDWARE: BACKBOARDD STARTUP COMPLETE / SPRINGBOARD MAIN CADISPLAY FAILURE
+
+Video120051 proves the BackBoard config restoration advances PID10 to Startup
+Complete. SpringBoard now SIGTRAPs at FBSDisplayMonitor.m:56: failed to find the
+main CADisplay (15 consecutive restarts at video end). No lockscreen proof.
+Compared pinned HackiOS and latest a3384e031eb1e605cf37adaefc19991f04f6274b,
+including its migrated userland. Final source was reconstructed by strict
+application of all11 MiniIOSurface.cpp patches. Definite current gaps:
+framebuffer accepts only root parent1 m39-probe, IOSurface is root-only,
+TimingElements/ColorElements and standard current-mode/default-surface/DPI
+queries are absent. Native mobile501 clients do not pass the current gate.
+Logical iPhoneX surface dimensions also conflict with8MiB/2048 limits and
+fixed720x1480 submit. Exact first failing native query still needs tracing.
+Details: M67_HACKIOS_COMPARISON.txt and ../research/m68-display-comparison/.
+Comparison only: no M68 patch/build/package produced in this turn.
+
+PREVIOUS STATUS RECORD
+
 2026-10-31 M67 BACKBOARD EVENT PROCESSOR CONFIG PACKAGED / HARDWARE PENDING
 
 M66 hardware video114012 (319.01sec, SHA 0b098f23495690e8d0b37431480a41479d2ffd05359c48d76a1786cad26e3142)

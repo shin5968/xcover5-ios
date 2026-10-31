@@ -1,0 +1,70 @@
+2026-10-31 M67 VIDEO / HACKIOS GRAPHICS COMPARISON
+
+Observed hardware
+  BackBoard configuration omission is resolved: original backboardd PID10 reaches
+  Startup Complete and handles shell connections; it does not restart as before.
+  SpringBoard now SIGTRAPs at FBSDisplayMonitor.m:56 in
+  _initWithBookendObserver:transformer: -- failed to find the main CADisplay.
+  Video end shows15 consecutive SpringBoard crashes. No rendered lockscreen.
+  Video120051 length228.14sec, SHA
+  80092fa5c6eec5676e85252d68a606c12e6da9f9c8c727f2d619b27a0f9310ff
+
+Reference coverage
+  Reviewed pinned kernel d82c64a3a31cd27a0a0afbf6e213e467e44b1b4c and pinned
+  userland a79ff0772a3454fd1ef127e181e5b3bce6c9ce18 used by the current port.
+  Also fetched the current remote kernel/main-repository HEAD:
+  a3384e031eb1e605cf37adaefc19991f04f6274b
+  The old userland repository HEAD2573c4a8d80ed143e534d16b5a386efa5b06ccbb
+  is now only a moved notice: current sources are main-repository userland/.
+  Latest MiniIOMobileFramebuffer/MiniIOSurface/inject/inject_sb saved locally
+  with individual source hashes; original pinned checkouts were not changed.
+
+Verified current source (not inferred from old patch comments)
+  Reconstructed MiniIOSurface.cpp by strict git apply --check/apply of all11
+  applicable source patches0074..0084. Later patches through0091 do not modify
+  that file. No build/worktree source was altered. Reconstructed source SHA:
+  a8fae53e36a44737a308010f6dafcde65484722cba01587363774596caf09c7c
+
+1. Framebuffer user-client admission
+  Current final source line1968 rejects uid !=0, parent !=1 or name !=m39-probe.
+  The mobile501 native backboardd/SpringBoard cannot pass this gate. Upstream
+  uses task-based IOUserClient initialization without this added probe gate.
+  This source-level restriction is certain; no separate device admission trace
+  was added in this comparison, so do not claim an observed IOKit error code.
+
+2. Native display-mode discovery
+  Current service publishes the client class and disp0 service name, but not
+  TimingElements or ColorElements. Current selectors are4/5/6/7/8 plus
+  diagnostics91..95. Upstream publishModes creates matching nonvirtual timing
+  and color modes; selector79 block0x40 returns their IDs. It also provides
+  DPI(selector28), a default surface(selector3), frame info and notifications.
+  FB Count1 only proves enumeration, not successful main CADisplay creation.
+  This missing contract is a strong explanation for the current assertion;
+  the exact native request that first fails remains a hardware tracing task.
+
+3. IOSurface and logical UI dimensions
+  Current IOSurfaceRootUserClient is root-only (final source line883),8MiB
+  per surface with geometry cap2048. Native UI runs as mobile501. Upstream
+  supplies logical iPhoneX dimensions1125x2436 or fbscale2, then scales onto
+  the physical panel. The current Samsung full-panel submit is720x1480 BGRA.
+  A1125x2436 32-bit surface already exceeds8MiB before row alignment and its
+  height exceeds2048, so dimension changes require coherent scaling and a
+  bounded memory plan for the255MiB machine, not just a reported-size change.
+
+User-space hooks
+  Vendored inject.c and inject_sb.c texts exactly match the pinned upstream.
+  The video reports installed window-server hooks and active SpringBoard hooks.
+  Latest sources were compared too; the core mode publication/task-client
+  contract above is present in both the pinned and latest driver versions.
+
+Required next implementation scope
+  Admit the actual signed native UI clients to framebuffer/IOSurface while
+  keeping diagnostic selectors restricted. Publish coherent primary timing,
+  color and current-mode data and implement the native discovery ABI. Then
+  accept and compose the corresponding IOSurfaces with real completion and
+  resource cleanup, keeping the Samsung physical copy path and RAM bounds.
+  Latest upstream also has hardware-specific MMIO/GPU/recording code; those
+  addresses and allocations are not a Samsung display implementation.
+
+This turn produced the comparison and saved video evidence. No M68 kernel
+patch or new Odin package was created. No device flash was performed.
