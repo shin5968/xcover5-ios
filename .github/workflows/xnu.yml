@@ -182,7 +182,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: dxb/fakeroot/System/Library/Kernels
-          key: xnu-kernel-v1-${{ runner.os }}-${{ runner.arch }}-${{ env.MACOS_VERSION }}-${{ env.KERNEL_CONFIG }}-${{ env.MACHINE_CONFIG }}-${{ env.DXB_SHA }}-${{ env.DEVELOPER_DIR }}-${{ hashFiles('xnu/patches/**', '.github/workflows/xnu.yml') }}
+          key: xnu-kernel-v1-${{ runner.os }}-${{ runner.arch }}-${{ env.MACOS_VERSION }}-${{ env.KERNEL_CONFIG }}-${{ env.MACHINE_CONFIG }}-${{ env.DXB_SHA }}-${{ env.DEVELOPER_DIR }}-${{ hashFiles('xnu/patches/**', 'third_party/hackios-portable/**', '.github/workflows/xnu.yml') }}
 
       - name: Build
         if: steps.kernel-cache.outputs.cache-hit != 'true'
