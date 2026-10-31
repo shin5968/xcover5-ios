@@ -1,0 +1,38 @@
+name: M77 prune completed boot regression probes
+on:
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  root:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download verified M75 root
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run view 41200251594 --json status,conclusion,headSha,jobs > source-ci.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('source-ci.json'))
+          assert d['status']=='completed' and d['conclusion']=='success'
+          assert d['headSha']=='4c76a34fe058fbfe33b829209127d24213fdef8c'
+          assert all(j['conclusion']=='success' for j in d['jobs'])
+          PY
+          gh run download 41200251594 --name m75-userspace --dir out
+          (cd out && shasum -a 256 -c M75_SHA256SUMS)
+      - name: Prune only completed owned diagnostics
+        run: |
+          WORK=$(mktemp -d)
+          trap 'hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true' EXIT
+          hdiutil attach -imagekey diskimage-class=CRawDiskImage -owners on -nobrowse -mountpoint "$WORK/mnt" out/root-hfs.img >/dev/null
+          sudo python3 tools/prune_boot_diagnostics.py "$WORK/mnt" > out/M77_REMOVED.json
+          sync
+          hdiutil detach "$WORK/mnt" >/dev/null
+          (cd out && shasum -a 256 root-hfs.img > M77_SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m77-root
+          path: out/
