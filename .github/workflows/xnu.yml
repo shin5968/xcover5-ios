@@ -223,7 +223,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          ks=list(Path('dxb/fakeroot/System/Library/Kernels').glob('kernel.*'))
+          ks=[p for p in Path('dxb/fakeroot/System/Library/Kernels').glob('kernel.*') if p.is_file()]
           assert ks
           for p in ks:
               data=p.read_bytes()
