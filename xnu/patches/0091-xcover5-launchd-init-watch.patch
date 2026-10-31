@@ -1,39 +1,53 @@
 --- a/osfmk/arm64/sleh.c
 +++ b/osfmk/arm64/sleh.c
-@@ -1,3 +1,5 @@
+@@ -1638,6 +1638,8 @@
+ extern void syscall_trace(struct arm_saved_state * regs);
  #if defined(XCOVER5)
  extern void xcover5_bootdiag_svc(arm_saved_state_t *,unsigned);
 +extern void xcover5_initdiag_svc(arm_saved_state_t *);
 +extern void xcover5_initdiag_irq(arm_saved_state_t *);
  #endif
---- a/osfmk/arm64/sleh.c
-+++ b/osfmk/arm64/sleh.c
-@@ -1,3 +1,4 @@
+ 
+ static void
+@@ -1658,6 +1660,7 @@
+ 
  #if defined(XCOVER5)
  	if(trap_no!=MACH_ARM_TRAP_ABSTIME && trap_no!=MACH_ARM_TRAP_CONTTIME)xcover5_bootdiag_svc(state,1);
 +	if(trap_no!=MACH_ARM_TRAP_ABSTIME && trap_no!=MACH_ARM_TRAP_CONTTIME)xcover5_initdiag_svc(state);
  #endif
---- a/osfmk/arm64/sleh.c
-+++ b/osfmk/arm64/sleh.c
-@@ -1,3 +1,6 @@
+ 	if (trap_no == (int)PLATFORM_SYSCALL_TRAP_NO) {
+ 		platform_syscall(state);
+@@ -1878,6 +1881,9 @@
+ 	}
  	if (intid == sweet_vtimer_intid) {
  		sleh_interrupt_handler_prologue(state, DBG_INTR_TYPE_TIMER);
 +#if defined(XCOVER5)
 +		xcover5_initdiag_irq(state);
 +#endif
  		cdp->cpu_decrementer = -1; /* Large */
+ 		INTERRUPT_MASKED_DEBUG_START(rtclock_intr, DBG_INTR_TYPE_TIMER);
+ 		rtclock_intr(TRUE);
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -1,2 +1,4 @@
+@@ -982,6 +982,8 @@
+ #if defined(XCOVER5)
+ 	extern void xcover5_bootdiag_init(void);
  	xcover5_bootdiag_init();
 +	extern void xcover5_initdiag_init(void);
 +	xcover5_initdiag_init();
  	extern void xcover5_autolog_init(void);
+ 	xcover5_autolog_init();
+ #endif
 --- a/bsd/conf/files
 +++ b/bsd/conf/files
-@@ -1 +1,2 @@
+@@ -8,6 +8,7 @@
+ bsd/dev/xcmmc.c			standard
+ bsd/dev/xcover5_autolog.c		standard
  bsd/kern/xcover5_bootdiag.c		standard
 +bsd/kern/xcover5_initdiag.c		standard
+ 
+ OPTIONS/config_macf			optional config_macf
+ OPTIONS/mach_assert			optional mach_assert
 --- /dev/null
 +++ b/bsd/kern/xcover5_initdiag.c
 @@ -0,0 +1,105 @@
