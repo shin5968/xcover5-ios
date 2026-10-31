@@ -17,7 +17,7 @@ class IOMobileFramebuffer:public IOService {
  OSDeclareDefaultStructors(IOMobileFramebuffer);
  IOLock *fLock;MiniIOSurface *fDefaultSurface;
  uint32_t *fCanvas,*fSaved;IOUserClient *fPresenter;bool fPresented;
- uint32_t fSwapID,fFrames,fTrace[128];
+ uint32_t fSwapID,fFrames,fTrace[128],fFailures[128];
 public:
  void publishModes(void) {
   OSDictionary *timing=OSDictionary::withCapacity(8),*horizontal=OSDictionary::withCapacity(4);
@@ -42,7 +42,7 @@ public:
  }
  bool start(IOService *provider) APPLE_KEXT_OVERRIDE {
   fLock=NULL;fDefaultSurface=NULL;fCanvas=fSaved=NULL;fPresenter=NULL;fPresented=false;
-  fSwapID=fFrames=0;bzero(fTrace,sizeof(fTrace));
+  fSwapID=fFrames=0;bzero(fTrace,sizeof(fTrace));bzero(fFailures,sizeof(fFailures));
   if(!IOService::start(provider))return false;
   fLock=IOLockAlloc();if(!fLock)return false;
   publishModes();
@@ -58,7 +58,10 @@ public:
  }
  void trace(uint32_t selector,IOExternalMethodArguments *a) {
   if(selector<128&&__sync_fetch_and_add(&fTrace[selector],1)<3)
-   IOLog("XCOVER5 M68 FB pid=%d selector=%u in=%u out=%u struct=%u/%u\n",proc_selfpid(),selector,a->scalarInputCount,a->scalarOutputCount,a->structureInputSize,a->structureOutputSize);
+   IOLog("XCOVER5 M68 FB pid=%d selector=%u in=%u [%llx,%llx] out=%u struct=%u/%u\n",proc_selfpid(),selector,a->scalarInputCount,(unsigned long long)(a->scalarInputCount?a->scalarInput[0]:0),(unsigned long long)(a->scalarInputCount>1?a->scalarInput[1]:0),a->scalarOutputCount,a->structureInputSize,a->structureOutputSize);
+ }
+ void report(uint32_t selector,IOReturn result){
+  if(selector<128&&__sync_fetch_and_add(&fFailures[selector],1)<3)IOLog("XCOVER5 M68 FB_RESULT pid=%d selector=%u rc=%x\n",proc_selfpid(),selector,result);
  }
  uint32_t nextID(void){IOLockLock(fLock);if(!++fSwapID)++fSwapID;uint32_t id=fSwapID;IOLockUnlock(fLock);return id;}
  mach_port_name_t defaultPort(task_t task) {
@@ -73,7 +76,9 @@ public:
   uint32_t enabled=0;bool valid=true;
   if(!fCanvas)fCanvas=(uint32_t *)IOMalloc(XC68_PANEL_BYTES);
   if(!fSaved)fSaved=(uint32_t *)IOMalloc(XC68_PANEL_BYTES);
-  if(!fCanvas||!fSaved){result=kIOReturnNoMemory;valid=false;}
+  if(!fCanvas||!fSaved){result=kIOReturnNoMemory;valid=false;
+   if(!fPresented){if(fCanvas){IOFree(fCanvas,XC68_PANEL_BYTES);fCanvas=NULL;}if(fSaved){IOFree(fSaved,XC68_PANEL_BYTES);fSaved=NULL;}}
+  }
   if(valid) {
    /* A zero layer ID clears that layer, as in HackiOS. Layer0 is the composed
     * software frame; additional layers use the same source/destination ABI. */
@@ -168,6 +173,11 @@ public:
   if(fLock)IOLockFree(fLock);OSSafeReleaseNULL(fOwner);IOUserClient::free();
  }
  IOReturn externalMethod(uint32_t selector,IOExternalMethodArguments *a,IOExternalMethodDispatch *,OSObject *,void *) APPLE_KEXT_OVERRIDE {
+  IOReturn result=dispatch(selector,a);
+  if(result&&fOwner)fOwner->report(selector,result);
+  return result;
+ }
+ IOReturn dispatch(uint32_t selector,IOExternalMethodArguments *a) {
   if(!a||!fOwner||!fLock||fClosed)return kIOReturnNotOpen;
   if((a->scalarInputCount&&!a->scalarInput)||(a->scalarOutputCount&&!a->scalarOutput)||
      a->structureInputDescriptor||a->structureOutputDescriptor||a->scalarInputCount>16||a->scalarOutputCount>16||
@@ -213,8 +223,7 @@ public:
    default:
     /* Same HackiOS compatibility replies for unnamed feature queries/setters.
      * SwapEnd/SwapWait never reach this path and require actual presentation. */
-    if(selector>=90)return kIOReturnUnsupported;
-    if(a->scalarOutputCount)bzero(out,a->scalarOutputCount*sizeof(out[0]));
+        if(a->scalarOutputCount)bzero(out,a->scalarOutputCount*sizeof(out[0]));
     if(a->structureOutputSize)bzero(a->structureOutput,a->structureOutputSize);
     return kIOReturnSuccess;
   }

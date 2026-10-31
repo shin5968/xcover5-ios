@@ -16,7 +16,7 @@ if len(sys.argv)>1:
     assert 'class XCoverDiagnosticFramebuffer : public IOService' in s
     assert 'same task-based user client as HackiOS' in s
     assert 'if (proc_getuid(current_proc_EXTERNAL()) != 0) return false;' not in s
-    assert 'strcmp(diagnostic_name,"m39-probe")' in s
+    assert 'if (proc_getuid(caller) != 0 || proc_ppid(caller) != 1 ||' in s and 'strcmp(name, "m39-probe")' in s
     assert 'if (selector != kSurfaceMethodCreate && selector != kSurfaceMethodLookup &&' not in s
     if '--source-only' in sys.argv:
         print('M68 actual applied native service/header/IOSurface admission identity PASS');sys.exit(0)

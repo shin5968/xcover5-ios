@@ -78,7 +78,7 @@ struct IOUserClient:IOService{
  void setAsyncReference64(OSAsyncReference64 r,mach_port_t,io_user_reference_t cb,io_user_reference_t ctx,task_t){r[0]=cb;r[1]=ctx;}
  void sendAsyncResult64WithOptions(OSAsyncReference64 r,int result,io_user_reference_t*a,int n,int){assert(r[0]&&result==0&&n==6&&a[4]);notifications++;}
 };
-static int live_allocations=0;static void*IOMalloc(size_t n){void*p=malloc(n);if(p)live_allocations++;return p;}
+static unsigned alloc_calls=0,alloc_fail_at=0;static int live_allocations=0;static void*IOMalloc(size_t n){if(++alloc_calls==alloc_fail_at)return nullptr;void*p=malloc(n);if(p)live_allocations++;return p;}
 static void IOFree(void*p,size_t){assert(p);live_allocations--;free(p);}
 struct MiniIOSurface{struct{uint32_t width,height,bytesPerRow,bytesPerElement,pixelFormat,planeCount;uint64_t allocSize;}info;
  uint8_t*kpixels;void*client=nullptr;unsigned refs=1,id;};
@@ -113,7 +113,7 @@ int main(){
  a.scalarOutputCount=2;assert(!call(c,8,a)&&output[0]==750&&output[1]==1624);
  a.scalarOutputCount=1;assert(!call(c,28,a)&&output[0]==305);
  assert(!call(c,7,a)&&output[0]==1);assert(!call(c,77,a)&&output[0]==mach_absolute_time());
- a.scalarOutputCount=0;assert(call(c,8,a)==kIOReturnBadArgument);assert(call(c,95,a)==kIOReturnUnsupported);
+ a.scalarOutputCount=0;assert(call(c,8,a)==kIOReturnBadArgument);assert(!call(c,95,a)&&!presenting);
  a.scalarOutputCount=1;output[0]=~0ULL;assert(!call(c,25,a)&&output[0]==0);assert(!call(c,3,a)&&output[0]>100);unsigned sid=(unsigned)output[0]-100;
  auto*s=surfaces[sid];assert(s&&s->info.width==750&&s->info.height==1624);
  for(uint32_t y=0;y<1624;y++){auto*row=(uint32_t*)(s->kpixels+y*s->info.bytesPerRow);for(uint32_t x=0;x<750;x++)row[x]=0xff000000U|(y<<12)|x;}
@@ -125,6 +125,7 @@ int main(){
  put(0x50,id);put(0x54,sid);put(0x6c,750);put(0x70,1624);put(0xcc,750);put(0xd0,1624);put(0x104,1);
  a.scalarOutputCount=0;a.scalarInputCount=1;input[0]=id;assert(call(c,6,a)==kIOReturnNotReady);
  a.scalarInputCount=0;a.structureInput=swap;a.structureInputSize=sizeof(swap);
+ alloc_fail_at=alloc_calls+2;assert(call(c,5,a)==kIOReturnNoMemory&&!presenting&&live_allocations==0);alloc_fail_at=0;
  put(0x6c,751);assert(call(c,5,a)==kIOReturnBadArgument&&!presenting);put(0x6c,750);
  fail_begin=true;assert(call(c,5,a)==kIOReturnError&&!presenting);fail_begin=false;
  assert(!call(c,5,a)&&presenting&&begins==1);
@@ -137,6 +138,8 @@ int main(){
  a.structureInput=nullptr;a.structureInputSize=0;a.scalarInputCount=1;input[0]=id;assert(call(c,6,a)==kIOReturnNotReady);
  a.scalarInputCount=0;a.structureInput=swap;a.structureInputSize=sizeof(swap);assert(!call(c,5,a)&&updates==1);
  // A malformed later layer may not partially overwrite the panel.
+ a.structureInput=nullptr;a.structureInputSize=0;a.scalarOutputCount=1;assert(!call(c,4,a));put(0x50,(uint32_t)output[0]);
+ a.scalarOutputCount=0;a.structureInput=swap;a.structureInputSize=sizeof(swap);
  std::vector<uint32_t>before=panel;put(0x58,255);assert(call(c,5,a)==kIOReturnBadArgument&&panel==before);put(0x58,0);
  // Notification ABI: retained port, callback/refcon/type and six32-bit halves.
  assert(!c->registerNotificationPort((void*)2,5,0));assert(c->registerNotificationPort((void*)2,8,0)==kIOReturnBadArgument);

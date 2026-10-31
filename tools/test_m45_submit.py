@@ -5,15 +5,6 @@ r=Path(__file__).resolve().parents[1]
 p=(r/'xnu/patches/0076-xcover5-user-surface-submit.patch').read_text()
 added=''.join(x[1:] for x in p.splitlines(True) if x.startswith('+') and not x.startswith('+++'))
 body=added[added.index('    if (selector == 90) {'):]
-# M68 keeps this diagnostic private after normal IOSurface clients become task-based.
-# Execute the actual extra admission guard, rather than stripping it for source checks.
-p68=r/'xnu/patches/0092-xcover5-native-hackios-graphics.patch'
-if p68.exists():
- import re
- delta=''.join(x[1:]+'\n' for x in p68.read_text().splitlines() if x.startswith('+') and not x.startswith('+++'))
- guard=re.search(r'        proc_t diagnostic=current_proc_EXTERNAL\(\);.*?return kIOReturnNotPrivileged;\n',delta,re.S)
- assert guard
- body=body.replace('    if (selector == 90) {\n','    if (selector == 90) {\n'+guard.group())
 if len(sys.argv)>1:
  s=(Path(sys.argv[1])/'iokit/Kernel/arm/MiniIOSurface.cpp').read_text();assert body in s
  assert 'fPresentationSequence = 0;' in s
