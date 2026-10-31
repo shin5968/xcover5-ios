@@ -1,3 +1,12 @@
+M77 BOOT CLEAN PACKAGED / HARDWARE PENDING
+CI41202778316 source9796a27f57b2f150461c564f69be371fa6c5721c success.
+Removed24 completed owned diagnostic files/jobs,506788bytes.
+M34 PID1 gate, M74/M75 prep, M39 observer and all Apple files retained.
+Local ../artifacts/m77-boot-clean/AP_M77_BOOT_CLEAN_REQUIRES_M72_CACHE.tar.md5
+Existing M72 cache retained; boot.img only. Remaining bytes/metadata and kernel identical M75.
+See M77_BOOT_CLEAN_STATUS.json. No flash performed.
+
+Previous status follows:
 2026-10-31 M75 RAMFS DIRECTORY ABI FIX PACKAGED / HARDWARE PENDING
 
 Input video20261031_170810.mp4 SHA256

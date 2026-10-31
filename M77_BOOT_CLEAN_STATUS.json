@@ -1,0 +1,110 @@
+{
+  "removed": [
+    {
+      "path": "/System/Library/LaunchDaemons/org.xcover5.m37.echo.plist",
+      "bytes": 228
+    },
+    {
+      "path": "/System/Library/LaunchDaemons/org.xcover5.m35.proof.plist",
+      "bytes": 208
+    },
+    {
+      "path": "/System/Library/LaunchDaemons/org.xcover5.m38.notify.plist",
+      "bytes": 209
+    },
+    {
+      "path": "/System/Library/LaunchDaemons/org.xcover5.m36.echo.plist",
+      "bytes": 227
+    },
+    {
+      "path": "/sbin/m21-probe",
+      "bytes": 16635
+    },
+    {
+      "path": "/sbin/m22-probe",
+      "bytes": 16635
+    },
+    {
+      "path": "/sbin/m23-probe",
+      "bytes": 16635
+    },
+    {
+      "path": "/sbin/m24-probe",
+      "bytes": 16635
+    },
+    {
+      "path": "/sbin/m25-probe",
+      "bytes": 16635
+    },
+    {
+      "path": "/sbin/m26-probe",
+      "bytes": 16635
+    },
+    {
+      "path": "/sbin/m27-probe",
+      "bytes": 16635
+    },
+    {
+      "path": "/sbin/m28-probe",
+      "bytes": 16635
+    },
+    {
+      "path": "/sbin/m29-probe",
+      "bytes": 16683
+    },
+    {
+      "path": "/sbin/m30-probe",
+      "bytes": 33387
+    },
+    {
+      "path": "/sbin/m31-probe",
+      "bytes": 33419
+    },
+    {
+      "path": "/sbin/m32-probe",
+      "bytes": 33563
+    },
+    {
+      "path": "/sbin/m33-probe",
+      "bytes": 33595
+    },
+    {
+      "path": "/sbin/m35-proof",
+      "bytes": 16635
+    },
+    {
+      "path": "/sbin/m36-probe",
+      "bytes": 33883
+    },
+    {
+      "path": "/sbin/m37-client",
+      "bytes": 33883
+    },
+    {
+      "path": "/sbin/m37-server",
+      "bytes": 33883
+    },
+    {
+      "path": "/sbin/m38-probe",
+      "bytes": 33483
+    },
+    {
+      "path": "/usr/lib/libm25.dylib",
+      "bytes": 33147
+    },
+    {
+      "path": "/usr/lib/libm26.dylib",
+      "bytes": 37275
+    }
+  ],
+  "removed_file_bytes": 506788,
+  "root_free_bytes": 1089536,
+  "all_remaining_paths_metadata_and_bytes": "identical M75",
+  "kernel_shim_dtb_and_payload_outside_root": "identical M75",
+  "ap": "AP_M77_BOOT_CLEAN_REQUIRES_M72_CACHE.tar.md5",
+  "ap_sha256": "1d3b2b74a31dcf83a33779c5a8ffbe93a5575940f8595eba03d4f951d9a43292",
+  "boot_sha256": "c03b6496e2388f0ba5cc408cf50f9eea4db4c9c35b20a9db85e22098a5ba84ce",
+  "root_sha256": "50ddea9dc08df447e639bcc7e181721402205c1750981ae9b2408e0540aecc4e",
+  "hardware": "PENDING",
+  "userdata": "retain installed M72 cache; boot.img only"
+}
