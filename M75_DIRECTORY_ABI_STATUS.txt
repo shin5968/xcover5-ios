@@ -1,0 +1,61 @@
+2026-10-31 M75 RAMFS DIRECTORY ABI FIX PACKAGED / HARDWARE PENDING
+
+Input video20261031_170810.mp4 SHA256
+ebc36a546c1656b3ba03470169347d6af5642c69a8217d4452442bd91bf198a9
+450134466bytes/111.96s starts after initial boot. No M74 preflight/build markers
+are visible, so M74 native RAMFS/MOBILE_IO is not directly confirmed by it.
+logd repeatedly SIGSEGVs (25 then29 crashes); terminal PID50 retains
+PC1de0837a4 LR19afe64dc FAR40 X040. Subsequent PID51 reaches SIGPROC_BEGIN;
+later video frames show the same output, without evidence identifying whether
+the output path or CPU stopped. WinUSB read-only inventory found no interface.
+
+Local ipsw symbols/disassembly and controlled Unicorn replay of actual cache
+instructions match readdir(NULL) -> DIR+0x40 mutex load under inferred slide
+0xd3b0000. Paired PC/LR/FAR/X0 all match. The cache import stub is bound to the
+actual armv81 pthread_mutex_lock function in the controlled replay; no live
+task snapshot/slide readout or exact logd caller/directory is established.
+This is local-tool evidence, not REA decompilation. Known Windows REA profile
+does not admit ARM64 Mach-O; no provider/setup changes attempted.
+
+Confirmed source bug: the M72 port registration advertised extended-directory
+entries for BOTH APFS and RAMFS, while actual imported ramfs_readdir emits
+classic dirent and explicitly rejects EXTENDED/REQSEEKOFF with EINVAL.
+M75 keeps VFS_TBLREADDIR_EXTENDED only for APFS. Other registration flags,
+RAMFS storage/permissions and the32MiB file-data limit are unchanged.
+No Apple-code readdir(NULL) guard or fabricated filesystem success was added.
+
+Kernel218eb317d3cf00ba13f74a96125d378f33c132a0 CI41200007382 all jobs success.
+Userspace4c76a34fe058fbfe33b829209127d24213fdef8c CI41200251594 all jobs success.
+Actual registration-body test verifies per-FS directory ABI and other flags;
+native CI also verifies the exact applied body against tools/compat/filesystems.c
+and the source hash in APPLIED.json. Existing portable driver/parser tests pass.
+Native prelaunch helper retains M74's var restore and actual mobile1MiB I/O,
+then requires real fdopendir/readdir under logdUID272 and mobileUID501.
+On failure it prints and stops PID1 handoff. A fresh-var receipt is written only
+after success and reread by the observer every15s, including after console recovery.
+Real host directory/identity/short-I/O and failed fdopendir/readdir paths PASS;
+host filesystem/mount shims do not establish native Samsung RAMFS behavior.
+
+All M74 paths/owners/modes/file bytes retained except two owned executables.
+Static init, libraries and every Apple original file remain byte-identical.
+All133 var seed records/4772regular-file bytes and15 independently extracted
+owned files verified. Owned platform2/CD page hashes and signatures PASS.
+Actual new kernel Mach-O segments/entry/root mapping, retained255MiB RAM,
+stock Samsung DTB/shim/cmdline/identity, final C parser and Odin member/MD5 PASS.
+Retained shim/DTB/identity are recovered from the SHA-pinned M74 boot and match
+their original hashes; no missing legacy build file is silently substituted.
+Original Apple bytes remain local; CI/public uploads are code/hashes/placeholders.
+
+Local ../artifacts/m75-ramfs-readdir/AP_M75_DIRECTORY_ABI_REQUIRES_M72_CACHE.tar.md5
+AP bytes42158158 SHA25637b459149815d2b05f42859427a57eb0e2a8e4b41da35a785af460e69dce0ad8
+Boot bytes42153984 SHA25697311e63ca1abe397ec7c6a0b22fd95283f824a3eeb66c51c8a5d4026186f7be
+Kernel SHA256110353911a98d002d4a4aef60ce6eb44ae75f52d1fc1ce75e8051ac42cbc3e25
+Root SHA2564322d988b776999d654e3fa227f70cc0f5a22491e2d2c1bd73b162897fa29a26
+Root24MiB/free495616bytes; boot44MiB headroom3983360bytes.
+Odin member boot.img only; retain existing M72 font/cache userdata.
+Var remains fresh volatile RAMFS every boot; no flash/persistent-data migration.
+No device flashing or reboot performed. Existing dirty sweet-bootstrap-exec.S preserved.
+
+Native M75 READDIR/VAR_READY/MOBILE_IO/DIR_IO/BOOT_PROOF results, actual logd
+stability, first nonempty framebuffer frame and lockscreen remain hardware PENDING.
+See M75_M74_VIDEO_REVIEW.json and M75_NULL_DIR_REPLAY.json for evidence limits.

@@ -1,4 +1,4 @@
-# XCover5 HackiOS integration (M74)
+# XCover5 HackiOS integration (M75)
 
 Reference: `oosexgang/hackios-xnu-kernel` commit
 `a3384e031eb1e605cf37adaefc19991f04f6274b`.
@@ -19,6 +19,7 @@ firmware and loader callbacks are not a substitute for Exynos drivers.
 | Network discovery | IONetworkStack / IONetworkStackUserClient registered under IOResources as expected by configd's InterfaceNamer. | Opens the standard service; refuses requests to name nonexistent IOKit interfaces. No NIC, IP address, radio, DHCP or connectivity is fabricated. |
 | APFS | HackiOS read-only VFS/vnode driver, metadata reader, zlib/libdeflate and zbitmap support compiled and registered. | Existing HFS root/cache boot stays active. APFS is not mounted as the boot root. No encryption, snapshot boot, Fusion or disk writes. Default metadata cache 512 blocks, 256 KiB read buffer, two retained buffers. |
 | RAMFS | M74 adds an owned pre-launchd helper to mount registered RAMFS on `/private/var`, restore133 existing fresh-var records, and test1MiB mobile write/readback before original launchd. | Native mount, restore and probe require hardware validation; failure stops handoff and keeps PID1 alive. Data resets every boot. File-data quota is min(RAM/4,32MiB) per mount; metadata additional. Existing read-only M72 HFS cache retained. |
+| M75 directory ABI | Correct RAMFS registration to classic dirent; only APFS advertises extended-directory support. Native UID272/501 fdopendir/readdir preflight and a repeated per-boot receipt are added. | Actual RAMFS rejects extended requests. Registration/applied-source and real host directory tests pass; native directory proof, logd crash-loop resolution and lockscreen still need hardware. No Apple readdir guard or success fabrication. |
 | UI identity | A local-only D22AP metadata merge adds `/product`, including the model product-id; scale2/sRGB matches native software display profile. | Owned fixtures verify that Samsung CPU, RAM, MMIO and other hardware data are preserved. Apple hardware nodes, serial/ECID/MAC, camera/haptics and syscfg placeholders are excluded. |
 | Resources | M71's 2692 original framework Info.plists retained. M72 adds 39 local original files (1,294,496 bytes), including configd/fontservicesd and common SystemConfiguration plugin resources. | Raw HFS owner/mode/file comparison and independent extraction. Apple bytes are injected locally, never included in the new public source commits or CI inputs. The extended image adds every file of the stock Fonts directory (256), plus 186 UI bundle files on the read-only cache: 442 files / 403,413,560 bytes. 89 root links expose the complete Fonts directory and selected SpringBoard/UIKit/CoreUI resources. Existing framework directory identities remain in place; media services and the complete stock root are not claimed. |
 | M73 current CoreDuet model | Missing `_DKDataModel.momd` current version35 restored: `.mom`, `.omo` and original `VersionInfo.plist`,190863bytes. | Exact APFS/independent7Zip/final-HFS bytes verified locally. Addresses and resource lookup inferred from chronod's NSURL nil-path exception; actual exception resolution needs hardware. Historical migration model versions are not staged. |
@@ -46,6 +47,13 @@ SQLite-journal failure. M74 therefore separates writable var from the24MiB boot
 root. M74's boot-only package also reuses the installed M72 cache. See
 `M74_WRITABLE_VAR_STATUS.txt` and `M74_M73_VIDEO_REVIEW.json`; actual lockscreen
 rendering and physical Samsung input remain unestablished.
+
+The subsequent170810 recording shows logd repeated SIGSEGV and no initial M74
+preflight markers. Paired instruction replay matches readdir(NULL) under an
+inferred slide; the exact failing directory/caller is unknown. M75 repairs the
+separately confirmed RAMFS registration mismatch and requires real directory
+enumeration before launchd. Its boot-only package retains the M72 cache and all
+M74 Apple resources. See `M75_DIRECTORY_ABI_STATUS.txt` and its evidence JSONs.
 
 The next storage migration is a read-only complete stock resource/root view using
 the new APFS reader, with writable var and selected job overlays. The 24 MiB boot root now exposes fonts and selected UI resources from the existing

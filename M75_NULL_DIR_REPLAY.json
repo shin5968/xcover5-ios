@@ -1,0 +1,28 @@
+{
+  "method": "controlled Unicorn replay of actual iOS16.5 cache instructions, not live iOS or REA execution",
+  "input_dir": "NULL",
+  "fault": {
+    "pc": "0x1d0cd37a4",
+    "lr": "0x18dc364dc",
+    "far": "0x40",
+    "x0": "0x40"
+  },
+  "inferred_slide": "0xd3b0000",
+  "observed": {
+    "pc": "0x1de0837a4",
+    "lr": "0x19afe64dc",
+    "far": "0x40",
+    "x0": "0x40"
+  },
+  "import_binding": [
+    {
+      "stub": "0x18dc9e880",
+      "target": "0x1d0cd379c",
+      "symbol": "pthread_mutex_lock armv81"
+    }
+  ],
+  "readdir_code_sha256": "0174e47c999ff7e7f7553f352d0c89ee1df6871290e22a0d6ffc10bae3285607",
+  "mutex_code_sha256": "a76d6eaea40feb9c16bc9e442dfd93b9759f8c454082fc8cdf5daaa13afe1c2d",
+  "established": "readdir NULL adds0x40 for DIR mutex and faults loading it; paired PC/LR/FAR/X0 match video under one inferred slide",
+  "unknown": "Exact caller in logd and which directory/syscall first caused fdopendir failure; no current device task snapshot or exact slide readout"
+}

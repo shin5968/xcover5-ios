@@ -1,0 +1,35 @@
+{
+  "expected_build": "M74, based on the prior delivered package; no visible M74 build marker in this recording",
+  "video": "20261031_170810.mp4",
+  "video_bytes": 450134466,
+  "video_sha256": "ebc36a546c1656b3ba03470169347d6af5642c69a8217d4452442bd91bf198a9",
+  "duration_seconds": 111.96,
+  "observed": [
+    "Recording begins with existing launchd/logd restart logs, not the initial kernel/PID1 preflight.",
+    "logd repeatedly exits SIGSEGV. Visible terminal launchd messages report25 then29 consecutive crashes.",
+    "Terminal retained logdPID50 fault: PC1de0837a4 LR19afe64dc FAR40 X0=40.",
+    "A subsequent logd/xpcproxyPID51 reaches SIGPROC_BEGIN. Later sampled frames retain the same visible content until111s. The recording cannot establish whether only output or the kernel stopped."
+  ],
+  "not_visible": [
+    "M74 VAR_READY, MOBILE_IO status or native RAMFS space",
+    "M74 observer data/DB state",
+    "A nonempty SpringBoard framebuffer submission or lockscreen"
+  ],
+  "native_analysis": {
+    "method": "local ipsw symbol/disassembly plus controlled Unicorn replay; not live iOS or REA provider output",
+    "rea_boundary": "Previously established Windows REA Ghidra profile only admits PE; no new provider/installation changes attempted for ARM64 Mach-O.",
+    "inferred_cache_slide": "0xd3b0000",
+    "paired_locations": "readdir+28 returns to18dc364dc after taking DIR+0x40 mutex; pthread_mutex_lock armv81+8 at1d0cd37a4 loads [X0]",
+    "replay": "Actual readdir(NULL) instructions, with the unresolved cache stub bound to the actual mutex function, reproduce paired PC/LR/FAR40/X040 under one inferred slide.",
+    "unknown": "Exact logd caller/directory/first failing syscall is not present in the recording; slide is inferred, not read from a task snapshot."
+  },
+  "source_bug": {
+    "registration": "M72's shared APFS/RAMFS registration unconditionally advertises VFS_TBLREADDIR_EXTENDED.",
+    "actual_ramfs": "Imported RAMFS emits classic32-bit-inode dirent and explicitly returns EINVAL for VNODE_READDIR_EXTENDED or REQSEEKOFF.",
+    "repair": "Retain extended-directory capability only for APFS. RAMFS uses the kernel's classic directory path. No readdir(NULL) guard or success fabrication is added to Apple code.",
+    "validation": "Actual registration body host test and applied-source identities; new native UID272/501 fdopendir/readdir preflight before launchd. Native results remain pending."
+  },
+  "m75_preflight": "Retains M74's fresh32MiB RAMFS var and mobile1MiB write/readback, then requires actual directory enumeration for logd272 and mobile501. Writes a per-boot receipt on fresh RAMFS only after all succeed; observer rereads it every15s.",
+  "usb": "Read-only WinUSB interface inventory returned an empty list; no complete device snapshot available, no reset or flash attempted.",
+  "hardware": "PENDING; actual RAMFS/libc enumeration, disappearance of logd crash loop, and lockscreen rendering require hardware verification."
+}
