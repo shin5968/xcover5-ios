@@ -1,3 +1,41 @@
+2026-10-31 M67 BACKBOARD EVENT PROCESSOR CONFIG PACKAGED / HARDWARE PENDING
+
+M66 hardware video114012 (319.01sec, SHA 0b098f23495690e8d0b37431480a41479d2ffd05359c48d76a1786cad26e3142)
+proves ICU stat0 bytes30447056, DATE create1/locale1 and pass1 (2001-01-01).
+Backboardd enumerates FB Count1 and window server ready, then throws
+NSInternalInconsistencyException at BKHIDPrimaryEventProcessorFactory.m:55:
+/System/Library/BackBoard/EventProcessorConfiguration.plist missing,
+NSCocoaErrorDomain260 + NSPOSIXErrorDomain2. SIGABRT/restarts follow.
+SpringBoard and chronod exit255 because they cannot communicate with backboardd.
+Headless(display=YES/server=YES), missing built-in backlight driver, invalid
+product id, missing /dev/redwood-touch and analyticsd FAR0 are separate observed
+diagnostics. Their effect on UI rendering is not yet resolved. No lockscreen proof.
+
+M67 adds original iOS16.5 20F66 config1313 bytes, SHA
+1360a59a33789cebea9db2f652ddaf42c6978158a98c2fce72cb43810ea9ed01
+19 ordered processors/15 event chains, all referenced names in order, validated.
+Only hash metadata and synthetic placeholder in Git; original file local only.
+M67 source39202f7cf526eec9ceedd76f76ce7084a6e32314
+Userspace CI41162108737 completed/success; all nonempty jobs success.
+Exact M65 kernel52d128b4e251ada0b340e75f14c0fcc1073fff86 CI41156046841 retained.
+Root SHA 26271bf468d7cd0c0714aaed2a51d01755059769f5f1caec6f5b5b8e8e34f555
+Boot SHA 319240c0af82eee0f8bac4cab721f1738043851880cff9da1d1d4757d81e8701
+AP SHA 5da52277faa7459825e79159a5cc6b0e3923e56042fb5de6af221ff811b53a79
+AP41984062 bytes, boot41975808, 44MiB boot headroom4161536.
+Local AP: ../artifacts/m67-backboard-config/AP_M67_BACKBOARD_CONFIG.tar.md5
+Contains only boot.img; installed M66 ICU userdata cache required and retained.
+Odin AP, Re-Partition/Nand Erase OFF. No device flash performed by agent.
+PASS: staging/overwrite/source/placeholder guards, native build/strict codesign,
+owned observer CodeDirectory pages, all M66 original paths/data/owners/modes and
+ICU links preserved except owned observer; one BackBoard folder/original plist
+added. Independent7zz config extraction/hash; actual final boot C-parser tests;
+all kernel/payload bytes outside root, ADT/header/255MiB memory/24MiB root
+placement/cmdline/shim/DTB unchanged; boot-only tar/member/MD5 verification.
+Next hardware check: M67 EVENTCFG stat0 bytes1313, then actual BackBoard processor
+startup without missing-file exception, and real panel rendering. Hardware PENDING.
+
+PREVIOUS STATUS RECORD
+
 2026-10-31 M66 ICU RESOURCE RESTORATION PACKAGED / HARDWARE PENDING
 
 M65 video104734 runs 428.47 seconds and reaches native SpringBoard/backboardd
