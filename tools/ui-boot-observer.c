@@ -5,6 +5,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#if defined(M66_ICU_PROFILE)
+#include "m66-icu-probe.h"
+#endif
 #if defined(M63_RESOURCE_PROFILE)
 #include <sys/mount.h>
 static void resource_status(unsigned elapsed){
@@ -23,6 +26,9 @@ static void resource_status(unsigned elapsed){
 int main(void){
  setvbuf(stdout,NULL,_IONBF,0);setvbuf(stderr,NULL,_IONBF,0);
  printf("XCOVER5 M55 BEGIN observer pid=%d ppid=%d uid=%d; real launchd mobile UI jobs; no graphics baseline delay\n",getpid(),getppid(),getuid());
+#if defined(M66_ICU_PROFILE)
+ m66_icu_probe();
+#endif
  const char *paths[]={"/usr/libexec/backboardd","/System/Library/CoreServices/SpringBoard.app/SpringBoard"};
  const off_t sizes[]={1182960,112048};
  for(unsigned i=0;i<2;i++){
