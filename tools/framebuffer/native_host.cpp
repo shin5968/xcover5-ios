@@ -21,7 +21,7 @@ using UInt32=uint32_t;using task_t=void*;using mach_port_t=void*;
 using mach_port_name_t=uint32_t;using io_user_reference_t=uint64_t;
 using thread_call_param_t=void*;using OSAsyncReference64=uint64_t[8];
 enum {kIOReturnSuccess=0,kIOReturnBadArgument=2,kIOReturnNoMemory=3,kIOReturnError=4,
- kIOReturnNotReady=5,kIOReturnNotOpen=6,kIOReturnUnsupported=7,kIOUserNotifyOptionCanDrop=1};
+ kIOReturnNotReady=5,kIOReturnNotOpen=6,kIOReturnUnsupported=7,kIOReturnNotPrivileged=8,kIOReturnBusy=9,kIOUserNotifyOptionCanDrop=1};
 using IOReturn=int;struct IOExternalMethodDispatch{};
 struct IOExternalMethodArguments{uint64_t *scalarInput=nullptr,*scalarOutput=nullptr;
  uint32_t scalarInputCount=0,scalarOutputCount=0;void *structureInput=nullptr,*structureOutput=nullptr;
@@ -55,8 +55,9 @@ struct IOService:IORegistryEntry{bool inactive=false;std::string name;
  virtual bool init(OSDictionary* =nullptr){return true;}virtual bool start(IOService*){return true;}
  bool attach(IOService*){return true;}void detach(IOService*){}void registerService(){}void setName(const char*s){name=s;}
  bool isInactive(){return inactive;}void terminate(){inactive=true;}void free()override{}};
-struct IOLock{bool held=false;};static int live_locks=0;
+struct IOLock{bool held=false;};static int live_locks=0;static bool busy_lock=false;
 static IOLock*IOLockAlloc(){live_locks++;return new IOLock;}
+static bool IOLockTryLock(IOLock*l){if(busy_lock||l->held)return false;l->held=true;return true;}
 static void IOLockLock(IOLock*l){assert(l&&!l->held);l->held=true;}
 static void IOLockUnlock(IOLock*l){assert(l&&l->held);l->held=false;}
 static void IOLockFree(IOLock*l){assert(l&&!l->held);live_locks--;delete l;}
@@ -67,7 +68,8 @@ static void thread_call_enter_delayed(thread_call_t c,uint64_t){c->armed=true;}
 static void thread_call_cancel_wait(thread_call_t c){c->armed=false;}
 static void thread_call_free(thread_call_t c){assert(!c->armed);live_calls--;delete c;}
 #define NSEC_PER_SEC 1000000000ULL
-static uint64_t mach_absolute_time(){return 123456789;}
+static uint64_t fake_now=123456789;static uint64_t mach_absolute_time(){return fake_now;}
+static void absolutetime_to_nanoseconds(uint64_t n,uint64_t*p){*p=n;}
 static void nanoseconds_to_absolutetime(uint64_t n,uint64_t*p){*p=n;}
 struct IOUserClient:IOService{
  virtual bool initWithTask(task_t,void*,UInt32,OSDictionary*){return true;}
@@ -98,6 +100,7 @@ static int xcover5_full_present_end(const uint32_t*s){assert(presenting);memcpy(
 #include "XCoverNativeFramebuffer.h"
 static uint32_t number(OSDictionary*d,const char*k){auto*n=dynamic_cast<OSNumber*>(d->getObject(k));assert(n);return n->value;}
 static IOReturn call(IOMobileFramebufferUserClient*c,unsigned sel,IOExternalMethodArguments&a){return c->externalMethod(sel,&a,nullptr,nullptr,nullptr);}
+static void m73_test();
 int main(){
  auto*fb=new IOMobileFramebuffer;assert(fb->init()&&fb->start(nullptr));
  auto*timings=dynamic_cast<OSArray*>(fb->getProperty("TimingElements"));assert(timings&&timings->array.size()==1);
@@ -151,7 +154,37 @@ int main(){
  a.structureInput=nullptr;a.structureInputSize=0;a.scalarInputCount=3;input[0]=0x123;input[1]=0x456;input[2]=5;
  assert(!call(c,72,a)&&last_call->armed);last_call->fn(last_call->self,nullptr);assert(notifications==1&&last_call->armed);
  assert(!c->clientClose()&&!presenting&&restores==1&&!last_call->armed);assert(panel==std::vector<uint32_t>(panel.size(),0xabcdef01));c->release();
- assert(ports_released==1&&live_calls==0);fb->release();chosen->release();product->release();
+ assert(ports_released==1&&live_calls==0);fb->release();m73_test();chosen->release();product->release();
  assert(live_surfaces==0&&live_allocations==0&&live_locks==0);
  puts("M68 actual native service: mobile client admission, modes/current IDs/DPI/default surface, guarded scaling/panel canaries, failed completion, timed notification and close cleanup PASS");
+}
+static void m73_test(){
+ auto*fb=new IOMobileFramebuffer;assert(fb->init()&&fb->start(nullptr));
+ auto*c=new IOMobileFramebufferUserClient;assert(c->initWithTask((void*)1,nullptr,0,nullptr)&&c->start(fb));
+ uint64_t in[3]={0},out[13]={0};out[12]=0xfeedface;
+ IOExternalMethodArguments a;a.scalarInput=in;a.scalarOutput=out;
+ auto query=[&](unsigned command){a.structureInput=nullptr;a.structureInputSize=0;a.scalarInputCount=1;in[0]=command;a.scalarOutputCount=12;return call(c,XC73_DIAG_SELECTOR,a);};
+ actor_uid=501;assert(query(0)==kIOReturnNotPrivileged);actor_uid=0;
+ assert(!query(0)&&out[0]==XC73_DIAG_MAGIC&&!out[1]&&!out[8]&&out[12]==0xfeedface);
+ a.scalarOutputCount=11;assert(call(c,XC73_DIAG_SELECTOR,a)==kIOReturnBadArgument);
+ assert(query(2)==kIOReturnBadArgument);busy_lock=true;assert(query(0)==kIOReturnBusy);busy_lock=false;
+ uint8_t swap[0x46c]={0};auto put=[&](unsigned at,uint32_t v){memcpy(swap+at,&v,4);};
+ auto submit=[&](){a.scalarInputCount=0;a.structureInput=nullptr;a.structureInputSize=0;a.scalarOutputCount=1;assert(!call(c,4,a));put(0x50,(uint32_t)out[0]);a.scalarOutputCount=0;a.structureInput=swap;a.structureInputSize=sizeof(swap);return call(c,5,a);};
+ auto before=panel;unsigned old_restores=restores;
+ assert(!submit()&&presenting);assert(!query(0)&&out[1]==1&&out[2]==0&&out[3]==0&&out[4]==1&&out[5]==1);
+ fake_now+=1000000000ULL;assert(!query(1)&&presenting&&restores==old_restores);
+ fake_now+=2000000000ULL;assert(!query(1)&&!presenting&&panel==before&&out[9]==1&&out[11]==1);
+ // Empty frames still really copy/read back; capture mode restores their console afterward.
+ unsigned old_begins=begins;assert(!submit()&&begins==old_begins+1&&!presenting&&panel==before);
+ assert(!query(0)&&out[1]==2&&out[9]==2);
+ a.scalarInputCount=0;a.scalarOutputCount=1;assert(!call(c,3,a));auto*s=surfaces[(unsigned)out[0]-100];
+ for(uint32_t y=0;y<1624;y++){auto*p=(uint32_t*)(s->kpixels+y*s->info.bytesPerRow);for(uint32_t x=0;x<750;x++)p[x]=0xff112233;}
+ put(0x54,s->id);put(0x6c,750);put(0x70,1624);put(0xcc,750);put(0xd0,1624);
+ assert(!submit()&&presenting);fake_now+=10000000000ULL;
+ assert(!query(1)&&presenting&&out[1]==3&&out[2]==1&&out[3]==720*1480&&out[11]==0);
+ // A failed update does not increment completed frames or erase the previous real content.
+ fail_update=true;assert(submit()==kIOReturnError);fail_update=false;
+ assert(!query(0)&&out[1]==3&&out[6]==1&&out[7]==kIOReturnError&&out[12]==0xfeedface);
+ assert(!c->clientClose()&&!presenting);c->release();fb->release();actor_uid=501;
+ puts("M73 actual observation: root-only ABI/canaries, busy/shape rejection, delayed blank recovery, genuine black copy/restore, real-content takeover and failed-frame accounting PASS");
 }

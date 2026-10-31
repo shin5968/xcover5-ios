@@ -8,6 +8,9 @@
 #if defined(M66_ICU_PROFILE)
 #include "m66-icu-probe.h"
 #endif
+#if defined(M73_DISPLAY_PROFILE)
+#include "m73-display-observer.h"
+#endif
 #if defined(M72_PORTABLE_PROFILE)
 #include "m72-portable-probe.h"
 #endif
@@ -56,7 +59,13 @@ int main(void){
   printf("XCOVER5 M55 MACHO path=%s bytes=%ld magic=%08x\n",paths[i],(long)n,magic);
   if(n!=4 || (magic!=0xfeedfacfU && magic!=0xbebafecaU && magic!=0xbfbafecaU))return 202;
  }
+#if defined(M73_DISPLAY_PROFILE)
+ m73_start();
+#endif
  for(unsigned elapsed=0;elapsed<OBSERVATION_SECONDS;elapsed++){
+#if defined(M73_DISPLAY_PROFILE)
+  if(elapsed%5==0)m73_observe(elapsed);
+#endif
 #if defined(M63_RESOURCE_PROFILE)
   if(elapsed%30==0)resource_status(elapsed);
 #endif
@@ -64,6 +73,9 @@ int main(void){
   sleep(1);
  }
 
+#if defined(M73_DISPLAY_PROFILE)
+ m73_finish();
+#endif
 #if defined(M63_RESOURCE_PROFILE)
  resource_status(OBSERVATION_SECONDS);
  puts("XCOVER5 M63 OBSERVATION_END:90 seconds; exit77 means capture complete ONLY; not UI readiness or lock-screen success");

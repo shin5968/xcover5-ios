@@ -10,6 +10,7 @@
 #include <kern/clock.h>
 #endif
 #include "XCoverNativeFBABI.h"
+#include "XCoverFBObservation.h"
 static void xc68number(OSDictionary *d,const char *key,uint32_t value) {
  OSNumber *n=OSNumber::withNumber(value,32);if(n){d->setObject(key,n);n->release();}
 }
@@ -18,6 +19,8 @@ class IOMobileFramebuffer:public IOService {
  IOLock *fLock;MiniIOSurface *fDefaultSurface;
  uint32_t *fCanvas,*fSaved;IOUserClient *fPresenter;bool fPresented;
  uint32_t fSwapID,fFrames,fTrace[128],fFailures[128];
+ uint32_t fEmpty,fBlack,fRejected,fLastMask,fNonBlack,fRestores;
+ uint64_t fFrameAt;IOReturn fLastResult;bool fCaptureBlack;
 public:
  void publishModes(void) {
   OSDictionary *timing=OSDictionary::withCapacity(8),*horizontal=OSDictionary::withCapacity(4);
@@ -42,6 +45,7 @@ public:
  }
  bool start(IOService *provider) APPLE_KEXT_OVERRIDE {
   fLock=NULL;fDefaultSurface=NULL;fCanvas=fSaved=NULL;fPresenter=NULL;fPresented=false;
+  fEmpty=fBlack=fRejected=fLastMask=fNonBlack=fRestores=0;fFrameAt=0;fLastResult=kIOReturnSuccess;fCaptureBlack=false;
   fSwapID=fFrames=0;bzero(fTrace,sizeof(fTrace));bzero(fFailures,sizeof(fFailures));
   if(!IOService::start(provider))return false;
   fLock=IOLockAlloc();if(!fLock)return false;
@@ -64,6 +68,24 @@ public:
   if(selector<128&&__sync_fetch_and_add(&fFailures[selector],1)<3)IOLog("XCOVER5 M68 FB_RESULT pid=%d selector=%u rc=%x\n",proc_selfpid(),selector,result);
  }
  uint32_t nextID(void){IOLockLock(fLock);if(!++fSwapID)++fSwapID;uint32_t id=fSwapID;IOLockUnlock(fLock);return id;}
+ IOReturn observe(uint64_t command,uint64_t *out) {
+  if(!IOLockTryLock(fLock))return kIOReturnBusy;
+  uint64_t age=0,now=mach_absolute_time();
+  if(fFrameAt&&now>=fFrameAt)absolutetime_to_nanoseconds(now-fFrameAt,&age);
+  IOReturn result=kIOReturnSuccess;
+  /* Explicit root observation only. A black frame was actually copied/read back;
+   * recover the saved console so subsequent faults and progress stay visible. */
+  if(command==1&&fPresented&&fNonBlack==0&&age>=2*NSEC_PER_SEC) {
+   int rc=xcover5_full_present_end(fSaved);
+   if(!rc){fPresented=false;fPresenter=NULL;fCaptureBlack=true;fRestores++;
+    IOLog("XCOVER5 M73 CONSOLE_RECOVER frames=%u layers=%x rgb_pixels=0 age_ms=%llu\n",fFrames,fLastMask,age/1000000);}
+   else result=kIOReturnError;
+  }
+  out[0]=XC73_DIAG_MAGIC;out[1]=fFrames;out[2]=fLastMask;out[3]=fNonBlack;
+  out[4]=fEmpty;out[5]=fBlack;out[6]=fRejected;out[7]=(uint32_t)fLastResult;
+  out[8]=fPresented;out[9]=fRestores;out[10]=age;out[11]=fCaptureBlack;
+  IOLockUnlock(fLock);return result;
+ }
  mach_port_name_t defaultPort(task_t task) {
   IOLockLock(fLock);
   if(!fDefaultSurface)fDefaultSurface=MiniIOSurfaceCreateSimple(XC68_WIDTH,XC68_HEIGHT,'BGRA');
@@ -93,11 +115,20 @@ public:
    if(valid) {
     int rc=fPresented?xcover5_full_present_update(fCanvas):xcover5_full_present_begin(fCanvas,fSaved);
     result=rc?kIOReturnError:kIOReturnSuccess;
-    if(!rc){fPresented=true;fPresenter=client;fFrames++;
+    if(!rc){fPresented=true;fPresenter=client;fFrames++;fLastMask=enabled;fNonBlack=0;fFrameAt=mach_absolute_time();
+     if(enabled)for(unsigned p=0;p<XC68_PANEL_W*XC68_PANEL_H;p++)fNonBlack+=(fCanvas[p]&0xffffffU)!=0;
+     if(!enabled)fEmpty++;if(!fNonBlack)fBlack++;else fCaptureBlack=false;
      if(fFrames<=8||fFrames%60==0)IOLog("XCOVER5 M68 FRAME id=%u layers=%x shown=%u panel_readback=PASS\n",xc68word(swap,0x50),enabled,fFrames);
+     /* After an explicit observation recovery, blank-only submissions still copy
+      * and read back before restoring the console. Real content keeps the panel. */
+     if(fCaptureBlack&&!fNonBlack){int restored=xcover5_full_present_end(fSaved);
+      if(!restored){fPresented=false;fPresenter=NULL;fRestores++;}
+      else IOLog("XCOVER5 M73 CONSOLE_RESTORE_ERROR rc=%d\n",restored);
+     }
     }
    }
   }
+  fLastResult=result;if(result)fRejected++;
   for(unsigned i=0;i<4;i++)if(layers[i])MiniIOSurfaceDrop(layers[i]);
   IOLockUnlock(fLock);return result;
  }
@@ -184,6 +215,12 @@ public:
      a->structureInputSize>65536||a->structureOutputSize>65536||
      (a->structureOutputSize&&!a->structureOutput))return kIOReturnBadArgument;
   fOwner->trace(selector,a);const uint64_t *in=a->scalarInput;uint64_t *out=a->scalarOutput;
+  if(selector==XC73_DIAG_SELECTOR) {
+   if(proc_getuid(current_proc_EXTERNAL())!=0)return kIOReturnNotPrivileged;
+   if(a->scalarInputCount!=1||in[0]>1||a->scalarOutputCount<XC73_DIAG_WORDS||a->structureInputSize||a->structureOutputSize)return kIOReturnBadArgument;
+   bzero(out,XC73_DIAG_WORDS*sizeof(*out));IOReturn rc=fOwner->observe(in[0],out);
+   a->scalarOutputCount=rc?0:XC73_DIAG_WORDS;return rc;
+  }
   switch(selector) {
    case 7:case 8:case 28:case 77:
     if(a->scalarOutputCount<(selector==8?2U:1U))return kIOReturnBadArgument;
