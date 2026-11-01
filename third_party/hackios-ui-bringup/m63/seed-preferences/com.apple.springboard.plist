@@ -17,5 +17,12 @@
 	     Percentage, which an iPhone X has off at first) -->
 	<key>SBShowBatteryPercentage</key>
 	<true/>
+	<key>FBLaunchWatchdogExceptions</key>
+	<dict>
+		<key>com.apple.purplebuddy</key>
+		<real>100.0</real>
+	</dict>
+	<key>MCForceShowCloudConfigurationUI</key>
+	<false/>
 </dict>
 </plist>

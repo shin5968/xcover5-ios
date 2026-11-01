@@ -47,7 +47,7 @@ def metadata():
         records[name] = item
     for source in sorted((CONFIG / 'seed-preferences').glob('*.plist')):
         name = '/private/var/mobile/Library/Preferences/' + source.name
-        records[name] = dict(kind='f', mode=0o644, uid=501, gid=501, source=source)
+        records[name] = dict(kind='f', mode=0o600, uid=501, gid=501, source=source)
     for name in MARKERS:
         records[name] = dict(kind='f', mode=0o644, uid=272, gid=272, data=b'')
     return records

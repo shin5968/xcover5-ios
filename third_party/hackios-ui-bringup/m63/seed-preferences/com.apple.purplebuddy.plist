@@ -11,5 +11,9 @@
 	<string>SetupUsingAssistant</string>
 	<key>ForceNoBuddy</key>
 	<true/>
+	<key>SetupFinishedAllSteps</key>
+	<true/>
+	<key>daemonizeNeedsToRun</key>
+	<false/>
 </dict>
 </plist>

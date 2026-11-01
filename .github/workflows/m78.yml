@@ -1,0 +1,40 @@
+name: M78 S8-derived RAMFS preferences
+on:
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  root:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test RAMFS preference staging
+        run: sudo python3 tools/test_s8_preferences.py
+      - name: Download verified M77 synthetic root
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run view 41202778316 --json status,conclusion,headSha,jobs > source-ci.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('source-ci.json'))
+          assert d['status']=='completed' and d['conclusion']=='success'
+          assert d['headSha']=='9796a27f57b2f150461c564f69be371fa6c5721c'
+          assert d['jobs'] and all(j['conclusion']=='success' for j in d['jobs'])
+          PY
+          gh run download 41202778316 --name m77-root --dir out
+          (cd out && shasum -a 256 -c M77_SHA256SUMS)
+      - name: Update frozen RAMFS preference template
+        run: |
+          WORK=$(mktemp -d)
+          trap 'hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true' EXIT
+          hdiutil attach -imagekey diskimage-class=CRawDiskImage -owners on -nobrowse -mountpoint "$WORK/mnt" out/root-hfs.img >/dev/null
+          sudo python3 tools/update_s8_var_seed.py "$WORK/mnt" > out/M78_PREFERENCES.json
+          sync
+          hdiutil detach "$WORK/mnt" >/dev/null
+          (cd out && shasum -a 256 root-hfs.img > M78_SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m78-root
+          path: out/

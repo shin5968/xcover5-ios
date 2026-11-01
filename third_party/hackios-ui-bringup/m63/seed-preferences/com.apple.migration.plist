@@ -13,5 +13,12 @@
 		<key>buildVersion</key>
 		<string>20F66</string>
 	</dict>
+	<key>DMUserDataDisposition</key>
+	<dict>
+		<key>SyntheticDidUpgrade</key>
+		<false/>
+		<key>buildVersion</key>
+		<string>20F66</string>
+	</dict>
 </dict>
 </plist>
