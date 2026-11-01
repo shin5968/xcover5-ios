@@ -1,3 +1,12 @@
+M79 ORIGINAL PROFILED MATCHED BOOT+USERDATA PACKAGED / HARDWARE PENDING
+CI41266147705 source6080b5ec3b1795875efc46e03658ded050e5b84c success.
+Original profiled +16 framework resources on cache; demand job matches pinned upstream selector.
+Existing M72 cache paths/metadata and every file hash preserved. Kernel retained M78.
+Final RAMFS seed137 accepted by actual prep host body. Independent assets, sparse, LZ4, Odin checks PASS.
+Local ../artifacts/m79-profiled-storage/AP_M79_PROFILED_MATCHED_BOOT_USERDATA.tar.md5
+This AP replaces boot AND userdata cache; M72 alone lacks the program. No flash performed.
+Video M78 native receipt135 and I/O passed; UI still empty1/layers0.
+
 M78 S8-DERIVED PREFERENCES PACKAGED / HARDWARE PENDING
 CI41265106473 source bf3cd271ceceda986dd1768fdbf0414576ac8f12 success.
 Final-image seed 135 records accepted by actual prep body in host mount shim.

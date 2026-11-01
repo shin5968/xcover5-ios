@@ -1,0 +1,13 @@
+{
+  "source": "local original iPhone10,3 iOS16.5 20F66 APFS; original bytes remain local",
+  "files": "FILES.json pins original program, job and ManagedConfiguration resources",
+  "cache": "17 assets under xcover-m79; source launchd plist is not copied as cache data",
+  "job_policy": "semantic equality with actual pinned HackiOS mkjobs.py --rest output, OSLOG=com.apple.managedconfiguration.profiled",
+  "hackios_commit": "a3384e031eb1e605cf37adaefc19991f04f6274b",
+  "identity": "mobile, Adaptive, two original MachServices; no RunAtLoad, KeepAlive or LaunchEvents",
+  "existing_framework_info": "original Info.plist already exists in M78 and was verified byte-identical; retained",
+  "excluded": "ManagedSettingsExtension.appex; empty locale directories; no unrelated service enabled",
+  "direct_dependencies": "48 direct load-command paths found in retained primary cache; runtime load pending",
+  "activation": "no activation state or provisioning response is synthesized",
+  "runtime": "actual demand start and lockscreen still require device validation"
+}

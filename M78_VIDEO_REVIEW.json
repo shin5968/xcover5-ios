@@ -1,0 +1,32 @@
+{
+  "source": "C:\\Users\\user\\AppData\\Local\\Temp\\20261101_112834.mp4",
+  "bytes": 1217004710,
+  "sha256": "25fb6b0283f7dc02b4cf0f3519c4a33dc70e0c867cae4a2d3c5b55b435c067fa",
+  "duration_seconds": 303.51,
+  "sampled_video_seconds": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    302
+  ],
+  "observations": {
+    "180s": "M75 BOOT_PROOF records=135 mobile_io=PASS logd_dir_status=0 mobile_dir_status=0; FrontBoard applicationState.db exists; root and RAMFS have free space",
+    "150s": "SpringBoard pid9 checkedIn YES; backboardd bootstrap system shells ready",
+    "240-270s": "SpringBoard pid9 still logging; profiled.public lookup fails with no such process / NSCocoaErrorDomain4099; frame count1 layers0 rgb0 empty1 black1 rejected0 restored1",
+    "302s": "m39-probe exit77 after bounded observation, then analyticsd logs continue"
+  },
+  "interpretation": {
+    "m78_seed_native": "CONFIRMED: receipt135 matches M78 manifest",
+    "lockscreen": "NOT OBSERVED; no composed UI layers in sampled display counters",
+    "whole_device_hang": "NOT ESTABLISHED; logs continue after observer exit",
+    "profiled_missing": "CONFIRMED missing service, causal role in absent UI not established",
+    "next_focus": "Add original profiled and required resources via storage-backed placement; separately inspect SpringBoard scene/rendering readiness. Do not infer that every missing XPC service is required."
+  }
+}
