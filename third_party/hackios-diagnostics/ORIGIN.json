@@ -15,7 +15,8 @@
   "changes": [
     "No Redwood loader log: loader_log_line removed, every line goes to the console only",
     "userabort lines also require boot-arg systrace, so default console output is unchanged",
-    "__pthread_kill hook placed after the existing declarations",
+    "__pthread_kill hook after target/signal validation and only when the target is the calling thread",
+    "ustacks thread call allocated at THREAD_CALL_PRIORITY_LOW (single core)",
     "Comments name the XCover5 adaptation; no other code change"
   ],
   "boot_args": "systrace=1; ustacks=NAME|top ustacks_at=SECONDS [ustacks_ms ustacks_count ustacks_threads ustacks_tname]",

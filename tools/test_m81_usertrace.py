@@ -14,7 +14,7 @@ body=''.join(line[1:] for line in section.splitlines(True) if line.startswith('+
 # The only differences from upstream, each applied exactly once.
 ADAPT=[
  (' * addresses found by walking the frame pointers.\n */\n',
-  ' * addresses found by walking the frame pointers.\n *\n * XCover5: from HackiOS a3384e031eb1e605cf37adaefc19991f04f6274b. There is no\n * Redwood loader log here, so every line goes to the console only; userabort\n * lines also need systrace, so a kernel without these boot-args prints nothing new.\n */\n'),
+  ' * addresses found by walking the frame pointers.\n *\n * XCover5: from HackiOS a3384e031eb1e605cf37adaefc19991f04f6274b. There is no\n * Redwood loader log here, so every line goes to the console only; userabort\n * lines also need systrace, so a kernel without these boot-args prints nothing new.\n * The sampler runs at low thread-call priority: on one core it must not stall what it observes.\n */\n'),
  ('\tif (task == kernel_task || state == NULL || !is_saved_state64(state)) {\n\t\treturn;\n\t}\n\tregion = vm_shared_region_get(task);\n\tif (region != NULL) {\n\t\tslide = region->sr_slide;\n\t\tvm_shared_region_deallocate(region);\n\t}\n\tprintf("userabort:',
   '\tif (!user_exception_trace_enabled || task == kernel_task || state == NULL || !is_saved_state64(state)) {\n\t\treturn;\n\t}\n\tregion = vm_shared_region_get(task);\n\tif (region != NULL) {\n\t\tslide = region->sr_slide;\n\t\tvm_shared_region_deallocate(region);\n\t}\n\tprintf("userabort:'),
  ("caught, or an assertion; the text of it goes to the program's standard error (boot-arg applog=1\n * puts that on the console), the stack is here.",
@@ -29,6 +29,9 @@ expected=upstream
 for old,new in ADAPT:
     assert expected.count(old)==1,old[:50]
     expected=expected.replace(old,new)
+assert expected.count('thread_call_allocate(ustacks_fire, NULL)')==2
+expected=expected.replace('thread_call_allocate(ustacks_fire, NULL)',
+                          'thread_call_allocate_with_priority(ustacks_fire, NULL, THREAD_CALL_PRIORITY_LOW)')
 assert body==expected and 'loader_log_line' not in body
 assert body.count('static TUNABLE(uint32_t, user_exception_trace_enabled, "systrace", 0);')==1
 hooks=patch.split('\ndiff --git ')[1:]
@@ -41,7 +44,10 @@ if len(sys.argv)>1:
     assert e.count('user_exception_trace(exception, code, codeCnt, thread);')==1
     assert e.index('user_exception_trace(')<e.index('assert(exception != EXC_RPC_ALERT);')
     k=(tree/'bsd/kern/kern_sig.c').read_text().split('\n__pthread_kill(')[1].split('\n}\n')[0]
-    assert k.count('user_abort_trace();')==1 and k.index('if (signum == SIGABRT)')<k.index('port_name_to_thread(')
+    # only a resolved, in-range target that is the caller itself (abort() signals its own thread)
+    assert k.count('user_abort_trace();')==1
+    assert k.count('if (signum == SIGABRT && target_act == current_thread()) {')==1
+    assert k.index('return ESRCH;')<k.index('error = EINVAL;')<k.index('user_abort_trace();')<k.index('get_bsdthread_info(target_act)')
     if '--source-only' in sys.argv:
         print('M81 actual applied user trace source, exception/abort hooks and build entry PASS');sys.exit(0)
 traces=body.split('/*\n * Boot-args ustacks=')[0]
@@ -85,7 +91,7 @@ static void map(uint64_t at,const void *data,size_t size){assert(mapped<40&&size
 static const unsigned char *find(uint64_t at,size_t size){for(unsigned i=0;i<mapped;i++)if(at>=mem[i].at&&at+size<=mem[i].at+mem[i].size)return mem[i].bytes+(at-mem[i].at);return NULL;}
 static int copyin(user_addr_t from,void *to,size_t size){const unsigned char *p=find(from,size);if(!p)return 14;memcpy(to,p,size);return 0;}
 static int copyinstr(user_addr_t from,void *to,size_t max,vm_size_t *done){char *out=to;for(size_t i=0;i<max;i++){const unsigned char *p=find(from+i,1);if(!p){*done=i;return 14;}out[i]=*p;if(!*p){*done=i+1;return 0;}}*done=max;return 63;}
-static void bzero(void *p,size_t n){memset(p,0,n);}
+#define bzero(p,n) memset((p),0,(n))  /* macOS string.h already declares bzero */
 static char logs[16384];static size_t used;
 static int capture(const char *fmt,...){va_list a;va_start(a,fmt);int n=vsnprintf(logs+used,sizeof(logs)-used,fmt,a);va_end(a);used+=n;assert(used<sizeof(logs));return n;}
 #define printf capture

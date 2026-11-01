@@ -2,7 +2,7 @@ diff --git a/osfmk/arm64/user_exception_trace.c b/osfmk/arm64/user_exception_tra
 new file mode 100644
 --- /dev/null
 +++ b/osfmk/arm64/user_exception_trace.c
-@@ -0,0 +1,439 @@
+@@ -0,0 +1,440 @@
 +/*
 + * Bring-up aid: with boot-arg systrace set, describe every fatal-looking
 + * exception a user thread takes, before it is delivered. There is no crash
@@ -17,6 +17,7 @@ new file mode 100644
 + * XCover5: from HackiOS a3384e031eb1e605cf37adaefc19991f04f6274b. There is no
 + * Redwood loader log here, so every line goes to the console only; userabort
 + * lines also need systrace, so a kernel without these boot-args prints nothing new.
++ * The sampler runs at low thread-call priority: on one core it must not stall what it observes.
 + */
 +
 +#include <arm/thread.h>
@@ -418,7 +419,7 @@ new file mode 100644
 +{
 +	strlcpy(ustacks_name, name, sizeof(ustacks_name));
 +	if (ustacks_call == NULL) {
-+		ustacks_call = thread_call_allocate(ustacks_fire, NULL);
++		ustacks_call = thread_call_allocate_with_priority(ustacks_fire, NULL, THREAD_CALL_PRIORITY_LOW);
 +	}
 +	thread_call_enter(ustacks_call);
 +}
@@ -437,7 +438,7 @@ new file mode 100644
 +	PE_parse_boot_argn("ustacks_threads", &ustacks_threads, sizeof(ustacks_threads));
 +	PE_parse_boot_argn("ustacks_tname", ustacks_tname, sizeof(ustacks_tname));
 +	PE_parse_boot_argn("ustacks_count", &ustacks_count, sizeof(ustacks_count));
-+	ustacks_call = thread_call_allocate(ustacks_fire, NULL);
++	ustacks_call = thread_call_allocate_with_priority(ustacks_fire, NULL, THREAD_CALL_PRIORITY_LOW);
 +	clock_interval_to_deadline(at, NSEC_PER_SEC, &deadline);
 +	thread_call_enter_delayed(ustacks_call, deadline);
 +}
@@ -483,18 +484,18 @@ diff --git a/osfmk/kern/exception.c b/osfmk/kern/exception.c
 diff --git a/bsd/kern/kern_sig.c b/bsd/kern/kern_sig.c
 --- a/bsd/kern/kern_sig.c
 +++ b/bsd/kern/kern_sig.c
-@@ -1101,6 +1101,14 @@ __pthread_kill(__unused proc_t p, struct __pthread_kill_args *uap,
- 	int signum = uap->sig;
- 	struct uthread *uth;
+@@ -1112,6 +1112,14 @@ __pthread_kill(__unused proc_t p, struct __pthread_kill_args *uap,
+ 		goto out;
+ 	}
  
 +#if defined(__arm64__)
-+	if (signum == SIGABRT) {
++	if (signum == SIGABRT && target_act == current_thread()) {
 +		extern void user_abort_trace(void);
 +
 +		user_abort_trace();             /* no crash reporter here: this is where an abort() gets recorded */
 +	}
 +#endif
 +
- 	target_act = (thread_t)port_name_to_thread(uap->thread_port,
- 	    PORT_INTRANS_OPTIONS_NONE);
+ 	uth = (struct uthread *)get_bsdthread_info(target_act);
  
+ 	if (uth->uu_flag & UT_NO_SIGMASK) {

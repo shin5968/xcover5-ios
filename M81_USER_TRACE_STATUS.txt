@@ -16,7 +16,10 @@ Why
 
 Hooks (same sites as upstream redwood.patch)
   osfmk/kern/exception.c exception_triage_thread: before existing triage.
-  bsd/kern/kern_sig.c __pthread_kill(SIGABRT): after existing declarations.
+  bsd/kern/kern_sig.c __pthread_kill(SIGABRT): after the target port and signal
+  are validated, and only when the target is the calling thread (abort() itself).
+  Upstream traced the sender before validation, so another-thread or invalid
+  requests were reported as the sender aborting.
   osfmk/conf/files.arm64: standard source next to sleh.c.
   M69 breakpoint logger and every existing exception flow remain unchanged.
 
@@ -24,18 +27,22 @@ XCover5 changes from upstream (test_m81_usertrace.py checks this exact list)
   No Redwood loader log: loader_log_line removed; console printf only.
   userabort lines also need systrace, so a kernel built with 0096 but without
   the boot-args below prints nothing new.
+  ustacks/top thread call at THREAD_CALL_PRIORITY_LOW instead of the default
+  high priority, so on one core it does not preempt the processes it observes.
   Comments only otherwise.
 
 Boot-args (none are in the current packaging cmdline)
   systrace=1                       usertrap: / userabort: lines
-  ustacks=SpringBoard ustacks_at=60 ustacks_ms=10000 ustacks_count=6
-                                   per-thread pc/lr/return addresses
+  ustacks=SpringBoard ustacks_at=60 ustacks_ms=10000 ustacks_count=6 ustacks_threads=1
+                                   main-thread pc/lr/return addresses
   ustacks=top ustacks_at=60 ustacks_ms=10000 ustacks_count=6
                                    busy percentage and top 12 processes
   Optional ustacks_threads=N, ustacks_tname=TEXT (e.g. coreanimation).
   Addresses minus the printed slide resolve in the exact iOS16.5 dyld cache.
-  Console volume: each ustacks report is about 1 line per thread; on the slow
-  framebuffer console prefer ustacks_threads=1 or ustacks_tname.
+  Console volume: one logical line per thread, up to ~250 bytes (pc, lr and 14
+  return addresses), which wraps over several rows of the 720px console; without
+  ustacks_threads a report may cover up to 96 threads in each of 8 matching
+  processes. Keep ustacks_threads=1 or ustacks_tname on the framebuffer console.
 
 Verification so far
   Pinned upstream size/SHA256 PASS. Patch body equals upstream plus the listed
@@ -47,7 +54,15 @@ Verification so far
   32-bit filtered, x0 message printed, short/binary/unmapped/out-of-range values
   skipped, slide reported and region reference released, fp walk stops on a
   non-rising frame, caps 10 (trap) and 24 (abort), misaligned fp ignored. PASS.
-  The ustacks/top part is not run on the host (it needs task/thread queues).
+  The ustacks/top part and the __pthread_kill hook body are not run on the host
+  (they need task/thread queues and port resolution); their placement and
+  priority are checked on the applied source.
+
+Review / CI
+  First kernel CI run 41274341607 failed in preflight: the harness's static
+  bzero mock clashes with Darwin's string.h declaration (Linux job passed).
+  Codex review round1 (artifacts/m81-user-trace/codex-review-1.md) found the
+  same, plus thread-call priority and SIGABRT attribution; all three fixed.
 
 Not established
   Kernel compilation of 0096 on macOS CI, a boot package, and any device output.
