@@ -1,0 +1,74 @@
+{
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/Payloads.loctable": [
+    4006993,
+    "eec4e239a6faff9a7ea3bfd24694d05c8561d017bb27ebe88d70f1aa4788e527"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/_CodeSignature/CodeResources": [
+    2467,
+    "3c727b0f043e463c0227db49cef54c5567715986d08a46c98923c9bb73585e5a"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/defaultRestrictions.plist": [
+    11022,
+    "3ab19bb64239f6883a8e956b0efd79c5a4f85cf4e8568d8a2a5d3146c88abe90"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/com.apple.ManagedConfiguration.plist": [
+    203,
+    "7cd2fca169c9815cb375465d460ef931fb682b3184c71909df590c248debfb17"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/singleUserRestrictionPayloadKeysFilter.plist": [
+    4524,
+    "3bf172da098c34450b160bc980de793e60fb169d8ba2c1c71ef591362f3701cc"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/WatchRestrictionPayloadKeysFilter.plist": [
+    517,
+    "8730dfb7fbe97aaa81964c7f7ff2fb8abdd173c97063825fc5711eb8b0fe2144"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/AppleTVRestrictionPayloadKeysFilter.plist": [
+    746,
+    "30e0c2bc3a35716b151d8a65b45c7bb9be9e22a14f87b1f0f9e3a383b70f405a"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/ephemeralMultiUserRestrictionPayloadKeysFilter.plist": [
+    4397,
+    "ee8ffe2f6173a3f06c5d95aabd2adba57e97a17c296514ae46cc378f6dac5efe"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/unsupervisedRestrictionPayloadKeys.plist": [
+    1800,
+    "fb056d47f3e9792ac9f1e9febc8d6f4e5209886011b530f8380e9146a3ca3c47"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/defaultSettings.plist": [
+    10519,
+    "9d2736616726391aed46c8c461ecda8ba864e4949431019446f10f33a8a28447"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/Errors.loctable": [
+    1795821,
+    "98b11631d31b1554078ce3912c67f3cf28b05df5e4575384e9ab6d624269d53e"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/enforcedAppWhitelistRestrictions.plist": [
+    392,
+    "f6fd901ea7877da3acbbdb7a382623f2d5010bdc764cbb86b437e3177327b609"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/deprecatedUnsupervisedRestrictionPayloadKeys.plist": [
+    271,
+    "a9182a7f757c6e7ce3dd8f67d4345dedcdce3ebd1cbaf29138b243a5a468aaff"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/publicRestrictionKeys.plist": [
+    2943,
+    "fec0b1b220e989e65c05f687649d84f66252d51b43525eccd0a18c8acf5ea49c"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/supervisedRestrictionPayloadKeys.plist": [
+    4718,
+    "2bcf3246820f08b52dd804b47c325c4371c4198413c36b3d720b741d753e4674"
+  ],
+  "System/Library/PrivateFrameworks/ManagedConfiguration.framework/UserEnrollmentRestrictionPayloadKeysFilter.plist": [
+    942,
+    "6ff690b588c5d6073ceda626c633cfe41560ec22f4e9fdc29c14d7bea63e49ac"
+  ],
+  "usr/libexec/profiled": [
+    1108096,
+    "08511b7aaff3d340dddabdec563592100538ed64af71d58591aa912fe87d83d7"
+  ],
+  "System/Library/LaunchDaemons/com.apple.managedconfiguration.profiled.plist": [
+    1003,
+    "223f634a0102286459ccbd5c70071f394c47e4db6f8c07ea34c5694518a9869a"
+  ]
+}

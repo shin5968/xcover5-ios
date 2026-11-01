@@ -1,0 +1,49 @@
+name: M79 storage-backed original profile service
+on:
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  root:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download verified M78 synthetic root
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run view 41265106473 --json status,conclusion,headSha,jobs > source-ci.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('source-ci.json'))
+          assert d['status']=='completed' and d['conclusion']=='success'
+          assert d['headSha']=='bf3cd271ceceda986dd1768fdbf0414576ac8f12'
+          assert d['jobs'] and all(j['conclusion']=='success' for j in d['jobs'])
+          PY
+          gh run download 41265106473 --name m78-root --dir out
+          (cd out && shasum -a 256 -c M78_SHA256SUMS)
+      - name: Add profile service and writable data directories
+        run: |
+          WORK=$(mktemp -d)
+          trap 'hdiutil detach "$WORK/mnt" >/dev/null 2>&1 || true' EXIT
+          hdiutil attach -imagekey diskimage-class=CRawDiskImage -owners on -nobrowse -mountpoint "$WORK/mnt" out/root-hfs.img >/dev/null
+          sudo python3 tools/stage_m79_profiled.py root "$WORK/mnt"
+          sync
+          hdiutil detach "$WORK/mnt" >/dev/null
+      - name: Build matched cache with all previous assets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('tools/mkhfs_m72_cache.sh').read_text()
+          marker='sudo chown -R 0:0 "$WORK/mnt"'
+          assert s.count(marker)==1
+          s=s.replace(marker,'sudo python3 tools/stage_m79_profiled.py cache "$WORK/mnt"\n'+marker)
+          Path('m79-cache.sh').write_text(s)
+          PY
+          bash m79-cache.sh out/userdata-m79-template.img
+          (cd out && shasum -a 256 root-hfs.img userdata-m79-template.img > M79_SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m79-storage
+          path: out/
