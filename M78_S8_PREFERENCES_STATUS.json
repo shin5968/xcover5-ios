@@ -1,0 +1,38 @@
+{
+  "ap": "AP_M78_S8_PREFERENCES_REQUIRES_M72_CACHE.tar.md5",
+  "ap_sha256": "17b2ecba331bb6236532f86b002bb69bbb17e8792b887921b5308d93bb685c81",
+  "boot_sha256": "229d2d1e1663f24070652915cafccb065ff172bb94d3192a9bf03c54ecda608b",
+  "root_sha256": "5b5f2192baddf24c54f2c8bbcf16b4471f56b24f723ed8f9a20f21aef0cf36aa",
+  "root_free_bytes": 1081344,
+  "seed_records": 135,
+  "preference_domains": [
+    "com.apple.VideoProcessing.plist",
+    "com.apple.assistant.support.plist",
+    "com.apple.coremedia.plist",
+    "com.apple.frontboard.plist",
+    "com.apple.keyboard.preferences.plist",
+    "com.apple.managedconfiguration.notbackedup.plist",
+    "com.apple.migration.plist",
+    "com.apple.purplebuddy.notbackedup.plist",
+    "com.apple.purplebuddy.plist",
+    "com.apple.springboard.plist"
+  ],
+  "permitted_changed_paths": [
+    "/usr/share/xcover5/m74-var-template/files/0000.bin",
+    "/usr/share/xcover5/m74-var-template/files/0001.bin",
+    "/usr/share/xcover5/m74-var-template/files/0124.bin",
+    "/usr/share/xcover5/m74-var-template/files/0125.bin",
+    "/usr/share/xcover5/m74-var-template/files/0126.bin",
+    "/usr/share/xcover5/m74-var-template/files/0127.bin",
+    "/usr/share/xcover5/m74-var-template/files/0128.bin",
+    "/usr/share/xcover5/m74-var-template/files/0129.bin",
+    "/usr/share/xcover5/m74-var-template/files/0130.bin",
+    "/usr/share/xcover5/m74-var-template/files/0131.bin",
+    "/usr/share/xcover5/m74-var-template/manifest.tsv"
+  ],
+  "all_other_paths_metadata_and_bytes": "identical M77",
+  "kernel_shim_dtb_and_payload_outside_root": "identical M77",
+  "hardware": "PENDING",
+  "userdata": "retain installed M72 cache; boot.img only",
+  "final_image_native_seed_host_test": "PASS: actual xc74_prepare body, 135 records, mount mocked; native device pending"
+}

@@ -1,3 +1,10 @@
+M78 S8-DERIVED PREFERENCES PACKAGED / HARDWARE PENDING
+CI41265106473 source bf3cd271ceceda986dd1768fdbf0414576ac8f12 success.
+Final-image seed 135 records accepted by actual prep body in host mount shim.
+All paths outside preference seed and kernel/shim/DTB identical M77.
+Local ../artifacts/m78-s8-preferences/AP_M78_S8_PREFERENCES_REQUIRES_M72_CACHE.tar.md5
+Retain installed M72 cache. Boot only. No flash performed.
+
 M77 BOOT CLEAN PACKAGED / HARDWARE PENDING
 CI41202778316 source9796a27f57b2f150461c564f69be371fa6c5721c success.
 Removed24 completed owned diagnostic files/jobs,506788bytes.

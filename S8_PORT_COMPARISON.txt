@@ -3,7 +3,7 @@ Pinned source: 04b41729e89f702261e5599dbe3677e8ee5f5ee3
 Reviewed: tools/sweet-root-tweaks.py, tools/mkiosroot.sh,
 tools/dreamlte/finish-iosroot.sh, xnu/patches/0109 and 0124.
 
-Applied to source preference seeds (not yet packaged):
+Applied to source preference seeds and M78 boot package:
 - Preserve existing 20F66 migration state; add DMUserDataDisposition.
 - Preserve existing BKNoWatchdogs and watchdog scale; add cloud UI setting
   and PurpleBuddy launch exception from the reference recipe.
@@ -18,8 +18,7 @@ Remaining review: full OS/Cryptex inventory, demand services, native display
 mode and actual UI frame production. S8 register addresses, UFS, GPIO, PMIC,
 memory geometry and boot images must not be copied to Exynos850.
 
-M77 device package is unchanged. Existing packaged M74 seed is already
-frozen; updating these source plists alone does not alter that image.
-A subsequent image build must regenerate its manifest and seed blobs.
+M77 device package is unchanged. M78 updates the frozen M74 seed manifest
+and preference blobs in a separate boot-only package. Kernel unchanged.
 Host verification: tools/test_s8_preferences.py exercises apply_var and
 stage_m74_var against a real temporary filesystem. Hardware pending.
