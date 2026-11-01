@@ -64,6 +64,9 @@ Review / CI
   Codex review round1 (artifacts/m81-user-trace/codex-review-1.md) found the
   same, plus thread-call priority and SIGABRT attribution; all three fixed.
 
+  Source de023d0: kernel CI 41274715388 completed/success (portable and build
+  jobs, including the patch-phase applied-source check and kernel link).
+
 Not established
-  Kernel compilation of 0096 on macOS CI, a boot package, and any device output.
+  A boot package with the trace boot-args, and any device output.
   No crash cause is claimed. Packaging and flashing remain manual.
