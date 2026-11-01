@@ -1,0 +1,23 @@
+{
+  "repository": "https://github.com/oosexgang/hackios-xnu-kernel",
+  "commit": "a3384e031eb1e605cf37adaefc19991f04f6274b",
+  "license": "APSL-2.0 repository license copied",
+  "files": [
+    {
+      "path": "user_exception_trace.c",
+      "source": "xnu/files/osfmk/arm64/user_exception_trace.c",
+      "bytes": 14448,
+      "sha256": "b4fa90eb28d8752ae68b4dc4532aea3ed43611f7f5874aee4ab17ec035c80916"
+    }
+  ],
+  "hooks": "redwood.patch exception_triage_thread and __pthread_kill(SIGABRT) call sites",
+  "adaptation": "xnu/patches/0096-xcover5-hackios-user-exception-trace.patch",
+  "changes": [
+    "No Redwood loader log: loader_log_line removed, every line goes to the console only",
+    "userabort lines also require boot-arg systrace, so default console output is unchanged",
+    "__pthread_kill hook placed after the existing declarations",
+    "Comments name the XCover5 adaptation; no other code change"
+  ],
+  "boot_args": "systrace=1; ustacks=NAME|top ustacks_at=SECONDS [ustacks_ms ustacks_count ustacks_threads ustacks_tname]",
+  "scope": "Diagnostics only; not a crash fix. Off unless the boot command line enables it."
+}

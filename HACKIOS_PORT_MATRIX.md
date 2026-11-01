@@ -24,6 +24,20 @@ firmware and loader callbacks are not a substitute for Exynos drivers.
 | Resources | M71's 2692 original framework Info.plists retained. M72 adds 39 local original files (1,294,496 bytes), including configd/fontservicesd and common SystemConfiguration plugin resources. | Raw HFS owner/mode/file comparison and independent extraction. Apple bytes are injected locally, never included in the new public source commits or CI inputs. The extended image adds every file of the stock Fonts directory (256), plus 186 UI bundle files on the read-only cache: 442 files / 403,413,560 bytes. 89 root links expose the complete Fonts directory and selected SpringBoard/UIKit/CoreUI resources. Existing framework directory identities remain in place; media services and the complete stock root are not claimed. |
 | M73 current CoreDuet model | Missing `_DKDataModel.momd` current version35 restored: `.mom`, `.omo` and original `VersionInfo.plist`,190863bytes. | Exact APFS/independent7Zip/final-HFS bytes verified locally. Addresses and resource lookup inferred from chronod's NSURL nil-path exception; actual exception resolution needs hardware. Historical migration model versions are not staged. |
 | User-space injection | Existing BackBoard/SpringBoard software-rendering hooks retained. | Latest upstream injection removes workarounds that this GPU-less port still needs; its modem/GPU/camera hooks cannot simply replace the current library. |
+| M81 user crash/stack trace | Upstream `user_exception_trace.c` (usertrap/userabort/ustacks/top) via `0096`, same exception_triage_thread and `__pthread_kill(SIGABRT)` hooks. | Off unless `systrace=1` / `ustacks=...` boot-args; no Redwood loader log. Host body test with ASan/UBSan and applied-source check pass; kernel CI build and device output pending. See `M81_USER_TRACE_STATUS.txt`. |
+
+## Remaining upstream inventory (M81 review, a3384e0)
+
+| Upstream file(s) | Status here | Reason |
+| --- | --- | --- |
+| `bsd/dev/redwood_*`, `RedwoodGPU/WLAN/Battery`, `gic_v3_irq.c`, `generic_arm64_support.c` | Not portable | Qualcomm/Goodix/ath11k/Adreno/GICv3 hardware; Exynos needs its own drivers. |
+| `GenericARMPE.cpp`, `minicrypto/*`, `pthread_kext_static.c`, `loader_return.c` | Covered by the existing port | sweet device-tree PE (0016), HMAC-PRNG/BearSSL (0013/0014/0020/0023/0027/0032/0033), built-in pthread (0019); no Redwood loader. |
+| `kern_minimac.c`, `miniamfi*`, `MiniAppleKeyStore`, `MiniIOMobileFramebuffer`, `MiniIOSurface`, `MiniIONetworkStack`, input queue, APFS read, RAMFS | Ported (M39J..M75) | See rows above. |
+| `user_exception_trace.c` | Ported (M81) | Hardware-independent diagnostics. |
+| `apfs_write.c`, `redwood_sparse.c`, `redwood_apfs_check.c`, `redwood_image.c` | Deferred | Need the APFS root/storage migration; the Samsung block layout is not yet verified for an APFS root. |
+| `psci_smp.c` | Deferred | PSCI is generic, but Exynos 850 CPU_ON failed before (ROADMAP); it needs a separate SMP hardware experiment, not a blind import. |
+| userland `mkjobs.py` demand-start selection | In progress (uncommitted `upstream_demand_jobs`) | Not touched by M81. |
+| userland `inject*.c` latest, `init.c` var_store | Not ported | GPU/modem/camera hooks and the Redwood var archive do not fit the GPU-less Samsung boot. |
 
 New portable source is pinned in `third_party/hackios-portable/ORIGIN.json`.
 The immutable upstream files and their licenses are retained; Samsung adaptations

@@ -1,0 +1,54 @@
+2026-11-01 M81 HACKIOS USER EXCEPTION / ABORT / STACK TRACE PORT -- SOURCE + HOST PASS, KERNEL CI/DEVICE PENDING
+
+Reference oosexgang/hackios-xnu-kernel a3384e031eb1e605cf37adaefc19991f04f6274b
+xnu/files/osfmk/arm64/user_exception_trace.c, 14448 bytes, SHA256
+b4fa90eb28d8752ae68b4dc4532aea3ed43611f7f5874aee4ab17ec035c80916.
+Exact copy and APSL license: third_party/hackios-diagnostics/.
+Adaptation: xnu/patches/0096-xcover5-hackios-user-exception-trace.patch.
+
+Why
+  M69 logs only SpringBoard/backboardd breakpoint registers, without user memory.
+  M75 still lacks the logd readdir(NULL) caller, M78 shows SpringBoard alive but
+  layers0, and M80 only samples process state. Upstream's trace adds, for any
+  process: crash message text (x0-x3/x8/x16 strings left by assertion helpers),
+  shared cache slide, frame-pointer return addresses, abort() call stacks and
+  periodic per-thread stacks of a named process or a CPU share list ("top").
+
+Hooks (same sites as upstream redwood.patch)
+  osfmk/kern/exception.c exception_triage_thread: before existing triage.
+  bsd/kern/kern_sig.c __pthread_kill(SIGABRT): after existing declarations.
+  osfmk/conf/files.arm64: standard source next to sleh.c.
+  M69 breakpoint logger and every existing exception flow remain unchanged.
+
+XCover5 changes from upstream (test_m81_usertrace.py checks this exact list)
+  No Redwood loader log: loader_log_line removed; console printf only.
+  userabort lines also need systrace, so a kernel built with 0096 but without
+  the boot-args below prints nothing new.
+  Comments only otherwise.
+
+Boot-args (none are in the current packaging cmdline)
+  systrace=1                       usertrap: / userabort: lines
+  ustacks=SpringBoard ustacks_at=60 ustacks_ms=10000 ustacks_count=6
+                                   per-thread pc/lr/return addresses
+  ustacks=top ustacks_at=60 ustacks_ms=10000 ustacks_count=6
+                                   busy percentage and top 12 processes
+  Optional ustacks_threads=N, ustacks_tname=TEXT (e.g. coreanimation).
+  Addresses minus the printed slide resolve in the exact iOS16.5 dyld cache.
+  Console volume: each ustacks report is about 1 line per thread; on the slow
+  framebuffer console prefer ustacks_threads=1 or ustacks_tname.
+
+Verification so far
+  Pinned upstream size/SHA256 PASS. Patch body equals upstream plus the listed
+  adaptations exactly. git apply --check and patch -p1 against the local
+  xnu-8796.141.3 exception.c / kern_sig.c / files.arm64 PASS; the applied tree
+  equals the staged result. Source-only applied-tree check PASS.
+  Actual user_exception_trace/user_abort_trace bodies under owned mocks with
+  ASan/UBSan (WSL gcc): default silent, non-fatal/foreign thread/kernel task/
+  32-bit filtered, x0 message printed, short/binary/unmapped/out-of-range values
+  skipped, slide reported and region reference released, fp walk stops on a
+  non-rising frame, caps 10 (trap) and 24 (abort), misaligned fp ignored. PASS.
+  The ustacks/top part is not run on the host (it needs task/thread queues).
+
+Not established
+  Kernel compilation of 0096 on macOS CI, a boot package, and any device output.
+  No crash cause is claimed. Packaging and flashing remain manual.
